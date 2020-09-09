@@ -16,12 +16,16 @@ class CreateFormulasTable extends Migration
         Schema::create('formulas', function (Blueprint $table) {
             $table->id();
             $table->string('formula');
+            $table->string('xml');
             $table->integer('quantidade_regras');
             $table->boolean('ticar_automaticamente');
             $table->boolean('fechar_automaticamente');
             $table->boolean('iniciar_zerada');
             $table->boolean('inicio_personalizado');
             $table->text('lista_passos')->nullable();
+            $table->text('lista_derivacoes')->nullable();
+            $table->text('lista_ticagem')->nullable();
+            $table->text('lista_fechamento')->nullable();
             $table->timestamps();
         });
     }

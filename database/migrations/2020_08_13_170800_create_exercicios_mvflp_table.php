@@ -23,6 +23,7 @@ class CreateExerciciosMvflpTable extends Migration
             $table->string('hash');
             $table->string('url');
             $table->integer('tempo');
+            $table->integer('qndt_erros');
             $table->text('descricao');
             $table->boolean('ativo');
             $table->timestamps();

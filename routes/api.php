@@ -36,6 +36,19 @@ Route::group(['middleware'=>['apiJwt']],function(){
     Route::put('mvflp/niveis/{id}', 'Api\NivelMvflpController@update');
     Route::delete('mvflp/niveis/{id}', 'Api\NivelMvflpController@destroy');
 
+
     Route::get('mvflp/exercicio/nivel/{id}', 'Api\ExercicioMvflpController@byIdNivel');
+    Route::post('mvflp/exercicio', 'Api\ExercicioMvflpController@store');
+
+
+
+    Route::post('arvore/otimizada', 'Api\ArvoreRefutacaoController@criarArvoreOtimizada');
+
+    Route::post('arvore/inicializacao/premisas-conclucao', 'Api\ArvoreRefutacaoController@premissasConclusao');
+    Route::post('arvore/inicializacao/adiciona-no', 'Api\ArvoreRefutacaoController@adicionaNoIncializacao');
+
+    Route::post('arvore/derivacao/adiciona-no', 'Api\ArvoreRefutacaoController@derivar');
+    Route::post('arvore/derivacao/fechar-no', 'Api\ArvoreRefutacaoController@fecharNo');
+    Route::post('arvore/derivacao/ticar-no', 'Api\ArvoreRefutacaoController@ticarNo');
 });
 
