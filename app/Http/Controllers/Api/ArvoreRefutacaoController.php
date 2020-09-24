@@ -36,7 +36,7 @@ class ArvoreRefutacaoController extends Controller
         #--------
         
         #Gera lista das possicoes de cada no da tabela
-        $impresaoAvr = $this->constr->geraListaArvore($arv,700,350,0);
+        $impresaoAvr = $this->constr->geraListaArvore($arv,$request->width,($request->width/2),0);
         #--------=>$str, 'posX'=>$posX, 'posY'=>$posYFilho,]
 
 

@@ -16,7 +16,7 @@ class CreateFormulasTable extends Migration
         Schema::create('formulas', function (Blueprint $table) {
             $table->id();
             $table->string('formula');
-            $table->string('xml');
+            $table->text('xml');
             $table->integer('quantidade_regras');
             $table->boolean('ticar_automaticamente');
             $table->boolean('fechar_automaticamente');

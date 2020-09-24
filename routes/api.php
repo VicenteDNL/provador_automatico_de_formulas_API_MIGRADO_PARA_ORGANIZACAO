@@ -39,6 +39,7 @@ Route::group(['middleware'=>['apiJwt']],function(){
 
     Route::get('mvflp/exercicio/nivel/{id}', 'Api\ExercicioMvflpController@byIdNivel');
     Route::post('mvflp/exercicio', 'Api\ExercicioMvflpController@store');
+    Route::delete('mvflp/exercicio/{id}', 'Api\ExercicioMvflpController@destroy');
 
 
 

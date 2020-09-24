@@ -22,14 +22,14 @@ class CreateExerciciosMvflpTable extends Migration
             $table->text('enunciado');
             $table->string('hash');
             $table->string('url');
-            $table->integer('tempo');
-            $table->integer('qndt_erros');
+            $table->integer('tempo')->nullable();
+            $table->integer('qndt_erros')->nullable();
             $table->text('descricao');
             $table->boolean('ativo');
             $table->timestamps();
             $table->foreign('id_recompensa')->references('id')->on('recompensas');
             $table->foreign('id_nivel')->references('id')->on('niveis_mvflp');
-            $table->foreign('id_formula')->references('id')->on('formulas');
+            $table->foreign('id_formula')->references('id')->on('formulas')->onDelete('cascade');;
         });
     }
 

@@ -21,11 +21,14 @@ class NivelMvflpController extends Controller
      */
     public function index()
     {
-        // $data= $this->niveis->paginate(5)->load('id_recompensa');
+        try{
         $data= $this->niveis->orderBy('created_at', 'desc')->paginate(5);
-    
         return response()->json(['success' => true, 'msg'=>'', 'data'=>$data]);
-         
+        
+        }catch(\Exception $e){
+            return response()->json(['success' => false, 'msg'=>$e, 'data'=>''],500);
+
+        }
     }
 
     /**

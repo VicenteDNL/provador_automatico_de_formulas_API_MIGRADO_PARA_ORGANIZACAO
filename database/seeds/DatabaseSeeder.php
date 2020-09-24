@@ -14,7 +14,7 @@ class DatabaseSeeder extends Seeder
     {
         //  $this->call(UserSeeder::class);
       // $this->call(NiveisMvflpSeeder::class);
-          // $this->call(RecompensaSeeder::class);
+        // $this->call(RecompensaSeeder::class);
         // $this->call(ExercicioMvflpSeeder::class);
     }
     
