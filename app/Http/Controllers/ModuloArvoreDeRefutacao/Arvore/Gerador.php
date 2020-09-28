@@ -938,7 +938,7 @@ class Gerador extends Controller
     public function criarNoIncializacao($listaArgumentos,$id,$negacao,$ultimoNo){
  
         $identi= str_split ($id,strrpos($id, "_"));
-        
+        // var_dump($identi);
         if($identi[0]=='premissa' && $negacao==false){
             $premissa = $listaArgumentos['premissas'][substr($identi[1], 1)];
 
