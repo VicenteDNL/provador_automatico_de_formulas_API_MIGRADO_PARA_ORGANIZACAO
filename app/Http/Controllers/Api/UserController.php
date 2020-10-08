@@ -17,16 +17,16 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::all();
+        // $users = User::all();
 
         // $user = new User();
         // $user->name = 'danilo';
         // $user->email = 'danilo@gmail.com';
         // $user->password =  Hash::make('1234');
         // $user->save();
-        // dd($user);
+       
 
-        return response()->json($users);
+        // return response()->json($users);
     }
 
     /**

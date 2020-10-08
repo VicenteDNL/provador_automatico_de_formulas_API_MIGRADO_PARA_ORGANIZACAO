@@ -1,7 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Api\aluno;
 
+use App\ExercicioMVFLP;
+use App\Formula;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Arvore\Gerador;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Construcao;
@@ -36,11 +38,8 @@ class ArvoreRefutacaoController extends Controller
         #--------
         
         #Gera lista das possicoes de cada no da tabela
-        $impresaoAvr = $this->constr->geraListaArvore($arv,$request->width,($request->width/2),0);
-        #--------=>$str, 'posX'=>$posX, 'posY'=>$posYFilho,]
+        $impresaoAvr = $this->constr->geraListaArvore($arv,$request->width,($request->width/2),0,true,true);
 
-
-        // $svg = $this->constr->geraSVG($impresaoAvr);
 
          #Gera uma string da Formula XML
          $formulaGerada = $this->arg->stringFormula($xml);
@@ -69,8 +68,14 @@ class ArvoreRefutacaoController extends Controller
 
 
     public function adicionaNoIncializacao(Request $request){
+
+        
+        $exercicio = ExercicioMVFLP::findOrFail($request->idExercicio);
+        $formula =  Formula::findOrFail($exercicio->id_formula);
+
+
         try{
-            $xml = simplexml_load_string($request->xml);
+            $xml = simplexml_load_string($formula->xml);
         }
         catch(\Exception $e){
             return response()->json(['success' => false, 'msg'=>'XML INVALIDO!', 'data'=>''],500);
@@ -93,8 +98,12 @@ class ArvoreRefutacaoController extends Controller
     }
     public function derivar(Request $request){
 
+        $exercicio = ExercicioMVFLP::findOrFail($request->idExercicio);
+        $formula =  Formula::findOrFail($exercicio->id_formula);
+
+
         #ler a string xml, e a transforma em objeto
-        try{$xml = simplexml_load_string($request->xml);}
+        try{$xml = simplexml_load_string($formula->xml);}
         catch(\Exception $e){return response()->json(['success' => false, 'msg'=>'XML INVALIDO!', 'data'=>''],500);}
         #-----
 
@@ -128,7 +137,7 @@ class ArvoreRefutacaoController extends Controller
                     if($arvoreFechada['sucesso']==true){
 
                         #Gera lista das possicoes de cada no da arvore
-                        $impresaoAvr = $this->constr->geraListaArvore($arvoreTicada['arv'],700,350,0);
+                        $impresaoAvr = $this->constr->geraListaArvore($arvoreTicada['arv'],700,350,0,$formula->ticar_automaticamente,$formula->fechar_automaticamente);
                     #-----
 
                     return  response()->json(['success' => true, 'msg'=>'', 'data'=>['impresao'=>$impresaoAvr,'lista'=>$resposta['lista'],'listaDerivacoes'=>$listaDerivacoes]]);
@@ -158,8 +167,13 @@ class ArvoreRefutacaoController extends Controller
     }
 
     public function ticarNo(Request $request){
+
+
+        $exercicio = ExercicioMVFLP::findOrFail($request->idExercicio);
+        $formula =  Formula::findOrFail($exercicio->id_formula);
+
         try{
-            $xml = simplexml_load_string($request->xml);
+            $xml = simplexml_load_string($formula->xml);
         }
         catch(\Exception $e){
             return response()->json(['success' => false, 'msg'=>'XML INVALIDO!', 'data'=>''],500);
@@ -187,7 +201,8 @@ class ArvoreRefutacaoController extends Controller
                     $arvorefinal = $this->gerador->ticarNo($arvoreTicada['arv'], $request->no);
                     if( $arvorefinal['sucesso']==true){
                         #Gera lista das possicoes de cada no da arvore
-                        $impresaoAvr = $this->constr->geraListaArvore($arvorefinal['arv'],700,350,0);
+
+                        $impresaoAvr = $this->constr->geraListaArvore($arvorefinal['arv'],700,350,0,$formula->ticar_automaticamente,$formula->fechar_automaticamente);
                         #-----
                         return  response()->json(['success' => true, 'msg'=>'', 'data'=>['impresao'=>$impresaoAvr,'noticado'=>$request->no]]);
                     }
@@ -213,8 +228,14 @@ class ArvoreRefutacaoController extends Controller
 
 
     public function fecharNo(Request $request){
+
+
+        
+        $exercicio = ExercicioMVFLP::findOrFail($request->idExercicio);
+        $formula =  Formula::findOrFail($exercicio->id_formula);
+
         try{
-            $xml = simplexml_load_string($request->xml);
+            $xml = simplexml_load_string($formula->xml);
         }
         catch(\Exception $e){
             return response()->json(['success' => false, 'msg'=>'XML INVALIDO!', 'data'=>''],500);
@@ -243,7 +264,7 @@ class ArvoreRefutacaoController extends Controller
 
                     if($fechada['sucesso']==true){
                         #Gera lista das possicoes de cada no da arvore
-                        $impresaoAvr = $this->constr->geraListaArvore($fechada['arv'],700,350,0);
+                        $impresaoAvr = $this->constr->geraListaArvore($fechada['arv'],700,350,0,$formula->ticar_automaticamente,$formula->fechar_automaticamente);
                         #-----
                         return  response()->json(['success' => true, 'msg'=>'', 'data'=>['impresao'=>$impresaoAvr,'nofechado'=>$request->noFolha, 'noContradicao'=>$request->noContradicao]]);
                     }

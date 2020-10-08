@@ -1,8 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Api\admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\LogicLive\ConfiguracaoController;
+use App\Http\Controllers\LogicLive\MvflpController;
 use App\NivelMVFLP;
 use Illuminate\Http\Request;
 
@@ -13,6 +15,8 @@ class NivelMvflpController extends Controller
     public function __construct(NivelMVFLP $niveis )
     {
         $this->niveis = $niveis; 
+        $this->configurador = new ConfiguracaoController;
+        $this->mvflp= new MvflpController;
     }
     /**
      * Display a listing of the resource.
@@ -45,6 +49,11 @@ class NivelMvflpController extends Controller
         $nivelMVFLP->ativo = $request->ativo;
         $nivelMVFLP->id_recompensa = $request->id_recompensa;
         $nivelMVFLP->save();
+
+        if($this->configurador->ativo()){
+            $this->mvflp->salvarNivel();
+        }
+
         return response()->json(['success' => true, 'msg'=>'Niviel ('.$request->nome.') cadastrado com sucesso', 'data'=>'']);
         }catch(\Exception $e){
             return response()->json(['success' => false, 'msg'=>$e, 'data'=>''],500);

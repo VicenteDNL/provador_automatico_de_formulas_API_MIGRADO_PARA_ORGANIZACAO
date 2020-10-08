@@ -905,7 +905,9 @@ class Gerador extends Controller
     public function inicializarPassoPasso($listaArgumentos,$id,$lista, $negacao){
         $ultimoNo=null;
         $resposta=null;
+
         foreach ($lista as $no){
+            
             $resposta = $this->criarNoIncializacao($listaArgumentos,$no['idNo'],$no['negacao'], $ultimoNo);
             if($resposta['sucesso']==false){
                 return ['sucesso'=>false, 'messagem'=>$resposta['messagem']];

@@ -185,6 +185,7 @@ class Argumento extends Controller
     public function CriaListaArgumentos($xml){
         $arrayPremissas=[];
         $arrayConclusao=[];
+        
         foreach ($xml as $filhos){
             if ($filhos->getName()=='PREMISSA'){
                  array_push($arrayPremissas, $this->premissa($filhos));

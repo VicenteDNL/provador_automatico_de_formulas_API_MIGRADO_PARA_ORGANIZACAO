@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Api\admin;
 
 use App\ExercicioMVFLP;
 use App\Formula;
@@ -9,6 +9,7 @@ use App\NivelMVFLP;
 use App\Recompensa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class ExercicioMvflpController extends Controller
 {
@@ -39,7 +40,7 @@ class ExercicioMvflpController extends Controller
      */
     public function store(Request $request, ExercicioMVFLP $exercicio)
     {
-        try{
+        // try{
             // Verifica sê existe uma recompensa com o id da requisicao
             $recompensas=Recompensa::where('id', $request->id_recompensa)->get(); 
             if(count($recompensas)==0){return response()->json(['success' => false, 'msg'=>'Recompensa não cadastrada', 'data'=>''],500);}
@@ -70,6 +71,7 @@ class ExercicioMvflpController extends Controller
             $formula->fechar_automaticamente =$request->id_formula["fechar_automaticamente"];
             $formula->iniciar_zerada =$request->id_formula["iniciar_zerada"];
             $formula->inicio_personalizado =$request->id_formula["inicio_personalizado"];
+            $formula->inicializacao_completa =$request->id_formula["inicializacao_completa"];
             if($request->id_formula["inicio_personalizado"]==true && $request->id_formula["iniciar_zerada"]==false ){
                 $formula->lista_passos =json_encode ($request->id_formula["lista_passos"]);
                 $formula->lista_derivacoes =json_encode ($request->id_formula["lista_derivacoes"]);
@@ -80,10 +82,13 @@ class ExercicioMvflpController extends Controller
             $formula->save();
             $exercicio->id_formula=$formula->id;
             $exercicio->save();
+            $exercicio->hash= hash ('md5',$exercicio->id, false);
+            $exercicio->save();
+            var_dump($exercicio->hash,);
             return response()->json(['success' => true, 'msg'=>'Cadastrado!', 'data'=>'']);
-        }catch(\Exception $e){
-            return response()->json(['success' => false, 'msg'=>$e, 'data'=>''],500);
-        }
+        // }catch(\Exception $e){
+        //     return response()->json(['success' => false, 'msg'=>$e, 'data'=>''],500);
+        // }
       
     }
 

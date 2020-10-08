@@ -19,6 +19,7 @@ class CreateFormulasTable extends Migration
             $table->text('xml');
             $table->integer('quantidade_regras');
             $table->boolean('ticar_automaticamente');
+            $table->boolean('inicializacao_completa');
             $table->boolean('fechar_automaticamente');
             $table->boolean('iniciar_zerada');
             $table->boolean('inicio_personalizado');

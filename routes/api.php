@@ -26,30 +26,38 @@ Route::group(['middleware'=>['apiJwt']],function(){
     Route::get('users', 'Api\UserController@index');
 
 
-    Route::get('recompensas', 'Api\RecompensaController@index');
+    Route::get('recompensas', 'Api\admin\RecompensaController@index');
+
+    Route::get('mvflp/niveis', 'Api\admin\NivelMvflpController@index');
+    Route::get('mvflp/niveis/listarTodos', 'Api\admin\NivelMvflpController@all');
+    Route::get('mvflp/niveis/{id}', 'Api\admin\NivelMvflpController@show');
+    Route::post('mvflp/niveis', 'Api\admin\NivelMvflpController@store');
+    Route::put('mvflp/niveis/{id}', 'Api\admin\NivelMvflpController@update');
+    Route::delete('mvflp/niveis/{id}', 'Api\admin\NivelMvflpController@destroy');
+    Route::get('mvflp/exercicio/nivel/{id}', 'Api\admin\ExercicioMvflpController@byIdNivel');
+    Route::post('mvflp/exercicio', 'Api\admin\ExercicioMvflpController@store');
+    Route::delete('mvflp/exercicio/{id}', 'Api\admin\admin\@destroy');
 
 
-    Route::get('mvflp/niveis', 'Api\NivelMvflpController@index');
-    Route::get('mvflp/niveis/listarTodos', 'Api\NivelMvflpController@all');
-    Route::get('mvflp/niveis/{id}', 'Api\NivelMvflpController@show');
-    Route::post('mvflp/niveis', 'Api\NivelMvflpController@store');
-    Route::put('mvflp/niveis/{id}', 'Api\NivelMvflpController@update');
-    Route::delete('mvflp/niveis/{id}', 'Api\NivelMvflpController@destroy');
-
-
-    Route::get('mvflp/exercicio/nivel/{id}', 'Api\ExercicioMvflpController@byIdNivel');
-    Route::post('mvflp/exercicio', 'Api\ExercicioMvflpController@store');
-    Route::delete('mvflp/exercicio/{id}', 'Api\ExercicioMvflpController@destroy');
-
-
-
-    Route::post('arvore/otimizada', 'Api\ArvoreRefutacaoController@criarArvoreOtimizada');
-
-    Route::post('arvore/inicializacao/premisas-conclucao', 'Api\ArvoreRefutacaoController@premissasConclusao');
-    Route::post('arvore/inicializacao/adiciona-no', 'Api\ArvoreRefutacaoController@adicionaNoIncializacao');
-
-    Route::post('arvore/derivacao/adiciona-no', 'Api\ArvoreRefutacaoController@derivar');
-    Route::post('arvore/derivacao/fechar-no', 'Api\ArvoreRefutacaoController@fecharNo');
-    Route::post('arvore/derivacao/ticar-no', 'Api\ArvoreRefutacaoController@ticarNo');
+    Route::post('arvore/otimizada', 'Api\admin\ArvoreRefutacaoController@criarArvoreOtimizada');
+    Route::post('arvore/inicializacao/premisas-conclucao', 'Api\admin\ArvoreRefutacaoController@premissasConclusao');
+    Route::post('arvore/inicializacao/adiciona-no', 'Api\admin\ArvoreRefutacaoController@adicionaNoIncializacao');
+    Route::post('arvore/derivacao/adiciona-no', 'Api\admin\ArvoreRefutacaoController@derivar');
+    Route::post('arvore/derivacao/fechar-no', 'Api\admin\ArvoreRefutacaoController@fecharNo');
+    Route::post('arvore/derivacao/ticar-no', 'Api\admin\ArvoreRefutacaoController@ticarNo');
 });
 
+
+
+// Requisições do lado do aluno
+Route::get('exercicio/validacao/{id}', 'Api\aluno\ExercicioMvflpController@buscarExercicio');
+Route::get('exercicio/arvore/criar', 'Api\aluno\ExercicioMvflpController@criarArvoreExercicio');
+
+
+
+Route::post('aluno/arvore/otimizada', 'Api\aluno\ArvoreRefutacaoController@criarArvoreOtimizada');
+Route::post('aluno/arvore/inicializacao/premisas-conclucao', 'Api\aluno\ArvoreRefutacaoController@premissasConclusao');
+Route::post('aluno/arvore/inicializacao/adiciona-no', 'Api\aluno\ArvoreRefutacaoController@adicionaNoIncializacao');
+Route::post('aluno/arvore/derivacao/adiciona-no', 'Api\aluno\ArvoreRefutacaoController@derivar');
+Route::post('aluno/arvore/derivacao/fechar-no', 'Api\aluno\ArvoreRefutacaoController@fecharNo');
+Route::post('aluno/arvore/derivacao/ticar-no', 'Api\aluno\ArvoreRefutacaoController@ticarNo');

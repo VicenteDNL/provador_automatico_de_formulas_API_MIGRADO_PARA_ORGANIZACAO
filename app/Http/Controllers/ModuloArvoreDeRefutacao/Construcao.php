@@ -34,9 +34,9 @@ class Construcao extends Controller
     }
 
 
-    public function geraListaArvore($arvore,$width,$posX,$posY,$array=[]){
+    public function geraListaArvore($arvore,$width,$posX,$posY, $ticar=false, $fechar=false){
         
-        $listaNo = $this->geraListaNO($arvore,$width,$posX,$posY,$array=[]);
+        $listaNo = $this->geraListaNO($arvore,$width,$posX,$posY,$array=[],$ticar,$fechar);
         $listaAresta = $this->geraListaArestas($listaNo);
         return ['nos'=>$listaNo,'arestas'=>$listaAresta];
 
@@ -44,11 +44,15 @@ class Construcao extends Controller
         
 
 
-    public function geraListaNO($arvore,$width,$posX,$posY,$array=[])
+    public function geraListaNO($arvore,$width,$posX,$posY,$array=[],$ticar,$fechar)
     {
         $posYFilho = $posY + 80;
         $str = $this->arg->stringArg($arvore->getValorNo());
         $tmh = strlen ( $str )<=4 ? 40 : (strlen ( $str  )>= 18 ? strlen ( $str) *6 : strlen ( $str )*8.5 );
+
+        $utilizado=$ticar==false? $arvore->isTicado(): $arvore->isUtilizado();
+        $fechado=$fechar==false? $arvore->isFechamento(): $arvore->isFechado();
+
         array_push($array,[
             'arv'=>$arvore,
             'str'=>$str, 
@@ -61,8 +65,8 @@ class Construcao extends Controller
             'posXno'=>$posX-($tmh/2), 
             'linhaDerivacao'=>$arvore->getLinhaDerivacao(),
             'posXlinhaDerivacao'=>$posX+($tmh/2),
-            'utilizado'=>$arvore->isTicado(),
-            'fechado'=>$arvore->isFechamento(),
+            'utilizado'=>$utilizado,
+            'fechado'=>$fechado,
             'linhaContradicao'=>$arvore->getLinhaContradicao(),
             'fill'=>'url(#grad1)',
             'strokeWidth'=>'2',
@@ -76,11 +80,11 @@ class Construcao extends Controller
                     $posXFilho = $posXFilho + $divisao;
                 }
             }
-            $array = $this->geraListaNO($arvore->getFilhoEsquerdaNo(), $width, $posXFilho, $posYFilho,$array);
+            $array = $this->geraListaNO($arvore->getFilhoEsquerdaNo(), $width, $posXFilho, $posYFilho,$array,$ticar,$fechar);
         }
         if ($arvore->getFilhoCentroNo() != null) {
 
-            $array = $this->geraListaNO($arvore->getFilhoCentroNo(), $width, $posX, $posYFilho,$array);
+            $array = $this->geraListaNO($arvore->getFilhoCentroNo(), $width, $posX, $posYFilho,$array,$ticar,$fechar);
         }
         if ($arvore->getFilhoDireitaNo() != null) {
             $divisao = $width / ($arvore->getFilhoDireitaNo()->getLinhaNo() + 1);
@@ -90,7 +94,7 @@ class Construcao extends Controller
                     $posXFilho = $posXFilho - $divisao;
                 }
             }
-            $array = $this->geraListaNO($arvore->getFilhoDireitaNo(), $width, $posXFilho, $posYFilho,$array);
+            $array = $this->geraListaNO($arvore->getFilhoDireitaNo(), $width, $posXFilho, $posYFilho,$array,$ticar,$fechar);
         }
         return $array;
     }
@@ -173,83 +177,7 @@ class Construcao extends Controller
     }
 
 
-    public function geraSVG($arv){
-
-        // Configuraçoes do estilo
-
-        $corRGB = 'rgb(175,175,175)';
-        $largura='1';
-        $linecap="'butt'";
-
-
-
-        $svg='<svg width="700" height="660">';
-
-        for ($i = 1; $i<count($arv); $i++){
-            if($arv[$i-1]['posY']>=($arv[$i]['posY'])){
-                for ($e = $i-1 ; $e>0;$e--){
-                    if($arv[$e]['posY']<($arv[$i]['posY'])){
-
-                        $posSvgX_1=strval($arv[$e]['posX']);
-                        $posSvgY_1=strval($arv[$e]['posY']+27);
-
-                        $posSvgX_2=strval($arv[$i]['posX']);
-                        $posSvgY_2=strval($arv[$i]['posY']-27);
-                    }
-                }
-            }
-            else{
-
-                $posSvgX_1=strval($arv[$i-1]['posX']);
-                $posSvgY_1=strval($arv[$i-1]['posY']+27);
-
-                $posSvgX_2=strval($arv[$i]['posX']);
-                $posSvgY_2=strval($arv[$i]['posY']-27);
-
-
-            }
-
-        };
-
-        $svg=$svg+"<line x1=".$posSvgX_1." y1=".$posSvgY_1." x2=".$posSvgX_2." y2=".$posSvgY_2." stroke=".$corRGB." stroke-width=".$largura." stroke-linecap=".$linecap."/>";
-
-
-        foreach($arv as $valor){
-            $svg=$svg+"<circle cx=".$valor['posX']." cy=".($valor['posY']+27)." r=".'3'." fill='#AFAFA4'/>";
-            $svg=$svg+"<circle cx=".$valor['posX']." cy=".($valor['posY']-27)." r=".'3'." fill='#AFAFAF'/>";
-
-
-            $svg=$svg+"<defs>";
-                $svg=$svg+"<linearGradient id='grad1' x1='30%' y1='0%' x2='90%' y2='50%'>";
-                    $svg=$svg+"<stop offset='0%' style='stop-color:rgb(32,178,170);stop-opacity:1' />";
-                    $svg=$svg+"<stop offset='100%' style='stop-color:rgb(0,128,128);stop-opacity:1' />";
-                $svg=$svg+"</linearGradient>";
-            $svg=$svg+"</defs>";
-
-            $svg=$svg+"<rect x=".($valor['posX']-($valor['tmh']/2))." y=".($valor['posY']-20)." rx=20 ry=20 width=".$valor['tmh']." height='40' fill='url(#grad1)' stroke=#C0C0C0 stroke-width=2/>";
-            $svg=$svg+"<text text-anchor='middle' font-size='15' font-weight='bold' fill='white'  font-family='Helvetica, sans-serif, Arial' x=".$valor['posX']." y=".($valor['posY']+5).">".$valor['str']."</text>";
-            $svg=$svg+ "<text font-size='15' font-weight='bold' fill='rgb(175,175,175)' x=".($valor['posX']+($valor['tmh']/2))." y=".($valor['posY']+25).">".($valor['arv']->getLinhaDerivacao())."</text>";
-
-            
-            if($valor['arv']->isUtilizado()==1){
-                $svg=$svg+ "<svg x=".($valor['posX']+($valor['tmh']/2)+12)." y=".($valor['posY']-10)." fill=#61CE61>";
-                $svg=$svg+"<path d='M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15.285z'/>";
-                $svg=$svg+"</svg>";
-            }
-            if($valor['arv']->isFechado()==true){
-                $svg=$svg+"<line x1=".($valor['posX']-15)." y1=".($valor['posY']+15)." x2=".($valor['posX']+15)." y2=".($valor['posY']+40)." stroke='#DC0F4B' stroke-width=4 stroke-dasharray='1'/>";
-                $svg=$svg+"<line x1=".($valor['posX']+15)." y1=".($valor['posY']+15)." x2=".($valor['posX']-15)." y2=".($valor['posY']+40)." stroke='#DC0F4B' stroke-width=4 stroke-dasharray='1'/>";
-                $svg=$svg+"<text font-size='17' fill='#DC0F4B' x=".($valor['posX']-5 )." y=".($valor['posY']+70 ).">".($valor['arv']->getLinhaContradicao())."</text>";
-            };
-        };
-    
-        $svg=$svg+'</svg>';
-        return $svg;
-        
-        
-
-    }
-
+ 
 
 
 
