@@ -1,22 +1,23 @@
 <?php
 
-namespace App\Http\Controllers\Api\admin;
+namespace App\Http\Controllers\Api\admin\modulos\validacaoFormulas;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\LogicLive\ConfiguracaoController;
-use App\Http\Controllers\LogicLive\MvflpController;
+use App\Http\Controllers\LogicLive\config\Configuracao;
+use App\Http\Controllers\LogicLive\modulos\validacaoFormulas\NivelVF;
+use App\LogicLive;
 use App\NivelMVFLP;
 use Illuminate\Http\Request;
 
-class NivelMvflpController extends Controller
+class NivelVFController extends Controller
 {
     private $niveis;
 
     public function __construct(NivelMVFLP $niveis )
     {
         $this->niveis = $niveis; 
-        $this->configurador = new ConfiguracaoController;
-        $this->mvflp= new MvflpController;
+        $this->config = new Configuracao;
+        $this->logicLive_nivel= new NivelVF;
     }
     /**
      * Display a listing of the resource.
@@ -43,22 +44,34 @@ class NivelMvflpController extends Controller
      */
     public function store(Request $request, NivelMVFLP $nivelMVFLP)
     {
-        try{
-        $nivelMVFLP->nome = $request->nome;
-        $nivelMVFLP->descricao = $request->descricao;
-        $nivelMVFLP->ativo = $request->ativo;
-        $nivelMVFLP->id_recompensa = $request->id_recompensa;
-        $nivelMVFLP->save();
+        // try{
 
-        if($this->configurador->ativo()){
-            $this->mvflp->salvarNivel();
-        }
+
+            if($this->config->ativo()){
+                $baseDados = LogicLive::where('tipo', '=', 'modulo1')->get();
+                $baseDados = $baseDados[0];
+                $criadoLogicLive = $this->logicLive_nivel->criarNivel(['mod_codigo'=>$baseDados->meu_id,'niv_nome'=>$request->nome,'niv_descricao'=>$request->descricao,'niv_ativo'=>$request->ativo,]);
+
+                if($criadoLogicLive['success']=false){
+                    return response()->json(['success' => false, 'msg'=>$criadoLogicLive['msg'], 'data'=>''],500);
+                }
+
+                $nivelMVFLP->meu_id_logic_live = $criadoLogicLive['data']['niv_codigo'];
+            }
+            $nivelMVFLP->id_modulo = $baseDados->meu_id;
+            $nivelMVFLP->nome = $request->nome;
+            $nivelMVFLP->descricao = $request->descricao;
+            $nivelMVFLP->ativo = $request->ativo;
+            $nivelMVFLP->id_recompensa = $request->id_recompensa;
+            $nivelMVFLP->save();
+
+     
 
         return response()->json(['success' => true, 'msg'=>'Niviel ('.$request->nome.') cadastrado com sucesso', 'data'=>'']);
-        }catch(\Exception $e){
-            return response()->json(['success' => false, 'msg'=>$e, 'data'=>''],500);
+        // }catch(\Exception $e){
+        //     return response()->json(['success' => false, 'msg'=>'Error interno', 'data'=>''],500);
 
-        }
+        // }
     }
 
     /**
@@ -84,6 +97,16 @@ class NivelMvflpController extends Controller
     {
         try{
             $nivelMVFLP = NivelMVFLP::findOrFail($id);
+
+            if($this->config->ativo()){
+                $criadoLogicLive = $this->logicLive_nivel->atualizarNivel($nivelMVFLP->meu_id_logic_live,['niv_nome'=>$request->nome,'niv_descricao'=>$request->descricao,'niv_ativo'=>$request->ativo,'mod_codigo'=>$nivelMVFLP->id_modulo]);
+                if($criadoLogicLive['success']==false){
+                   
+                    return response()->json(['success' => false, 'msg'=>$criadoLogicLive['msg'], 'data'=>''],500);
+                }
+
+            }
+     
             $nivelMVFLP->update($request->all());
             $nivelMVFLP->save();
             return response()->json(['success' => true, 'msg'=>'Niviel ('.$request->nome.') atualizado com sucesso', 'data'=>''], 200);

@@ -16,11 +16,15 @@ class CreateJogadoresTable extends Migration
         Schema::create('jogadores', function (Blueprint $table) {
             $table->id();
             $table->string('nome');
+            $table->string('usunome');
             $table->string('email');
-            $table->text('avatar');
-            $table->text('token');
-            $table->boolean('token_valido');
+            $table->text('avatar')->nullable();
+            $table->text('token')->nullable();
+            $table->boolean('token_valido')->nullable();
             $table->boolean('ativo');
+            $table->integer('id_logic_live')->nullable();
+            $table->string('provedor');
+            
             $table->timestamps();
         });
     }

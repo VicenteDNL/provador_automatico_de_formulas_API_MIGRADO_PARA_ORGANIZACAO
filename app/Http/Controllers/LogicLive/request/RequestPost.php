@@ -1,29 +1,20 @@
 <?php
 
-namespace App\Http\Controllers\LogicLive;
+namespace App\Http\Controllers\LogicLive\request;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Controllers\LogicLive\config\Configuracao;
 
-class MvflpController extends Controller
+class RequestPost
 {
-
     public function __construct( )
     {
-        $this->configurador = new ConfiguracaoController;
+        $this->configurador = new Configuracao;
     }
 
-    public function salvarNivel()
-    {     
-
-
-        $this->configurador->criarGameEndModulos();
-
-
+    public function httppost($url, $post=''){
         $token = $this->configurador->token();
-        $url = $this->configurador->url().'v1/nivel';
-        $post = []; // Matriz de dados 
-
+        $url = $this->configurador->url().$url;
+        $post =  $post;// Matriz de dados 
         header('Content-Type: application/json'); // Especifique o tipo de dados
         $ch = curl_init($url); // Inicializar cURLL
         $post = json_encode($post); // Codifique a matriz de dados em uma string JSON
@@ -35,6 +26,20 @@ class MvflpController extends Controller
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1); // Isso seguirá todos os redirecionamentos
         $result = curl_exec($ch); // Execute a instrução cURL
         curl_close($ch); // Feche a conexão cURL
-        // var_dump ($result); // Retorna os dados recebidos
+        $result= json_decode($result, true);
+
+        if($result==null){
+            return  ['success'=>false ,'msg'=>"Não foi possível conectar ao Logic Live", 'data'=>''];
+        }
+        elseif(!$result['status']){
+            return  ['success'=>false ,'msg'=>"", 'data'=>$result['data']];
+        }
+        elseif($result['status']){
+            return  ['success'=>true ,'msg'=>"", 'data'=>$result['data']];
+        }
+        else{
+            return  ['success'=>false ,'msg'=>"Não foi possível conectar ao Logic Live", 'data'=>''];
+        }
     }
+
 }

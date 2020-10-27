@@ -29,7 +29,8 @@ class CreateExerciciosMvflpTable extends Migration
             $table->timestamps();
             $table->foreign('id_recompensa')->references('id')->on('recompensas');
             $table->foreign('id_nivel')->references('id')->on('niveis_mvflp');
-            $table->foreign('id_formula')->references('id')->on('formulas')->onDelete('cascade');;
+            $table->foreign('id_formula')->references('id')->on('formulas')->onDelete('cascade');
+            $table->integer('id_logic_live')->nullable();
         });
     }
 

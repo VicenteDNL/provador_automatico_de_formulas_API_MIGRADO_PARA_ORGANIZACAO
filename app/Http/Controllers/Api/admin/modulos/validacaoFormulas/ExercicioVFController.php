@@ -1,24 +1,25 @@
 <?php
 
-namespace App\Http\Controllers\Api\admin;
+namespace App\Http\Controllers\Api\admin\modulos\validacaoFormulas;
 
 use App\ExercicioMVFLP;
 use App\Formula;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\LogicLive\config\Configuracao;
+use App\Http\Controllers\LogicLive\modulos\validacaoFormulas\ExercicioVF;
 use App\NivelMVFLP;
 use App\Recompensa;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 
-class ExercicioMvflpController extends Controller
+
+class ExercicioVFController extends Controller
 {
-
-    private $exercicio;
 
     public function __construct(ExercicioMVFLP $exercicio )
     {
         $this->exercicio = $exercicio; 
+        $this->config = new Configuracao;
+        $this->logicLive_exercicio =  new ExercicioVF;
     }
 
 
@@ -40,7 +41,7 @@ class ExercicioMvflpController extends Controller
      */
     public function store(Request $request, ExercicioMVFLP $exercicio)
     {
-        // try{
+        try{
             // Verifica sê existe uma recompensa com o id da requisicao
             $recompensas=Recompensa::where('id', $request->id_recompensa)->get(); 
             if(count($recompensas)==0){return response()->json(['success' => false, 'msg'=>'Recompensa não cadastrada', 'data'=>''],500);}
@@ -48,6 +49,8 @@ class ExercicioMvflpController extends Controller
             // Verifica sê existe um nivel com o id da requisicao
             $nivel=NivelMVFLP::where('id',$request->id_nivel['id'])->get(); 
             if(count($nivel)==0){return response()->json(['success' => false, 'msg'=>'Nivel não cadastrado', 'data'=>''],500);}
+
+
 
             $exercicio->id_recompensa=$request->id_recompensa['id'];
             $exercicio->id_nivel=$request->id_nivel['id'];
@@ -82,13 +85,32 @@ class ExercicioMvflpController extends Controller
             $formula->save();
             $exercicio->id_formula=$formula->id;
             $exercicio->save();
-            $exercicio->hash= hash ('md5',$exercicio->id, false);
+            
+
+
+            if($this->config->ativo()){        
+                $criadoLogicLive = $this->logicLive_exercicio->criarNivel([
+                    'rec_codigo'=>$recompensas[0]->id_logic_live, 
+                    'niv_codigo'=>$nivel[0]->meu_id_logic_live, 
+                    'exe_tempoexecucao'=> $request->tempo,
+                    'exe_link'=>$this->config->linkHospedagem().$exercicio->id,
+                    'exe_nome'=>$request->nome,
+                    'exe_descricao'=>$request->descricao,
+                    'exe_ativo'=>$request->ativo
+                ]);
+
+                if($criadoLogicLive['success']=false){
+                    return response()->json(['success' => false, 'msg'=>$criadoLogicLive['msg'], 'data'=>''],500);
+                    $exercicio->delete();
+                }
+            }
+            $exercicio->hash= $criadoLogicLive['data']['exe_hash'];
             $exercicio->save();
-            var_dump($exercicio->hash,);
+
             return response()->json(['success' => true, 'msg'=>'Cadastrado!', 'data'=>'']);
-        // }catch(\Exception $e){
-        //     return response()->json(['success' => false, 'msg'=>$e, 'data'=>''],500);
-        // }
+        }catch(\Exception $e){
+            return response()->json(['success' => false, 'msg'=>$e, 'data'=>''],500);
+        }
       
     }
 

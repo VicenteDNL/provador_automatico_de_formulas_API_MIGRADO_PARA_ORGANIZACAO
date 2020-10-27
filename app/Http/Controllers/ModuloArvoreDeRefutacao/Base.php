@@ -1,193 +1,153 @@
 <?php
 
 namespace App\Http\Controllers\ModuloArvoreDeRefutacao;
-use Illuminate\Http\Request;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Formula\Argumento;
+
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Arvore\Gerador;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Construcao;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Formula\Argumento;
 
-class Base extends Controller
-{
+class Base  
+{  
+    protected $xml_formula;
+    protected $string_formula; //String da Formula
+    protected $lista_no;       //Lista de posicionamento dos nós da arvore
+    protected $lista_aresta;    //Lista de posicionamento das arestas da arvore
+    protected $lista_passos;    //Lista de passos para reconstruir a arvore
+    protected $lista_argumentos;    //Lista de argumentos da formula (Premissas e conclusao)
+    protected $lista_ticagem;    //Lista dos nos já ticados
+    protected $lista_fechamento; //Lista dos nos já derivador
+    public $inicializacao;      //Objeto com as informaçoes da inicialização
+    public $derivacao;          //Objeto com as informaçoes da derivacao
+    public $arvore;             //Objeto com as informaçoes da arvore já montada
+
+    function __construct($xml) {
+        $this->arg = new Argumento;
+        $this->gerador = new Gerador;
+        $this->constr = new Construcao;
+
+        $this->prepararArvore($xml);
+
+
+
+    }
+
+    /*
+    * Inicializa o objeto para armazenar as informaçoes da derivação da arvore
+    *
+    */
+    private function prepararArvore($xml){
+        try{$this->xml_formula = simplexml_load_string($xml);}
+        catch(\Exception $e){
+            return response()->json(['success' => false, 'msg'=>'XML INVALIDO!', 'data'=>'']);}
+
+        $this->lista_argumentos=$this->arg->CriaListaArgumentos($this->xml_formula);
+        $this->string_formula = $this->arg->stringFormula($this->xml_formula);
+        $this->lista_no = [];
+        $this->lista_aresta = [];
+        $this->derivacao = new Derivacao;
+        $this->inicializacao = new Inicializacao( $this->lista_argumentos);
+        
+    }
+
+
+    public function montarArvore(){
+
         /**
-     * Handle the incoming request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-
-    function __construct() {
-      $this->arg = new Argumento;
-      $this->gerador = new Gerador;
-      $this->constr = new Construcao;
-
-
-}
-    #Carrega as formular e exibe a pagina inicial
-    public function Index(){
-        $listaFormulas=$this->constr->stringXmlDiretorio();
-        return view('arvore',['listaFormulas'=> $listaFormulas, 'formulaGerada'=> 'Nenhuma Fórmula Carregada...']);
-
-    }
-
-    #Salva na pasta public o Arquivo XML
-   public function SalvarXml(Request $request){
-    if ($request->hasFile('arquivo') && $request->file('arquivo')->isValid()){
-        $dir=dirname(__FILE__,4.).'\storage\app\public\formulas';
-        $diretorio = scandir($dir);
-        $num = count($diretorio) - 1;
-        $request->file('arquivo')->storeAs('formulas', 'formula-'.$num.'.xml');
-        return $this->Index();
-    }
-
-  }
-
-    #Busca o XML, e gera a arvore Otimizada
-    public function CriarArvoreOtimizada(Request $request){
-        # Busca XML no diretorio
-        $id = $request->all()['idFormula'];
-        $dir=dirname(__FILE__,4.).'\storage\app\public\formulas';
-        $xml = simplexml_load_file($dir.'\formula-'.$id.'.xml');
-        #--------
-
-        #Cria a arvore passando o XML
-        $listaArgumentos = $this->arg->CriaListaArgumentos($xml);
-        $arvore = $this->gerador->inicializarDerivacao($listaArgumentos['premissas'],$listaArgumentos['conclusao']);
-        $arv =  $this->gerador->arvoreOtimizada($arvore);
-        #--------
-
-        #Gera lista das possicoes de cada no da tabela
-        $impresaoAvr = $this->constr->geraListaArvore($arv,700,350,0);
-        #--------=>$str, 'posX'=>$posX, 'posY'=>$posYFilho,]
-
-
-        #Gera uma string da Formula XML
-        $formulaGerada = $this->arg->stringFormula($xml);
-        #--------
-
-        #Gera lista das arvores para exibir na tabela
-        $listaFormulas=$this->constr->stringXmlDiretorio();
-        #--------
-
-        return view('arvoreotimizada',['arv'=>$impresaoAvr,'listaFormulas'=> $listaFormulas, 'formulaGerada'=> $formulaGerada]);
-    }
-
-    #Carrega pagina inicia de resolucao por etapa
-    public function PorEtapa(Request $request){
-        #Gera lista das arvores para exibir na tabela
-        $listaFormulas=$this->constr->stringXmlDiretorio();
-        #--------
-
-        return view('porEtapa.baseEtapa',['listaFormulas'=> $listaFormulas, 'formulaGerada'=> 'Nenhuma Fórmula Carregada...']);
-    }
-
-
-    #Inicializa o processo de criacao por etapa
-    public function Inicializando(Request $request){
-
-        $formulario =$request->all();
-
-        # Busca XML no diretorio
-        $idFormula = $formulario['idFormula'];
-        $dir=dirname(__FILE__,4.).'\storage\app\public\formulas';
-        $xml = simplexml_load_file($dir.'\formula-'.$idFormula.'.xml');
-        #-----
-
-        #Cria a arvore passando o XML
-        $listaArgumentos = $this->arg->CriaListaArgumentos($xml);
-        $arvore = $this->gerador->inicializarDerivacao($listaArgumentos['premissas'],$listaArgumentos['conclusao']);
-        #-----
-
-        $listaDerivacoes="{}";
-
-
-        #Gera lista das possicoes de cada no da arvore
-        $impresaoAvr = $this->constr->geraListaArvore($arvore,700,350,0);
-        #-----
-
-        #Gera uma string da Formula XML
-        $formulaGerada = $this->arg->stringFormula($xml);
-        #-----
-
-        #Gera lista das formulas para exibir na tabela
-        $listaFormulas=$this->constr->stringXmlDiretorio();
-        #-----
-
-        #Gera array com tres alternativas senda 1 valida e 2 invalidas
-        $regras=$this->gerador->arrayPerguntas($arvore);
-
-    
-        #-----
-        $proximoNoInsercao=$this->gerador->proximoNoParaInsercao( $arvore);
-  
-       
-
-        return view('porEtapa.arvorePorEtapa',['arv'=>$impresaoAvr,'listaFormulas'=> $listaFormulas, 'formulaGerada'=> $formulaGerada, 'regras'=>$regras, 'listaDerivacoes'=>$listaDerivacoes, 'idFormula'=>$idFormula, 'proximoNoInsercao'=>$proximoNoInsercao,'modal'=>['sucesso'=>false,'messagem'=>'']]);
-    }
-
-    public function ValidaResposta(Request $request) {
-
-        #pega Itens do formulario
-        $formulario = $request->all();
-        #-----
-
-        #Inializa a arvore
-        $dir=dirname(__FILE__,4.).'\storage\app\public\formulas';
-        $xml = simplexml_load_file($dir.'\formula-'.$formulario['idFormula'].'.xml');
-        $listaArgumentos = $this->arg->CriaListaArgumentos($xml);
-        $arvore = $this->gerador->inicializarDerivacao($listaArgumentos['premissas'],$listaArgumentos['conclusao']);
-        #-----
-
-         #transforma o json em array
-         $listaDerivacoes=$formulario['derivacoes'];
-      
-         $listaDerivacoes=json_decode($listaDerivacoes,true);
-         #-----
-
-        #Reconstroi a arvore
-        $arvorePasso = $this->gerador->gerarArvorePassoPasso($arvore,$listaDerivacoes);
-        #-----
-
-        
-        #Deriva a tentativa atual, caso erro retorna a mensagem
-        $arvoreFinal =$this->gerador->derivar($arvorePasso, $formulario['linha'],$formulario['regra']);
-
-        
-
-        if($arvoreFinal['sucesso']==false){
-
-
-            $modal = ['sucesso'=>true,'messagem'=>"Linha:".$formulario['linha']." - ".$arvoreFinal['messagem']];
-
-            $proximoNoInsercao=$this->gerador->proximoNoParaInsercao( $arvorePasso);
-            $impresaoAvr = $this->constr->geraListaArvore($arvorePasso,700,350,0);
-            $formulaGerada = $this->arg->stringFormula($xml);
-            $listaFormulas=$this->constr->stringXmlDiretorio();
-            $listaDerivacoes =json_encode ($listaDerivacoes);
-            $regras=$this->gerador->arrayPerguntas( $arvorePasso);
+         * 
+         * Neste momento a arvore é contruida com seus primeiros nós já posicionados na arvore
+         * 
+         */
+        $arvore = $this->gerador->inicializarPassoPasso($this->lista_argumentos ,null,$this->lista_passos, null);
+        if(!$arvore['sucesso']){
+            return  response()->json(['success' => false, 'msg'=>$arvore['messagem'], 'data'=>'']); 
         }
-        else{
-            $proximoNoInsercao=$this->gerador->proximoNoParaInsercao($arvoreFinal['arv']);
-            $impresaoAvr = $this->constr->geraListaArvore($arvoreFinal['arv'],700,350,0);
 
-            $formulaGerada = $this->arg->stringFormula($xml);
+        /**
+         * 
+         * Neste momento a arvore é reconstruida por completo,sua reconstrução segue a lista de Derivações
+         * 
+         */
+ 
+        $arvore = $this->gerador->gerarArvorePassoPasso($arvore['arv'], $this->derivacao->getListaDerivacoes());
 
-            $listaFormulas=$this->constr->stringXmlDiretorio();
 
-            array_push( $listaDerivacoes, ['linha'=>$formulario['linha'],'regra'=>$formulario['regra']]);
-            $listaDerivacoes =json_encode ($listaDerivacoes);
-            $regras=$this->gerador->arrayPerguntas($arvoreFinal['arv']);
-            $modal = ['sucesso'=>false,'messagem'=>''];
+        #tica os nos já derivados
+        $arvore = $this->gerador->ticarTodosNos($arvore, $this->lista_ticagem);
+        if(!$arvore['sucesso']){
+            return  response()->json(['success' => false, 'msg'=>$arvore['messagem'], 'data'=>'']); 
+        }
 
-            
-    
-            
-             }
-        return view('porEtapa.arvorePorEtapa',['arv'=>$impresaoAvr,'listaFormulas'=> $listaFormulas, 'formulaGerada'=> $formulaGerada, 'regras'=>$regras, 'listaDerivacoes'=> $listaDerivacoes, 'idFormula'=>$formulario['idFormula'], 'proximoNoInsercao'=>$proximoNoInsercao, 'modal'=>$modal]);
+        #fechar informados os ramos
+        $arvore = $this->gerador->fecharTodosNos($arvore['arv'], $this->lista_fechamento);
+        if(!$arvore['sucesso']){
+            return  response()->json(['success' => false, 'msg'=>$arvore['messagem'], 'data'=>'']); 
+        }
+
+        /**
+         * 
+         * Cria a lista de posiçoes dos nós e arestas para serem exibidas no navegador
+         * 
+         */
+        $impresaoAvr = $this->constr->geraListaArvore($arvore['arv'],700,350,0);
+
+        
+        $this->lista_aresta = $impresaoAvr['arestas'];
+        $this->lista_no = $impresaoAvr['nos'];
+        $this->arvore=$arvore['arv'];
+      
+        return true;
+
 
     }
 
+    public function derivar($derivacao,$insercao,$regra){
 
+        $arvore = $this->montarArvore();
+        $arvore =$this->gerador->derivar($this->arvore,$derivacao,$insercao,$regra);
+
+        if(!$arvore['sucesso']){
+            return  response()->json(['success' => false, 'msg'=>$arvore['messagem'], 'data'=>'']);
+        }
+
+        #Adiciona a nova dericação a lista
+        $this->derivacao->setDerivacao($insercao,$derivacao,$regra);
+        #-----
+
+        $this->arvore=$arvore['arv'];
+
+        return true;
+    }
+
+
+
+    public function getListaNo(){
+        return $this->lista_no;
+    }
+
+    public function getListaAresta(){
+        return $this->lista_aresta;
+    }
+
+    public function getStrFormula(){
+        return $this->string_formula;
+    }
+
+    public function setListaPassos($lista){
+        $this->lista_passos=$lista;
+    }
+    public function getListaPassos(){
+        return $this->lista_passos;
+    }
+
+    public function setListaTicagem($lista){
+        $this->lista_ticagem=$lista;
+    }
+    public function setListaFechamento($lista){
+        $this->lista_fechamento=$lista;
+    }
+
+    public function getArvore(){
+        return $this->arvore;
+    }
 
 
 

@@ -21,6 +21,8 @@ class CreateNiveisMvflpTable extends Migration
             $table->boolean('ativo');
             $table->timestamps();
             $table->foreign('id_recompensa')->references('id')->on('recompensas');
+            $table->integer('id_modulo');
+            $table->integer('meu_id_logic_live')->nullable();
         });
     }
 

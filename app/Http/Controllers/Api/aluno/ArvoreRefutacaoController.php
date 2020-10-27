@@ -6,6 +6,7 @@ use App\ExercicioMVFLP;
 use App\Formula;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Arvore\Gerador;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Base;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Construcao;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Formula\Argumento;
 use Illuminate\Http\Request;
@@ -17,8 +18,15 @@ class ArvoreRefutacaoController extends Controller
         $this->arg = new Argumento;
         $this->gerador = new Gerador;
         $this->constr = new Construcao;
+
   
   
+  }
+
+    public function criarArvore(Request $request){
+
+        $arvore =  new Base($request->xml) ;
+
   }
 
     public function criarArvoreOtimizada(Request $request){
@@ -62,7 +70,11 @@ class ArvoreRefutacaoController extends Controller
         $listaStr = $this->constr->geraListaPremissasConclsao($listaArgumentos,[]);
         $formulaGerada = $this->arg->stringFormula($xml);
 
-        return  response()->json(['success' => true, 'msg'=>'', 'data'=>['listapcoes'=>$listaStr,'strformula'=>$formulaGerada]]);
+        return  response()->json([
+            'success' => true, 
+            'msg'=>'', 
+            'data'=>['listapcoes'=>$listaStr,'strformula'=>$formulaGerada]
+            ]);
        
     }
 
@@ -81,6 +93,7 @@ class ArvoreRefutacaoController extends Controller
             return response()->json(['success' => false, 'msg'=>'XML INVALIDO!', 'data'=>''],500);
         }
 
+        
         $listaArgumentos = $this->arg->CriaListaArgumentos($xml);
         $resposta=$this->gerador->inicializarPassoPasso($listaArgumentos,$request->idNo,$request->lista, $request->negacao);
         
@@ -101,187 +114,90 @@ class ArvoreRefutacaoController extends Controller
         $exercicio = ExercicioMVFLP::findOrFail($request->idExercicio);
         $formula =  Formula::findOrFail($exercicio->id_formula);
 
-
-        #ler a string xml, e a transforma em objeto
-        try{$xml = simplexml_load_string($formula->xml);}
-        catch(\Exception $e){return response()->json(['success' => false, 'msg'=>'XML INVALIDO!', 'data'=>''],500);}
-        #-----
-
-        #Inializa a arvore
-        $listaArgumentos = $this->arg->CriaListaArgumentos($xml);
-        $resposta=$this->gerador->inicializarPassoPasso($listaArgumentos,null,$request->listaInicial, null);
-        #-----
-        
-        if($resposta['sucesso']==true){
-
-            #Reconstroi a arvore
-            $listaDerivacoes =$request->listaDerivacoes;
-            $arvorePasso = $this->gerador->gerarArvorePassoPasso($resposta['arv'],$listaDerivacoes);
-            #-----
- 
-            #Deriva a tentativa atual, caso erro retorna a mensagem
-            $arvoreFinal =$this->gerador->derivar($arvorePasso,$request->derivacao,$request->insercao,$request->regra);
-            if($arvoreFinal['sucesso']==true){
-                #Adiciona a nova dericação a lista
-                array_push( $listaDerivacoes, ['insercao'=>$request->insercao,'derivacao'=>$request->derivacao,'regra'=>$request->regra]);
-                #-----
+        $arvore = new Base($formula->xml);
+        $arvore->setListaPassos($request->listaInicial );
+        $arvore->setListaTicagem($request->listaTicagem);
+        $arvore->setListaFechamento($request->listaFechamento);
+        $arvore->derivacao->setListaDerivacoes($request->listaDerivacoes);
 
 
-                #tica os nos já derivados
-                $arvoreTicada = $this->gerador->ticarTodosNos($arvoreFinal['arv'], $request->listaTicagem);
-
-                if($arvoreTicada['sucesso']==true){
-
-                     #fechar todos os ramos
-                    $arvoreFechada = $this->gerador->fecharTodosNos($arvorePasso, $request->listaFechamento);
-                    if($arvoreFechada['sucesso']==true){
-
-                        #Gera lista das possicoes de cada no da arvore
-                        $impresaoAvr = $this->constr->geraListaArvore($arvoreTicada['arv'],700,350,0,$formula->ticar_automaticamente,$formula->fechar_automaticamente);
-                    #-----
-
-                    return  response()->json(['success' => true, 'msg'=>'', 'data'=>['impresao'=>$impresaoAvr,'lista'=>$resposta['lista'],'listaDerivacoes'=>$listaDerivacoes]]);
-
-                    }
-                    else{
-                        return  response()->json(['success' => false, 'msg'=>$arvoreFechada['messagem'], 'data'=>'']);
-                    }
-                    #-----
-                }
-                else{
-                    return  response()->json(['success' => false, 'msg'=>$arvoreTicada['messagem'], 'data'=>'']);
-                }
-                #-----
-
-
-            }
-            else{
-                return  response()->json(['success' => false, 'msg'=>$arvoreFinal['messagem'], 'data'=>'']);
-            }
-            #-----
-        
-        } else{
-            return  response()->json(['success' => false, 'msg'=>$resposta['messagem'], 'data'=>'']);
+        if(!$arvore->derivar($request->derivacao,$request->insercao,$request->regra)){
+            return  response()->json(['success' => false, 'msg'=>'error ao construir arvore'],500); 
         }
+ 
+
+        #Gera lista das possicoes de cada no da arvore
+        $impresaoAvr = $this->constr->geraListaArvore($arvore->getArvore(),700,350,0,$formula->ticar_automaticamente,$formula->fechar_automaticamente);
+        #-----
+
+        return  response()->json([
+            'success' => true, 
+            'msg'=>'', 'data'=>[
+                'impresao'=>$impresaoAvr,
+                'lista'=>$arvore->getListaPassos(),
+                'listaDerivacoes'=> $arvore->derivacao->getListaDerivacoes()
+                ]
+            ]);
+
+
 
     }
 
     public function ticarNo(Request $request){
-
-
         $exercicio = ExercicioMVFLP::findOrFail($request->idExercicio);
         $formula =  Formula::findOrFail($exercicio->id_formula);
 
-        try{
-            $xml = simplexml_load_string($formula->xml);
+        $arvore = new Base($formula->xml);
+        $arvore->setListaPassos($request->listaInicial );
+        $arvore->setListaTicagem($request->listaTicagem);
+        $arvore->setListaFechamento($request->listaFechamento);
+        $arvore->derivacao->setListaDerivacoes($request->listaDerivacoes);
+
+
+        if(!$arvore->montarArvore()){
+            return  response()->json(['success' => false, 'msg'=>'error ao construir arvore'],500); 
         }
-        catch(\Exception $e){
-            return response()->json(['success' => false, 'msg'=>'XML INVALIDO!', 'data'=>''],500);
+
+        $arvorefinal = $this->gerador->ticarNo($arvore->getArvore(), $request->no);
+        if(!$arvorefinal['sucesso']){
+            return  response()->json(['success' => false, 'msg'=>$arvorefinal['messagem']]);
         }
-
-
-
-        $listaArgumentos = $this->arg->CriaListaArgumentos($xml);
-        $resposta=$this->gerador->inicializarPassoPasso($listaArgumentos,null,$request->listaInicial, null);
-
-
-        if($resposta['sucesso']==true){
-            #Reconstroi a arvore
-            $arvorePasso = $this->gerador->gerarArvorePassoPasso($resposta['arv'],$request->listaDerivacoes);
-            #-----
-
-            #tica os nos já derivados
-            $arvoreTicada = $this->gerador->ticarTodosNos($arvorePasso, $request->listaTicagem);
-            if($arvoreTicada['sucesso']==true){
-
-                #fechar todos os ramos
-                $arvoreFechada = $this->gerador->fecharTodosNos($arvorePasso, $request->listaFechamento);
-                if($arvoreFechada['sucesso']==true){
-
-                    $arvorefinal = $this->gerador->ticarNo($arvoreTicada['arv'], $request->no);
-                    if( $arvorefinal['sucesso']==true){
-                        #Gera lista das possicoes de cada no da arvore
-
-                        $impresaoAvr = $this->constr->geraListaArvore($arvorefinal['arv'],700,350,0,$formula->ticar_automaticamente,$formula->fechar_automaticamente);
-                        #-----
-                        return  response()->json(['success' => true, 'msg'=>'', 'data'=>['impresao'=>$impresaoAvr,'noticado'=>$request->no]]);
-                    }
-                    else{
-                        return  response()->json(['success' => false, 'msg'=>$arvorefinal['messagem']]);
-                    }
-
-                }
-                else{
-                    return  response()->json(['success' => false, 'msg'=>$arvoreFechada['messagem']]);
-                }
-                 #-----
-
-            }
-            else{
-                return  response()->json(['success' => false, 'msg'=>$arvoreTicada['messagem'], 'data'=>'']);
-            }
-            #-----
-        }else{
-            return  response()->json(['success' => false, 'msg'=>$resposta['messagem'], 'data'=>'']);
-        }
+        
+        #Gera lista das possicoes de cada no da arvore
+        $impresaoAvr = $this->constr->geraListaArvore($arvorefinal['arv'],700,350,0,$formula->ticar_automaticamente,$formula->fechar_automaticamente);
+        return  response()->json(['success' => true, 'msg'=>'', 'data'=>['impresao'=>$impresaoAvr,'noticado'=>$request->no]]);
     }
 
 
     public function fecharNo(Request $request){
-
-
-        
+   
         $exercicio = ExercicioMVFLP::findOrFail($request->idExercicio);
         $formula =  Formula::findOrFail($exercicio->id_formula);
 
-        try{
-            $xml = simplexml_load_string($formula->xml);
-        }
-        catch(\Exception $e){
-            return response()->json(['success' => false, 'msg'=>'XML INVALIDO!', 'data'=>''],500);
-        }
+        $arvore = new Base($formula->xml);
+        $arvore->setListaPassos($request->listaInicial );
+        $arvore->setListaTicagem($request->listaTicagem);
+        $arvore->setListaFechamento($request->listaFechamento);
+        $arvore->derivacao->setListaDerivacoes($request->listaDerivacoes);
 
-        $listaArgumentos = $this->arg->CriaListaArgumentos($xml);
-        $resposta=$this->gerador->inicializarPassoPasso($listaArgumentos,null,$request->listaInicial, null);
-
-        if($resposta['sucesso']==true){
-            #Reconstroi a arvore
-            $arvorePasso = $this->gerador->gerarArvorePassoPasso($resposta['arv'],$request->listaDerivacoes);
-            #-----
-
-            #tica os nos já derivados
-            $arvoreTicada = $this->gerador->ticarTodosNos($arvorePasso, $request->listaTicagem);
-
-            if($arvoreTicada['sucesso']==true){
-
-
-                #fechar todos os ramos
-                $arvoreFechada = $this->gerador->fecharTodosNos($arvorePasso, $request->listaFechamento);
-                if($arvoreFechada['sucesso']==true){
-
-                    #valida a tentativa do usuario de fechamento do nó
-                    $fechada = $this->gerador->fecharNo($arvoreFechada['arv'], $request->noFolha, $request->noContradicao);
-
-                    if($fechada['sucesso']==true){
-                        #Gera lista das possicoes de cada no da arvore
-                        $impresaoAvr = $this->constr->geraListaArvore($fechada['arv'],700,350,0,$formula->ticar_automaticamente,$formula->fechar_automaticamente);
-                        #-----
-                        return  response()->json(['success' => true, 'msg'=>'', 'data'=>['impresao'=>$impresaoAvr,'nofechado'=>$request->noFolha, 'noContradicao'=>$request->noContradicao]]);
-                    }
-                    else{
-                        return  response()->json(['success' => false, 'msg'=>$fechada['messagem'], 'data'=>'']);
-                    }
-                }
-                else{
-                    return  response()->json(['success' => false, 'msg'=>$arvoreFechada['messagem'], 'data'=>'']);    
-                }
-                #-----
-
-               
-            }
-
+        if(!$arvore->montarArvore()){
+            return  response()->json(['success' => false, 'msg'=>'error ao construir arvore'],500); 
         }
 
+        // var_dump($arvore->getArvore());
+        #valida a tentativa do usuario de fechamento do nó
+        $fechada = $this->gerador->fecharNo($arvore->getArvore(), $request->noFolha, $request->noContradicao);
 
+        if(!$fechada['sucesso']){
+            return  response()->json(['success' => false, 'msg'=>$fechada['messagem'], 'data'=>'']);   
+        }
+
+        #Gera lista das possicoes de cada no da arvore
+        $impresaoAvr = $this->constr->geraListaArvore($fechada['arv'],700,350,0,$formula->ticar_automaticamente,$formula->fechar_automaticamente);
+        #-----
+        return  response()->json(['success' => true, 'msg'=>'', 'data'=>['impresao'=>$impresaoAvr,'nofechado'=>$request->noFolha, 'noContradicao'=>$request->noContradicao]]);
+            
+
+   
     }
 }
