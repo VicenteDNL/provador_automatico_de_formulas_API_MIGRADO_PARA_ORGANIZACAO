@@ -78,8 +78,17 @@ class ExercicioVFController extends Controller
         
         $resposta = $this->resposta->criarResposta($jogador_cadastrado,$exercicio);
         if(!$resposta['success']){
+
             return response()->json(['success' => false, 'msg'=>'error ao criar resposta exercicio!', 'data'=>''],500);
         }
+
+        if(!$resposta['novo']){
+            $tentativa_restante = $this->resposta->buscaResposta($resposta['data'],$exercicio);
+        }
+        else{
+            $tentativa_restante = $exercicio->qndt_erros;
+        }
+
         $formula =  Formula::findOrFail($exercicio->id_formula);
 
         $arvore = new Base($formula->xml);
@@ -97,7 +106,10 @@ class ExercicioVFController extends Controller
                     'formula'=>$formula, 
                     'exercicio'=>$exercicio, 
                     'listapcoes'=>$arvore->inicializacao->getListaOpcoes(),
-                    'strformula'=>$arvore->getStrFormula()]]);
+                    'strformula'=>$arvore->getStrFormula(),
+                    'tentativa_restante'=>$tentativa_restante
+                    ]
+                ]);
         }else{
             $arvore->setListaPassos($formula->lista_passos = json_decode ($formula->lista_passos,true));
             $arvore->setListaTicagem($formula->lista_ticagem = json_decode ($formula->lista_ticagem,true));
@@ -121,8 +133,27 @@ class ExercicioVFController extends Controller
 
     }
 
-    public function criarArvoreExercicio(Request $request){
+    public function deletarResposta($id,Request $request){
 
-      
+        if(!isset($request->usu_hash)){
+            return response()->json(['success' => false, 'msg'=>'hash jogador não informado!', 'data'=>''],500);
+        }
+
+        $criadoLogicLive = $this->logicLive_jogador->getJogador($request->usu_hash);
+        $jogador_cadastrado = Jogador::where('id_logic_live',$criadoLogicLive['data']['jog_codigo'])->get();
+        $exercicio = ExercicioMVFLP::findOrFail($id); 
+
+        $deletar_tentativas = $this->resposta->deletarResposta($jogador_cadastrado[0],$exercicio);
+
+        if(!$deletar_tentativas['success']){
+            return response()->json(['success' => false, 'msg'=>'error ao reiniciar exercicio', 'data'=>''],500);
+        }
+        $tentativa_restante = $this->resposta->buscaResposta($deletar_tentativas['data'],$exercicio);
+        return response()->json(['success' => true, 'msg'=>'Exercicio reiniciado resposta', 'data'=>['tentativa_restante'=>$tentativa_restante]]);
     }
+
+
+
+
+
 }

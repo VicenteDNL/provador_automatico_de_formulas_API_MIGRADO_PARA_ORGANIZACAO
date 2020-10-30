@@ -129,10 +129,6 @@ class Construcao extends Controller
 
             }
             return $listaAresta;
-
-
-
-
     }
 
 

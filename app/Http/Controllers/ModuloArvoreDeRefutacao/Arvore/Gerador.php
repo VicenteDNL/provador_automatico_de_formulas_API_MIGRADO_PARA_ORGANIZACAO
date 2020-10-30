@@ -639,8 +639,8 @@ class Gerador extends Controller
         $noDerivacao = $this->getNoPeloId($arvore,$derivacao); // o nó a ser derivado
         $ListanoInsercao =[]; // lista de nós folha no qual o nó derivado deve ser inserido
         
-        foreach ($insercao as $idNo){
-            array_push($ListanoInsercao,$this->getNoPeloId($arvore, $idNo)); 
+        foreach ($insercao as $no){
+            array_push($ListanoInsercao,$this->getNoPeloId($arvore, $no['idNo'])); 
         }
         
 
@@ -795,8 +795,8 @@ class Gerador extends Controller
 
 
             $ListanoInsercao =[]; // lista de nós folha no qual o nó derivado deve ser inserido
-            foreach ($derivacao['insercao'] as $idNo){
-                array_push($ListanoInsercao,$this->getNoPeloId($arvore, $idNo)); 
+            foreach ($derivacao['insercao'] as $no){
+                array_push($ListanoInsercao,$this->getNoPeloId($arvore, $no['idNo'])); 
             }
             $noDerivacao=$this->getNoPeloId($arvore, $derivacao['derivacao']);
 
@@ -940,7 +940,6 @@ class Gerador extends Controller
     public function criarNoIncializacao($listaArgumentos,$id,$negacao,$ultimoNo){
  
         $identi= str_split ($id,strrpos($id, "_"));
-        // var_dump($identi);
         if($identi[0]=='premissa' && $negacao==false){
             $premissa = $listaArgumentos['premissas'][substr($identi[1], 1)];
 
@@ -989,7 +988,6 @@ class Gerador extends Controller
     
     public function ticarNo($arvore, $no){
         $noTicado = $this->getNoPeloId($arvore,$no); // o nó a ser ticado
-
         if(($noTicado->getValorNo()->getTipoPredicado()=='PREMISSA' OR $noTicado->getValorNo()->getTipoPredicado()=='CONCLUSAO' OR $noTicado->getValorNo()->getTipoPredicado()=='PREDICATIVO')and $noTicado->getValorNo()->getNegadoPredicado()<2){
                
             return ['sucesso'=>false, 'messagem'=>'Este argumento não pode ser ticado, pois não existe derivação'];
@@ -1011,7 +1009,6 @@ class Gerador extends Controller
     }
 
     public function ticarTodosNos($arvore, $listaNo){
-        
         foreach( $listaNo as $no){
             $noTicado = $this->getNoPeloId($arvore,$no); // o nó a ser ticado
 
@@ -1084,7 +1081,6 @@ class Gerador extends Controller
     public function fecharNo($arvore, $folha, $contradicao){
         $noContradicao = $this->getNoPeloId($arvore,$contradicao); 
         $noFolha = $this->getNoPeloId($arvore,$folha);
-
         $descendente=$this->isDecendente($noContradicao,$noFolha);
         if($descendente==true){
 
@@ -1094,12 +1090,16 @@ class Gerador extends Controller
                 $negacaoFolha = $noFolha->getValorNo()->getNegadoPredicado();
    
                 if ($negacaoContradicao == 1 and $negacaoFolha==0){
-   
+                    if ($noFolha->isFechamento()){
+                        return ['sucesso'=>false, 'messagem'=>'O ramo já foi fechado'];
+                    }
                     $noFolha->fechamentoNo();
                     return ['sucesso'=>true, 'messagem'=>'', 'arv'=>$arvore];  
                 }
                 elseif ($negacaoContradicao == 0 and $negacaoFolha==1) {
-
+                    if ($noFolha->isFechamento()){
+                        return ['sucesso'=>false, 'messagem'=>'O ramo já foi fechado'];
+                    }
                     $noFolha->fechamentoNo();
                     return ['sucesso'=>true, 'messagem'=>'', 'arv'=>$arvore];  
 

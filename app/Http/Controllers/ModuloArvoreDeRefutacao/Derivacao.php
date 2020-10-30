@@ -5,7 +5,8 @@ namespace App\Http\Controllers\ModuloArvoreDeRefutacao;
 
 class Derivacao  
 {
-    protected $lista_derivacoes;
+    protected $lista_derivacoes =[];
+    
     function __construct() {
         
     }

@@ -62,12 +62,13 @@ Route::group(['middleware'=>['apiJwt']],function(){
 // Requisições do lado do aluno
 Route::post('exercicio/validacao/{id}', 'Api\aluno\ExercicioVFController@buscarExercicio');
 Route::get('exercicio/arvore/criar', 'Api\aluno\ExercicioVFController@criarArvoreExercicio');
+Route::post('exercicio/tentarnovamente/{id}', 'Api\aluno\ExercicioVFController@deletarResposta');
 
 
 
 Route::post('aluno/arvore/otimizada', 'Api\aluno\ArvoreRefutacaoController@criarArvoreOtimizada');
 Route::post('aluno/arvore/inicializacao/premisas-conclucao', 'Api\aluno\ArvoreRefutacaoController@premissasConclusao');
-Route::post('aluno/arvore/inicializacao/adiciona-no', 'Api\aluno\ArvoreRefutacaoController@adicionaNoIncializacao');
+Route::post('aluno/arvore/inicializacao/adiciona-no', 'Api\aluno\ArvoreRefutacaoController@adicionaNo');
 Route::post('aluno/arvore/derivacao/adiciona-no', 'Api\aluno\ArvoreRefutacaoController@derivar');
 Route::post('aluno/arvore/derivacao/fechar-no', 'Api\aluno\ArvoreRefutacaoController@fecharNo');
 Route::post('aluno/arvore/derivacao/ticar-no', 'Api\aluno\ArvoreRefutacaoController@ticarNo');
