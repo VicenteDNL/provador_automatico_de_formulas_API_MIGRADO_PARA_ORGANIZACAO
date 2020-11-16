@@ -220,8 +220,59 @@ class Gerador extends Controller
     }
 
 
+    /*esta funçao recebe com parametro a arvore atual, e um boleano (indica se entre os seus descentende foi encontrado um No que ainda nao foi fechado pelo usuario)d, 
+    percorrendo da centro-esquerda-direita- para ate encontrar
+     um No folha apto para ser fechado */
+    public function existeNoPossivelFechamento($arvore, $noAberto = false){
+
+        $proximoNo =null;
+
+         if ($arvore->getFilhoDireitaNo() ==null and  $arvore->getFilhoEsquerdaNo() ==null and  $arvore->getFilhoCentroNo() ==null  and $arvore->isFechamento()==false and $arvore->isFechado()==true){
+            return $arvore;
+         }
+
+        
+         else {
+             if ($arvore->getFilhoCentroNo()!=null and $proximoNo ==null){
+
+                 $proximoNo = $this->existeNoPossivelFechamento($arvore->getFilhoCentroNo(),$noAberto); 
+             }
+             if ($arvore->getFilhoEsquerdaNo()!=null and $proximoNo ==null){
+                 $proximoNo = $this->existeNoPossivelFechamento($arvore->getFilhoEsquerdaNo(),$noAberto);
+             }
+             if ($arvore->getFilhoDireitaNo()!=null and $proximoNo ==null){
+                 $proximoNo = $this->existeNoPossivelFechamento($arvore->getFilhoDireitaNo(),$noAberto);
+             }
+             return $proximoNo;
+         }
+
+    }
 
 
+    public function existeNoPossivelTicagem($arvore, $ticado = false){
+        $proximoNo =null;
+
+        if ($arvore->isUtilizado()==true and ( (in_array($arvore->getValorNo()->getTipoPredicado(), ['DISJUNCAO','CONDICIONAL','BICONDICIONAL','CONJUNCAO'])) or ( $arvore->getValorNo()->getTipoPredicado()=='PREDICATIVO' and $arvore->getValorNo()->getNegadoPredicado()>=2)) and $arvore->isTicado()==false){
+
+            return $arvore;
+        }
+
+       
+        else {
+            if ($arvore->getFilhoCentroNo()!=null and $proximoNo ==null){
+
+                $proximoNo = $this->existeNoPossivelTicagem($arvore->getFilhoCentroNo(),$ticado); 
+            }
+            if ($arvore->getFilhoEsquerdaNo()!=null and $proximoNo ==null){
+                $proximoNo = $this->existeNoPossivelTicagem($arvore->getFilhoEsquerdaNo(),$ticado);
+            }
+            if ($arvore->getFilhoDireitaNo()!=null and $proximoNo ==null){
+                $proximoNo = $this->existeNoPossivelTicagem($arvore->getFilhoDireitaNo(),$ticado);
+            }
+            return $proximoNo;
+        }
+
+    }
 
         /*esta funçao recebe com parametro a arvore atual, e um boleano (indica se entre os seus descentende foi encontrado um No que ainda nao foi derivado), percorrendo da centro -esquerda-direita- para ate encontras
      um No folha apto para ser o proximo a ser inserido, caso nao encontre returna NULL*/
@@ -588,19 +639,20 @@ class Gerador extends Controller
 
     }
 
-     public function arrayPerguntas($arvore){
-         $listapossibilidades = $this->possibilidades($arvore);
+     public function arrayPerguntas($arvore, $qtdRegras){
+        $listapossibilidades = $this->possibilidades($arvore);
          $listaPosValida=[];
 
-         $possibilidades =[  'DUPLANAGACAO'=>['id'=>1,'str'=>'Dupla Negação'],
+         $possibilidades =[  
+             'DUPLANAGACAO'=>['id'=>1,'str'=>'Negação Negada'],
              'CONJUNCAO'=>['id'=>2,'str'=>'Conjunção'],
-             'DISJUNCAONEGADA'=>['id'=>3,'str'=>'Negação da Disjunção'],
-             'CONDICIONALNEGADA'=>['id'=>4,'str'=>'Negacão da Condicional'],
+             'DISJUNCAONEGADA'=>['id'=>3,'str'=>'Disjunção Negada'],
+             'CONDICIONALNEGADA'=>['id'=>4,'str'=>'Condicional Negado'],
              'DISJUNCAO'=>['id'=>5,'str'=>'Disjunção'],
              'CONDICIONAL'=>['id'=>6,'str'=>'Condicional'],
              'BICONDICIONAL'=>['id'=>7,'str'=>'Bicondicional'],
-             'CONJUNCAONEGADA'=>['id'=>8,'str'=>'Negação da Conjunção'],
-             'BICONDICIONALNEGADA'=>['id'=>9,'str'=>'Negação da Bicondicional']
+             'CONJUNCAONEGADA'=>['id'=>8,'str'=>'Conjunção Negada'],
+             'BICONDICIONALNEGADA'=>['id'=>9,'str'=>'Bicondicional Negado']
          ];
 
          foreach ( $listapossibilidades as $pos){
@@ -608,7 +660,8 @@ class Gerador extends Controller
              
          };
 
-        if (count( $listaPosValida)<3){
+
+        if (count( $listaPosValida)<$qtdRegras){
             $comp=false;
             while($comp==false){
                 $nova = array_rand($possibilidades,1);
@@ -620,10 +673,21 @@ class Gerador extends Controller
                 }
                 if($existe==false){
                     array_push($listaPosValida,$possibilidades[$nova]);
-                    if(count($listaPosValida)==3){
+                    if(count($listaPosValida)==$qtdRegras){
                         $comp=true;}
                 }
             }
+        }
+        elseif(count( $listaPosValida)>$qtdRegras){
+            $comp=false;
+            while($comp==false){
+                shuffle($listaPosValida);
+                array_shift ($listaPosValida);
+                if (count( $listaPosValida)==$qtdRegras){
+                    $comp=true;
+                }
+            }
+
         }
 
         shuffle($listaPosValida);
@@ -987,7 +1051,7 @@ class Gerador extends Controller
     }
     
     public function ticarNo($arvore, $no){
-        $noTicado = $this->getNoPeloId($arvore,$no); // o nó a ser ticado
+        $noTicado = $this->getNoPeloId($arvore,$no['idNo']); // o nó a ser ticado
         if(($noTicado->getValorNo()->getTipoPredicado()=='PREMISSA' OR $noTicado->getValorNo()->getTipoPredicado()=='CONCLUSAO' OR $noTicado->getValorNo()->getTipoPredicado()=='PREDICATIVO')and $noTicado->getValorNo()->getNegadoPredicado()<2){
                
             return ['sucesso'=>false, 'messagem'=>'Este argumento não pode ser ticado, pois não existe derivação'];
@@ -1010,7 +1074,7 @@ class Gerador extends Controller
 
     public function ticarTodosNos($arvore, $listaNo){
         foreach( $listaNo as $no){
-            $noTicado = $this->getNoPeloId($arvore,$no); // o nó a ser ticado
+            $noTicado = $this->getNoPeloId($arvore,$no['idNo']); // o nó a ser ticado
 
             if(($noTicado->getValorNo()->getTipoPredicado()=='PREMISSA' OR $noTicado->getValorNo()->getTipoPredicado()=='CONCLUSAO' OR $noTicado->getValorNo()->getTipoPredicado()=='PREDICATIVO')and $noTicado->getValorNo()->getNegadoPredicado()<2){
                    
@@ -1037,8 +1101,8 @@ class Gerador extends Controller
 
     public function fecharTodosNos($arvore, $listaNo){
         foreach( $listaNo as $no){
-            $noFolha = $this->getNoPeloId($arvore,$no['nofechado']); // o nó a ser fechado
-            $noContradicao = $this->getNoPeloId($arvore,$no['noContradicao']); 
+            $noFolha = $this->getNoPeloId($arvore,$no['nofechado']['idNo']); // o nó a ser fechado
+            $noContradicao = $this->getNoPeloId($arvore,$no['noContradicao']['idNo']); 
 
 
             $descendente=$this->isDecendente($noContradicao,$noFolha);
@@ -1079,8 +1143,8 @@ class Gerador extends Controller
 
 
     public function fecharNo($arvore, $folha, $contradicao){
-        $noContradicao = $this->getNoPeloId($arvore,$contradicao); 
-        $noFolha = $this->getNoPeloId($arvore,$folha);
+        $noContradicao = $this->getNoPeloId($arvore,$contradicao['idNo']); 
+        $noFolha = $this->getNoPeloId($arvore,$folha['idNo']);
         $descendente=$this->isDecendente($noContradicao,$noFolha);
         if($descendente==true){
 

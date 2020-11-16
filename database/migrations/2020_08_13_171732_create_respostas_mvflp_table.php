@@ -17,9 +17,11 @@ class CreateRespostasMvflpTable extends Migration
             $table->id();
             $table->unsignedBigInteger('id_exercicio');
             $table->unsignedBigInteger('id_jogador');
-            $table->integer('tempo');
+            $table->timestamp('tempo');
             $table->boolean('ativa');
             $table->integer('tentativas_invalidas');
+            $table->integer('pontuacao');
+            $table->integer('repeticao');
             $table->boolean('concluida');
             $table->timestamps();
             $table->foreign('id_exercicio')->references('id')->on('exercicios_mvflp');

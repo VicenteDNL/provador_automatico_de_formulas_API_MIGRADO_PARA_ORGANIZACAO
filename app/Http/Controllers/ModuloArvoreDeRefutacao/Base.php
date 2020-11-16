@@ -11,6 +11,8 @@
 
 namespace App\Http\Controllers\ModuloArvoreDeRefutacao;
 
+use App\ExercicioMVFLP;
+use App\Formula;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Arvore\Gerador;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Formula\Argumento;
 
@@ -102,9 +104,16 @@ class Base
             $this->arvore=$arvore['arv'];
 
             if($impressao){
-                $impresaoAvr = $this->constr->geraListaArvore($this->arvore,$this->cansa_width,$this->cansa_pos_x,$this->cansa_pos_y,$this->ticar_automatico, $this->fechar_automatico);
-                $this->lista_aresta = $impresaoAvr['arestas'];
-                $this->lista_no = $impresaoAvr['nos'];
+                if($this->arvore==null){
+                    $this->lista_aresta = [];
+                    $this->lista_no = [];
+                }
+                else{
+                    $impresaoAvr = $this->constr->geraListaArvore($this->arvore,$this->cansa_width,$this->cansa_pos_x,$this->cansa_pos_y,$this->ticar_automatico, $this->fechar_automatico);
+                    $this->lista_aresta = $impresaoAvr['arestas'];
+                    $this->lista_no = $impresaoAvr['nos'];
+                }
+
             }
             return  true;
         }
@@ -148,8 +157,9 @@ class Base
     }
 
     
-    public function retorno($exercicio,$usu_has,$exe_has){
-        return  [
+    public function retorno($exercicio,$usu_has,$exe_has, $admin =false){
+          $retorno=[
+            'regras'=>$this->buscarRegras($exercicio,$admin),
             'exe_hash'=>$exe_has,
             'usu_hash'=>$usu_has,
             'exercicio'=>$exercicio,
@@ -178,8 +188,17 @@ class Base
                 'auto'=> $this->ticar_automatico,
                 'lista'=> $this->lista_ticagem,
                 'no'=>null,
-            ]
+            ],
+            'finalizada'=>$this->isFinalizada(),
+             'strformula'=>$this->getStrFormula(),
+            
         ];
+
+        if($admin==true){
+            array_splice($retorno, 0, 4);
+
+        }
+        return $retorno;
         
     }
 
@@ -199,7 +218,6 @@ class Base
 
         $arvore = $this->montarArvore(null,null,false);
         $arvore =$this->gerador->derivar($this->arvore,$derivacao,$insercao,$regra);
-
         if(!$arvore['sucesso']){
             $this->error = $arvore['messagem'];
             return  false;
@@ -220,11 +238,11 @@ class Base
     public function fecharNo($noFolha, $noContradicao){
         
         $fechada = $this->gerador->fecharNo($this->arvore, $noFolha, $noContradicao);
-
         if(!$fechada['sucesso']){
             $this->error = $fechada['messagem'];
             return  false;   
         }
+        array_push($this->lista_fechamento,['nofechado'=>$noFolha,'noContradicao'=>$noContradicao]);
 
         $impresaoAvr = $this->constr->geraListaArvore($this->arvore,$this->cansa_width,$this->cansa_pos_x,$this->cansa_pos_y,$this->ticar_automatico, $this->fechar_automatico);
         $this->lista_aresta = $impresaoAvr['arestas'];
@@ -239,7 +257,8 @@ class Base
             $this->error = $arvorefinal['messagem'];
             return  false;
         }
-
+    
+        array_push($this->lista_ticagem,$no);
         $impresaoAvr = $this->constr->geraListaArvore($this->arvore,$this->cansa_width,$this->cansa_pos_x,$this->cansa_pos_y,$this->ticar_automatico, $this->fechar_automatico);
         $this->lista_aresta = $impresaoAvr['arestas'];
         $this->lista_no = $impresaoAvr['nos'];
@@ -247,6 +266,41 @@ class Base
     }
 
 
+    private function buscarRegras($exercicio,$admin){
+        if(!$this->inicializacao->getFinalizado() || $admin){
+            return [];
+        }
+        $exercicio  =  ExercicioMVFLP::findOrFail($exercicio);
+        $formula =  Formula::findOrFail($exercicio->id_formula);
+       return $this->gerador->arrayPerguntas($this->arvore,$formula->quantidade_regras);
+        
+    }
+
+
+    private function isFinalizada(){
+
+        if(!$this->inicializacao->getFinalizado()){
+            return false;
+        }
+        if($this->gerador->proximoNoParaInsercao($this->arvore)!=null){
+            return false;
+        }
+
+        if($this->fechar_automatico==false){
+            if($this->gerador->existeNoPossivelFechamento($this->arvore)!=null){
+                return false;
+            }
+        }
+
+        if($this->ticar_automatico==false){
+            if($this->gerador->existeNoPossivelTicagem($this->arvore)!=null){
+                return false;
+            }
+            
+        }
+ 
+        return true;
+    }
 
     public function getListaNo(){
         return $this->lista_no;

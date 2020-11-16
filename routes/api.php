@@ -62,7 +62,7 @@ Route::group(['middleware'=>['apiJwt']],function(){
 // Requisições do lado do aluno
 Route::post('exercicio/validacao/{id}', 'Api\aluno\ExercicioVFController@buscarExercicio');
 Route::get('exercicio/arvore/criar', 'Api\aluno\ExercicioVFController@criarArvoreExercicio');
-Route::post('exercicio/tentarnovamente/{id}', 'Api\aluno\ExercicioVFController@deletarResposta');
+Route::post('exercicio/tentarnovamente/{id}', 'Api\aluno\RespostaController@deletarResposta');
 
 
 

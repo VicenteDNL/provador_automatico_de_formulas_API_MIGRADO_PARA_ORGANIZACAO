@@ -147,7 +147,7 @@ class Construcao extends Controller
         }
         
         foreach($list['premissas'] as $key => $premissa){
-            $str= $premissa->getValorStrPremissa();
+            $str= $this->arg->stringArg($premissa->getValorObjPremissa()) ;
                 array_push($lista,[
                     'pos'=>$key,
                     'id'=>'premissa_'.$key,
@@ -158,7 +158,7 @@ class Construcao extends Controller
 
         for($i = 0; $i<count($list['conclusao']); $i++ ){
             if(array_key_exists($i,$list['conclusao'])){
-                $str= $list['conclusao'][$i]->getValorStrConclusao();
+                $str= $this->arg->stringArg($list['conclusao'][$i]->getValorObjConclusao()) ;
                 array_push($lista,[
                     'pos'=>$i,
                     'tipo'=>'conclusao',

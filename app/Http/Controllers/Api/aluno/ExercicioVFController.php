@@ -72,85 +72,46 @@ class ExercicioVFController extends Controller
         }
 
         $exercicio = ExercicioMVFLP::findOrFail($id);
-        if($exercicio->hash!=$request->exe_hash && !isset($request->usu_hash)){
+        if($exercicio->hash!=$request->exe_hash || !isset($request->exe_hash)){
             return response()->json(['success' => false, 'msg'=>'hash exercicio não informado ou invalido!', 'data'=>''],500);
         }
         
         $resposta = $this->resposta->criarResposta($jogador_cadastrado,$exercicio);
         if(!$resposta['success']){
-
             return response()->json(['success' => false, 'msg'=>'error ao criar resposta exercicio!', 'data'=>''],500);
         }
 
-        if(!$resposta['novo']){
-            $tentativa_restante = $this->resposta->buscaResposta($resposta['data'],$exercicio);
-        }
-        else{
-            $tentativa_restante = $exercicio->qndt_erros;
-        }
+        $validacoes = $this->resposta->validaResposta($resposta['data'],$exercicio,'buscar',true);
 
         $formula =  Formula::findOrFail($exercicio->id_formula);
 
         $arvore = new Base($formula->xml);
+        // $arvore->setListaPassos( json_decode ($formula->lista_passos,true));
+        $arvore->setListaPassos( $formula->lista_passos==[] ? [] :json_decode ($formula->lista_passos,true));
+        $arvore->setListaTicagem($formula->lista_ticagem==[] ? [] : json_decode ($formula->lista_ticagem,true));
+        $arvore->setListaFechamento( $formula->lista_fechamento==[]?[] : json_decode ($formula->lista_fechamento,true));
+        $arvore->derivacao->setListaDerivacoes($formula->lista_derivacoes==[] ? [] : json_decode ($formula->lista_derivacoes,true));
+        $arvore->fecharAutomatido($formula->fechar_automaticamente);
+        $arvore->ticarAutomatico($formula->ticar_automaticamente);
+        $arvore->inicializacao->setFinalizado($formula->inicializacao_completa);
 
-        if($formula->iniciar_zerada==true && $formula->inicio_personalizado==false){
-            return  response()->json([
-                'success' => true, 
-                'msg'=>'', 
-                'data'=>[
-                    'jogador'=>$jogador_cadastrado, 
-                    'impresao'=>[
-                        'nos'=>$arvore->getListaNo(),
-                        'arestas'=>$arvore->getListaAresta()
-                    ],
-                    'formula'=>$formula, 
-                    'exercicio'=>$exercicio, 
-                    'listapcoes'=>$arvore->inicializacao->getListaOpcoes(),
-                    'strformula'=>$arvore->getStrFormula(),
-                    'tentativa_restante'=>$tentativa_restante
-                    ]
-                ]);
-        }else{
-            $arvore->setListaPassos($formula->lista_passos = json_decode ($formula->lista_passos,true));
-            $arvore->setListaTicagem($formula->lista_ticagem = json_decode ($formula->lista_ticagem,true));
-            $arvore->setListaFechamento($formula->lista_fechamento = json_decode ($formula->lista_fechamento,true));
-            $arvore->derivacao->setListaDerivacoes($formula->lista_derivacoes = json_decode ($formula->lista_derivacoes,true));
-            if(!$arvore->montarArvore()){
-                return  response()->json(['success' => false, 'msg'=>'Error ar criar arvore', 'data'=>''],500);
-            }
-            return  response()->json([
-                'success' => true, 
-                'msg'=>'', 
-                'data'=>[
-                    'impresao'=>[
-                        'nos'=>$arvore->getListaNo(),
-                        'arestas'=>$arvore->getListaAresta()
-                    ],
-                    'formula'=>$formula, 
-                    'exercicio'=>$exercicio]]);
+        if(!$arvore->montarArvore()){
+            return  response()->json(['success' => false, 'msg'=>'Error ar criar arvore', 'data'=>''],500);
         }
-        
+
+        return  response()->json([
+            'success' => true, 
+            'msg'=>'', 
+            'data'=>[
+                'exercicio'=>$exercicio, 
+                'tentativas'=>$validacoes,
+                'arvore'=>$arvore->retorno($exercicio->id,$request->usu_hash, $request->exe_hash)
+                ]
+            ]);
 
     }
 
-    public function deletarResposta($id,Request $request){
 
-        if(!isset($request->usu_hash)){
-            return response()->json(['success' => false, 'msg'=>'hash jogador não informado!', 'data'=>''],500);
-        }
-
-        $criadoLogicLive = $this->logicLive_jogador->getJogador($request->usu_hash);
-        $jogador_cadastrado = Jogador::where('id_logic_live',$criadoLogicLive['data']['jog_codigo'])->get();
-        $exercicio = ExercicioMVFLP::findOrFail($id); 
-
-        $deletar_tentativas = $this->resposta->deletarResposta($jogador_cadastrado[0],$exercicio);
-
-        if(!$deletar_tentativas['success']){
-            return response()->json(['success' => false, 'msg'=>'error ao reiniciar exercicio', 'data'=>''],500);
-        }
-        $tentativa_restante = $this->resposta->buscaResposta($deletar_tentativas['data'],$exercicio);
-        return response()->json(['success' => true, 'msg'=>'Exercicio reiniciado resposta', 'data'=>['tentativa_restante'=>$tentativa_restante]]);
-    }
 
 
 

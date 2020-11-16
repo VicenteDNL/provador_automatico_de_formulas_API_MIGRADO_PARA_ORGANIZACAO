@@ -37,7 +37,7 @@ class Game
             return  ['success'=>false ,'msg'=>"Não foi possível conectar ao Logic Live", 'data'=>''];
         }
      
-        return ['success'=>true ,'msg'=>"", 'data'=>['game'=>$game['data'],'modulos'=>[ $modulo1, $modulo2, $modulo3]]];
+        return ['success'=>true ,'msg'=>"", 'data'=>['game'=>$game['data'],'modulos'=>[ $modulo1['data'], $modulo2['data'], $modulo3['data']]]];
     }
 
 
