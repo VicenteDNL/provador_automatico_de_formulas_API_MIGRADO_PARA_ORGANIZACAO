@@ -13,13 +13,13 @@ class Configuracao
      * usu_senha=arvorederefutacao
      */
 
-     
+    public $producao=true;
     private $ativar=true;
     private $token = "78b00e70344143a0895f106cce231f6bkxxKf9S9WvzPMFjmMWZvyNZ4XYmsm1yLzV0iqFA1X8iFACvnW4zHbfeABj6efOUD"; 
     private $url ='http://api.thelogiclive.com/api/v1/';
-    private $meuDominio = 'http://localhost:4200/';
+    private $meuDominio ='https://arvore-refutacao.thelogiclive.com/#/';
 
-    private $urlExercicioValidacao = '/exercicio/validacao/';
+    private $urlExercicioValidacao = 'exercicio/validacao/';
     private $urlExercicioLivre = 'exercicio/livre/';
     private $urlExercicioConceitos = 'exercicio/conceitos/';
 
@@ -43,6 +43,7 @@ class Configuracao
     
     public function __construct( )
     {
+        $this->meuDominio =  $this->producao==true ?'https://arvore-refutacao.thelogiclive.com/#/':'http://localhost:4200/#/';
     }
 
     public function ativo(){
