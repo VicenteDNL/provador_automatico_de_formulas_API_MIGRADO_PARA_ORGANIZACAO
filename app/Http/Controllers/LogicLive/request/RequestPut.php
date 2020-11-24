@@ -28,7 +28,6 @@ class RequestPut
         $result = curl_exec($ch); // Execute a instrução cURL
         curl_close($ch); // Feche a conexão cURL
         $result= json_decode($result, true);
-
         if($result==null){
             return  ['success'=>false ,'msg'=>"Não foi possível conectar ao Logic Live", 'data'=>''];
         }

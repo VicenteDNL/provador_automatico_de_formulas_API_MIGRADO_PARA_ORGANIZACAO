@@ -24,7 +24,9 @@ class Base
     protected $ticar_automatico  = false;  //
     protected $fechar_automatico =false;   //
 
+    protected $resposta;           //Resposta final da arvore
     protected $error;              //insere uma mensagem de error em caso da execução não ter sucesso
+    protected $xml;                //String do Xml da formula
     protected $xml_formula;        //Objeto do Xml da formula
     protected $string_formula;     //String da Formula
     protected $lista_no;           //Lista de posicionamento dos nós da arvore
@@ -54,9 +56,11 @@ class Base
     *
     */
     private function prepararArvore($xml){
-        try{$this->xml_formula = simplexml_load_string($xml);}
+        try{$this->xml_formula = simplexml_load_string($xml);
+            $this->xml = $xml;
+        }
         catch(\Exception $e){
-            return response()->json(['success' => false, 'msg'=>'XML INVALIDO!', 'data'=>'']);}
+            $this->error= 'XML INVALIDO!';}
 
         $this->lista_argumentos=$this->arg->CriaListaArgumentos($this->xml_formula);
         $this->string_formula = $this->arg->stringFormula($this->xml_formula);
@@ -70,6 +74,32 @@ class Base
         
     }
 
+
+    public function otimizada(){
+        #Cria a arvore passando o XML
+        $arvore = $this->gerador->inicializarDerivacao($this->lista_argumentos['premissas'],$this->lista_argumentos['conclusao']);
+        $this->arvore =  $this->gerador->arvoreOtimizada($arvore);
+        #--------
+        
+        #Gera lista das possicoes de cada no da tabela
+        $impresaoAvr = $this->constr->geraListaArvore($this->arvore,$this->cansa_width,$this->cansa_pos_x,$this->cansa_pos_y,true, true);
+        $this->lista_aresta = $impresaoAvr['arestas'];
+        $this->lista_no = $impresaoAvr['nos'];
+
+        return true;
+
+    }
+    public function validar(){
+
+        $arvore = $this->gerador->validarArvore($this->arvore);
+        if($arvore['sucesso']=false){
+            $this->error = $arvore['messagem'];
+            return false;
+        }
+        $this->resposta=$arvore['resposta'];
+        return true;
+
+    }
 
     
     /**
@@ -92,7 +122,7 @@ class Base
             $this->error = $arvore['messagem'];
             return  false;
         }
-
+        // return  $arvore;
         //Verifica se todos os elementos de premissa e conclução estão inseridos na arvore
         $listaStr = $this->constr->geraListaPremissasConclsao($this->lista_argumentos,$arvore['lista']);
         $this->inicializacao->setListaInseridos($arvore['lista']);
@@ -120,14 +150,14 @@ class Base
 
         //Neste momento a arvore é reconstruida por completo,sua reconstrução segue a lista de Derivações
         $arvore = $this->gerador->gerarArvorePassoPasso($arvore['arv'], $this->derivacao->getListaDerivacoes());
-
+        
         //tica os nos já informados pelo usuario
         $arvore = $this->gerador->ticarTodosNos($arvore, $this->lista_ticagem);
         if(!$arvore['sucesso']){
             $this->error = $arvore['messagem'];
             return  false; 
         }
-
+       
         //fechar os nós já informados pelo usuario
         $arvore = $this->gerador->fecharTodosNos($arvore['arv'], $this->lista_fechamento);
         if(!$arvore['sucesso']){
@@ -136,6 +166,7 @@ class Base
         }
 
         // Cria a lista de posiçoes dos nós e arestas para serem exibidas no navegador
+       
         $this->arvore=$arvore['arv'];
         if($impressao){
             $impresaoAvr = $this->constr->geraListaArvore($this->arvore,$this->cansa_width,$this->cansa_pos_x,$this->cansa_pos_y,$this->ticar_automatico, $this->fechar_automatico);
@@ -159,9 +190,9 @@ class Base
     
     public function retorno($exercicio,$usu_has,$exe_has, $admin =false){
           $retorno=[
-            'regras'=>$this->buscarRegras($exercicio,$admin),
-            'exe_hash'=>$exe_has,
-            'usu_hash'=>$usu_has,
+            'regras'=>$exercicio!=null?$this->buscarRegras($exercicio,$admin):null,
+            'exe_hash'=>$exe_has!=null?$exe_has:null,
+            'usu_hash'=>$usu_has!=null?$usu_has:null,
             'exercicio'=>$exercicio,
             'arestas'=>$this->lista_aresta,
             'nos'=>$this->lista_no,
@@ -191,6 +222,7 @@ class Base
             ],
             'finalizada'=>$this->isFinalizada(),
              'strformula'=>$this->getStrFormula(),
+            'xml'=>$this->xml
             
         ];
 
@@ -201,6 +233,16 @@ class Base
         return $retorno;
         
     }
+
+
+    public function retornoOtimizada(){
+        return [
+          'arestas'=>$this->lista_aresta,
+          'nos'=>$this->lista_no,
+           'strformula'=>$this->getStrFormula()   
+      ] ;
+      
+   }
 
 
      /**
@@ -305,6 +347,11 @@ class Base
     public function getListaNo(){
         return $this->lista_no;
     }
+    public function getResposta(){
+        return $this->resposta;
+    }
+
+    
 
     public function getListaAresta(){
         return $this->lista_aresta;

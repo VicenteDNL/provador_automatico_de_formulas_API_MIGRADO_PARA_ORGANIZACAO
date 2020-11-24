@@ -11,8 +11,8 @@ class RequestPost
         $this->configurador = new Configuracao;
     }
 
-    public function httppost($url, $post=''){
-        $token = $this->configurador->token();
+    public function httppost($url, $post='', $hash=null){
+        $token = $hash==null? $this->configurador->token():$hash;
         $url = $this->configurador->url().$url;
         $post =  $post;// Matriz de dados 
         header('Content-Type: application/json'); // Especifique o tipo de dados
@@ -27,15 +27,14 @@ class RequestPost
         $result = curl_exec($ch); // Execute a instrução cURL
         curl_close($ch); // Feche a conexão cURL
         $result= json_decode($result, true);
-
         if($result==null){
             return  ['success'=>false ,'msg'=>"Não foi possível conectar ao Logic Live", 'data'=>''];
         }
         elseif(!$result['status']){
-            return  ['success'=>false ,'msg'=>"", 'data'=>$result['data']];
+            return  ['success'=>false ,'msg'=>"Não foi possível conectar ao Logic Live", 'data'=>$result['data']];
         }
         elseif($result['status']){
-            return  ['success'=>true ,'msg'=>"", 'data'=>$result['data']];
+            return  ['success'=>true ,'msg'=>"Não foi possível conectar ao Logic Live", 'data'=>$result['data']];
         }
         else{
             return  ['success'=>false ,'msg'=>"Não foi possível conectar ao Logic Live", 'data'=>''];

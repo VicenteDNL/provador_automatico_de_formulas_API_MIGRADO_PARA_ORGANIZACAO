@@ -89,6 +89,7 @@ class RespostaController extends Controller
         $arvore->derivacao->setListaDerivacoes($formula->lista_derivacoes==[] ? [] : json_decode ($formula->lista_derivacoes,true));
         $arvore->fecharAutomatido($formula->fechar_automaticamente);
         $arvore->ticarAutomatico($formula->ticar_automaticamente);
+        $arvore->inicializacao->setFinalizado($formula->inicializacao_completa);
 
         if(!$arvore->montarArvore()){
             return  response()->json(['success' => false, 'msg'=>'Error ar criar arvore', 'data'=>''],500);
@@ -135,7 +136,22 @@ class RespostaController extends Controller
 
         $recompensa = Recompensa ::where('id',$exercicio->id_recompensa)->first();
 
-        if($exercicio->qndt_erros==null){
+        if($exercicio->qndt_erros==null ){
+            if($tipo=='responder'){
+
+                $pont=floor($resposta->pontuacao/2);
+
+                if($pont<=0){
+                    $resposta->pontuacao=0;
+                }
+                else{
+                    $resposta->pontuacao= $pont;
+                }
+        
+                $resposta->save();
+                return ['ponto'=>$resposta->pontuacao, 'maximo'=>$recompensa->pontuacao];
+
+            }
             return ['ponto'=>$resposta->pontuacao, 'tentativa'=>$resposta->repeticao];
         }
         
@@ -183,8 +199,8 @@ class RespostaController extends Controller
                 $porcentagem_derivar = $porcentagem_sub_ativa /$exercicio->qndt_erros; 
                 $erros = $recompensa_maxima - $resposta->pontuacao; 
                 $nova_recompensa = $recompensa_maxima -floor ((($recompensa_maxima*$porcentagem_derivar))+$erros); 
-
                 break;
+
             case 'buscar':
                 if($recompensa_maxima>=$resposta->pontuacao){
                     $nova_recompensa = $resposta->pontuacao; 
@@ -265,6 +281,34 @@ class RespostaController extends Controller
         }
         return null;
     }
+
+
+
+    public function tempoParaResposta($resposta,$exercicio){
+
+        if($exercicio->tempo==null){
+           return  null;
+
+        }
+        $tempo= $exercicio->tempo *60;
+        $inicio= strtotime($resposta->tempo)+$tempo;
+        $atual = strtotime(date("Y-m-d H:i:s"));
+
+        if($inicio>$atual){
+            $segundos = $inicio-$atual;
+
+            return $segundos;
+           ;
+        }
+        elseif($inicio<$atual){
+            return null;
+
+
+        }
+        return null;
+    }
+
+
 
     public function buscaTempo($resposta,$exercicio){
 

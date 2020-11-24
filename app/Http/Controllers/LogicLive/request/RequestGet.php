@@ -12,7 +12,6 @@ class RequestGet
     }
 
     public function httpget($url, $id='', $hash=null){
-
         $token = $hash==null? $this->configurador->token():$hash;
         $url = $this->configurador->url().$url.$id; 
         header('Content-Type: application/json'); // Especifique o tipo de dados

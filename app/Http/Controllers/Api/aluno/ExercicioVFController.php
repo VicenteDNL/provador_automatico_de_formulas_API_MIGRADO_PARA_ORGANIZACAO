@@ -94,7 +94,6 @@ class ExercicioVFController extends Controller
         $arvore->fecharAutomatido($formula->fechar_automaticamente);
         $arvore->ticarAutomatico($formula->ticar_automaticamente);
         $arvore->inicializacao->setFinalizado($formula->inicializacao_completa);
-
         if(!$arvore->montarArvore()){
             return  response()->json(['success' => false, 'msg'=>'Error ar criar arvore', 'data'=>''],500);
         }
