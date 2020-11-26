@@ -16,7 +16,7 @@ class Configuracao
     public $producao=true;
     private $ativar=true;
     private $token = "78b00e70344143a0895f106cce231f6bkxxKf9S9WvzPMFjmMWZvyNZ4XYmsm1yLzV0iqFA1X8iFACvnW4zHbfeABj6efOUD"; 
-    private $url ='http://api.thelogiclive.com/api/v1/';
+    private $url ='https://api.thelogiclive.com/api/v1/';
     private $meuDominio ='https://arvore-refutacao.thelogiclive.com/#/';
 
     private $urlExercicioValidacao = 'exercicio/validacao/';
