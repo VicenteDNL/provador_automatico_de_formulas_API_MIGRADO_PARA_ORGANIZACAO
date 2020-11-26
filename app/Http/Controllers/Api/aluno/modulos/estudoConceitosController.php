@@ -10,7 +10,7 @@ use App\Jogador;
 use App\LogicLive;
 use Illuminate\Http\Request;
 
-class estudoConceitosController extends Controller
+class EstudoConceitosController extends Controller
 {
 
     public function __construct()

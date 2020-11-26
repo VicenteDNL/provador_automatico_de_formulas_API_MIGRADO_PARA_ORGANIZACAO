@@ -8,7 +8,7 @@ use App\Http\Controllers\LogicLive\config\Game;
 use App\LogicLive;
 use Illuminate\Http\Request;
 
-class logicLiveController extends Controller
+class LogicLiveController extends Controller
 {
 
     private $logicLive;

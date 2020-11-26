@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Base;
 use Illuminate\Http\Request;
 
-class estudoLivreController extends Controller
+class EstudoLivreController extends Controller
 {
     
     public function arvore(Request $request){
