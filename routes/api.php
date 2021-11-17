@@ -2,7 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
+use \App\Http\Controllers\Api\logicLive\LogicLiveController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -56,9 +56,9 @@ Route::group(['middleware'=>['auth:sanctum']],function(){
     Route::post('arvore/derivacao/ticar-no', 'Api\admin\ArvoreRefutacaoController@ticarNo');
 
 
-    // Requisições da configurar os modulos e o game
-    Route::get('config/logiclive/', 'Api\logicLive\LogicLiveController@infoModulosEndGame');
-    Route::post('config/logiclive/criar', 'Api\logicLive\LogicLiveController@criarModulosEndGame');
+    //Requisições para configurar os modulos e o game
+    Route::get('config/logiclive/', [LogicLiveController::class, 'infoModulosEndGame']);
+    Route::post('config/logiclive/criar', [LogicLiveController::class, 'criarModulosEndGame']);
 });
 
 Route::post('aluno/hash', 'Api\aluno\autenticacao\AuthHash@hash');   //Valida o HASH do aluno

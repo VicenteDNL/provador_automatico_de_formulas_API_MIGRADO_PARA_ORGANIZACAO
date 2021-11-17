@@ -21,70 +21,70 @@ class LogicLiveController extends Controller
   }
 
     public function infoModulosEndGame(){
-    
-       
-            // Busca os dados do game da plataforma Logic Live
 
-            
+            // Busca os dados do game da plataforma Logic Live
 
             $game = $this->game->getGame();
             if( $game['success']==false){
                 return response()->json(['success' => false, 'msg'=>$game['success'], 'data'=>''],500);
             }
-           
-         
+
             // Busca os dados dos modulos da plataforma Logic Live
             $modulo =  $this->game->getModulo();
             if( $modulo['success']==false){
                 return response()->json(['success' => false, 'msg'=>$modulo['success'], 'data'=>''],500);
             }
 
-            $resposta=false;
-            if( count($modulo['data'])==3 && count($game['data']==1) ){
-                $modulo =  $modulo['data'];
-                $game =  $game['data'][0];
-                $resposta=true;
+            // Busca os dados do game na sua Base de Dados
+            $gameMinhaBaseDados = LogicLive::where('tipo', '=', 'game')->get();
 
-                // Verifica se o game da base de dados é o mesmo da API do Logic Live
-                $baseDados = LogicLive::where('tipo', '=', 'game')->get();
-                if($baseDados[0]->meu_id!=$game['gam_codigo']){
-                    return response()->json(['success' => false, 'msg'=>'Conflito na base de dados "GAME"', 'data'=>''],500);
-                }
-                // ----------
-                
-                // Verifica se o modulo1 da base de dados é o mesmo da API do Logic Live
-                $baseDados = LogicLive::where('tipo', '=', 'modulo1')->get();
-                $modulo1 =  $this->game->getModuloId($baseDados[0]->meu_id);
-                if( $modulo1['success']==false){
-                    return response()->json(['success' => false, 'msg'=>$modulo1['msg'], 'data'=>''],500);
-                }
+            // Busca os dados dos modulos na sua Base de Dados
+            $modulosMinhaBaseDados = LogicLive::where('tipo', '=', 'modulo1')->get();
 
-                // Verifica se o  modulo2 da base de dados é o mesmo da API do Logic Live
-                $baseDados = LogicLive::where('tipo', '=', 'modulo2')->get();
-                $modulo2 =  $this->game->getModuloId($baseDados[0]->meu_id);
-                if( $modulo2['success']==false){
-                    return response()->json(['success' => false, 'msg'=>$modulo2['msg'], 'data'=>''],500);
+            //Verifica sê os três modulos padroes e o game está cadastrado no Logic Live
+            $estaConfiguradoNoLogicLive = ( count($modulo['data'])==3 && count($game['data'])==1 )? true : false;
+
+            //Verifica sê os três modulos padroes e o game está cadastrado na sua Base de Dados
+            $estaConfiguradoNaMinhaBaseDados =  (count($modulosMinhaBaseDados)==3 && count($gameMinhaBaseDados)==1 )? true : false;
+
+            // sê as informações estiverem cadastradas em apenas umas das bases, deve-se gerar um erro
+            if( !$estaConfiguradoNoLogicLive || !$estaConfiguradoNaMinhaBaseDados  ){
+                if ($estaConfiguradoNoLogicLive && !$estaConfiguradoNaMinhaBaseDados){
+                    return response()->json(['success' => false, 'msg'=>'Game configurado no Logic Live, mas não está configurado na sua Base de Dados ', 'data'=>''],500);
                 }
-                // ----------
-                
-                // Verifica se o  modulo3 da base de dados é o mesmo da API do Logic Live
-                $baseDados = LogicLive::where('tipo', '=', 'modulo3')->get();
-                $modulo3 =  $this->game->getModuloId($baseDados[0]->meu_id);
-                if( $modulo3['success']==false){
-                    return response()->json(['success' => false, 'msg'=>$modulo3['msg'], 'data'=>''],500);
+                if (!$estaConfiguradoNoLogicLive && $estaConfiguradoNaMinhaBaseDados){
+                    return response()->json(['success' => false, 'msg'=>'Game configurado na sua Base de Dados , mas não está configurado no Logic Live', 'data'=>''],500);
                 }
-                // ----------
-            
-                return response()->json(['success' => true, 'msg'=>'', 'data'=>['game'=> $game, 'modulos'=>[$modulo1,$modulo2,$modulo3],'cadastrados'=>$resposta]]);
             }
-            elseif (count($game['data'])==0 && count($modulo['data'])==0){
-                return response()->json(['success' => true, 'msg'=>'', 'data'=>['game'=> $game, 'modulos'=>$modulo,'cadastrados'=>$resposta]]);
+
+            // Verifica se o game da base de dados é o mesmo da API do Logic Live
+            if($gameMinhaBaseDados[0]->meu_id!=$game['gam_codigo']){
+                return response()->json(['success' => false, 'msg'=>'O "GAME" cadastrado no LogicLive difere do cadastrado da sua base de dados', 'data'=>''],500);
             }
-            else{
-                return response()->json(['success' => false, 'msg'=>'Conflito na base de dados', 'data'=>''],500);
+
+            // Verifica se o modulo1 da base de dados é o mesmo da API do Logic Live
+            $baseDados = LogicLive::where('tipo', '=', 'modulo1')->get();
+            $modulo1LogicLive =  $this->game->getModuloId($baseDados[0]->meu_id);
+            if( $modulo1LogicLive['success']==false){
+                return response()->json(['success' => false, 'msg'=>$modulo1LogicLive['msg'], 'data'=>''],500);
             }
-            
-        
+
+            // Verifica se o  modulo2 da base de dados é o mesmo da API do Logic Live
+            $baseDados = LogicLive::where('tipo', '=', 'modulo2')->get();
+            $modulo2LogicLive =  $this->game->getModuloId($baseDados[0]->meu_id);
+            if( $modulo2LogicLive['success']==false){
+                return response()->json(['success' => false, 'msg'=>$modulo2LogicLive['msg'], 'data'=>''],500);
+            }
+
+            // Verifica se o  modulo3 da base de dados é o mesmo da API do Logic Live
+            $baseDados = LogicLive::where('tipo', '=', 'modulo3')->get();
+            $modulo3LogicLive =  $this->game->getModuloId($baseDados[0]->meu_id);
+            if( $modulo3LogicLive['success']==false){
+                return response()->json(['success' => false, 'msg'=>$modulo3LogicLive['msg'], 'data'=>''],500);
+            }
+
+            return response()->json(['success' => true, 'msg'=>'', 'data'=>['game'=> $game['data'][0], 'modulos'=>[$modulo1LogicLive,$modulo2LogicLive,$modulo3LogicLive],'cadastrados'=>true]]);
+
 
     }
 
@@ -97,11 +97,11 @@ class LogicLiveController extends Controller
 
 
             if(count($gameBase)==0 && count($gameApi)==0 && count($moduloBase)==0 && count($moduloApi)==0){
-                
+
                 $gameModulos = $this->game->criarGameEndModulos();
 
                 if($gameModulos['success']){
-                    
+
                     $gameCriado =$gameModulos['data']['game'];
                     $modulosCriado =$gameModulos['data']['modulos'];
                     $niveisCriado =$gameModulos['data']['niveis'];
@@ -109,7 +109,7 @@ class LogicLiveController extends Controller
                     $recompensasCriado =$gameModulos['data']['recompensas'];
 
                     // Criando Game
-                    $logicLive_game = new LogicLive(); 
+                    $logicLive_game = new LogicLive();
                     $logicLive_game->tipo='game';
                     $logicLive_game->meu_id=$gameCriado['gam_codigo'];
                     $logicLive_game->nome=$gameCriado['gam_nome'];
@@ -118,7 +118,7 @@ class LogicLiveController extends Controller
                     $logicLive_game->save();
 
                     // Criando Modulo 1
-                    $logicLive_modulo1 = new LogicLive(); 
+                    $logicLive_modulo1 = new LogicLive();
                     $logicLive_modulo1->tipo='modulo1';
                     $logicLive_modulo1->meu_id=$modulosCriado[0]['mod_codigo'];
                     $logicLive_modulo1->game_id=$modulosCriado[0]['gam_codigo'];
@@ -129,7 +129,7 @@ class LogicLiveController extends Controller
                     $logicLive_modulo1->save();
 
                     // Criando Modulo 2
-                    $logicLive_modulo2 = new LogicLive(); 
+                    $logicLive_modulo2 = new LogicLive();
                     $logicLive_modulo2->tipo='modulo2';
                     $logicLive_modulo2->meu_id=$modulosCriado[1]['mod_codigo'];
                     $logicLive_modulo2->game_id=$modulosCriado[1]['gam_codigo'];
@@ -141,7 +141,7 @@ class LogicLiveController extends Controller
 
 
                     // Criando Modulo 3
-                    $logicLive_modulo3 = new LogicLive(); 
+                    $logicLive_modulo3 = new LogicLive();
                     $logicLive_modulo3->tipo='modulo3';
                     $logicLive_modulo3->meu_id=$modulosCriado[2]['mod_codigo'];
                     $logicLive_modulo3->game_id=$modulosCriado[2]['gam_codigo'];
@@ -154,7 +154,7 @@ class LogicLiveController extends Controller
 
 
                     // Criando Nivel Modulo 2
-                    $logicLive_nivel_modulo2 = new LogicLive(); 
+                    $logicLive_nivel_modulo2 = new LogicLive();
                     $logicLive_nivel_modulo2->tipo='nivel_modulo2';
                     $logicLive_nivel_modulo2->meu_id=$niveisCriado[0]['niv_codigo'];
                     $logicLive_nivel_modulo2->modulo_id=$niveisCriado[0]['mod_codigo'];
@@ -165,7 +165,7 @@ class LogicLiveController extends Controller
 
 
                     // Criando Nivel Modulo 3
-                    $logicLive_nivel_modulo3 = new LogicLive(); 
+                    $logicLive_nivel_modulo3 = new LogicLive();
                     $logicLive_nivel_modulo3->tipo='nivel_modulo3';
                     $logicLive_nivel_modulo3->meu_id=$niveisCriado[1]['niv_codigo'];
                     $logicLive_nivel_modulo3->modulo_id=$niveisCriado[1]['mod_codigo'];
@@ -176,7 +176,7 @@ class LogicLiveController extends Controller
 
 
                      // Criando Exercicio 1  Modulo 2
-                     $logicLive_exercicio1_modulo2 = new LogicLive(); 
+                     $logicLive_exercicio1_modulo2 = new LogicLive();
                      $logicLive_exercicio1_modulo2->tipo='exercicio1_modulo2';
                      $logicLive_exercicio1_modulo2->meu_id=$exerciciosCriado[0]['exe_codigo'];
                      $logicLive_exercicio1_modulo2->recompensa_id=$exerciciosCriado[0]['rec_codigo'];
@@ -191,7 +191,7 @@ class LogicLiveController extends Controller
 
 
                      // Criando Exercicio 2  Modulo 2
-                     $logicLive_exercicio2_modulo2 = new LogicLive(); 
+                     $logicLive_exercicio2_modulo2 = new LogicLive();
                      $logicLive_exercicio2_modulo2->tipo='exercicio2_modulo2';
                      $logicLive_exercicio2_modulo2->meu_id=$exerciciosCriado[1]['exe_codigo'];
                      $logicLive_exercicio2_modulo2->recompensa_id=$exerciciosCriado[1]['rec_codigo'];
@@ -205,7 +205,7 @@ class LogicLiveController extends Controller
 
 
                      // Criando Exercicio 1  Modulo 3
-                     $logicLive_exercicio1_modulo3 = new LogicLive(); 
+                     $logicLive_exercicio1_modulo3 = new LogicLive();
                      $logicLive_exercicio1_modulo3->tipo='exercicio1_modulo2';
                      $logicLive_exercicio1_modulo3->meu_id=$exerciciosCriado[2]['exe_codigo'];
                      $logicLive_exercicio1_modulo3->recompensa_id=$exerciciosCriado[2]['rec_codigo'];
@@ -218,34 +218,34 @@ class LogicLiveController extends Controller
                      $logicLive_exercicio1_modulo3->save();
 
 
-                     // Criando Recompensa 1 
-                     $logicLive_recompensa1 = new LogicLive(); 
+                     // Criando Recompensa 1
+                     $logicLive_recompensa1 = new LogicLive();
                      $logicLive_recompensa1->tipo='recompensa1';
                      $logicLive_recompensa1->meu_id=$recompensasCriado[0]['rec_codigo'];
                      $logicLive_recompensa1->nome=$recompensasCriado[0]['rec_nome'];
-                     $logicLive_recompensa1->ativo=true;          
+                     $logicLive_recompensa1->ativo=true;
                      $logicLive_recompensa1->save();
 
-                     // Criando Recompensa 2  
-                     $logicLive_recompensa2 = new LogicLive(); 
+                     // Criando Recompensa 2
+                     $logicLive_recompensa2 = new LogicLive();
                      $logicLive_recompensa2->tipo='recompensa1';
                      $logicLive_recompensa2->meu_id=$recompensasCriado[1]['rec_codigo'];
                      $logicLive_recompensa2->nome=$recompensasCriado[1]['rec_nome'];
-                     $logicLive_recompensa2->ativo=true;          
+                     $logicLive_recompensa2->ativo=true;
                      $logicLive_recompensa2->save();
 
                     return response()->json(['success' => true, 'msg'=>'criado com sucesso!', 'data'=>['game'=> $gameCriado, 'modulos'=>$modulosCriado,'cadastrados'=>true]]);
 
                 }
                 else{
-                    return response()->json(['success' => false, 'msg'=>$gameModulos['msg'], 'data'=>'']);  
+                    return response()->json(['success' => false, 'msg'=>$gameModulos['msg'], 'data'=>'']);
                 }
-                
+
             }
             else{
-                return response()->json(['success' => false, 'msg'=>'Conflito na base de dados', 'data'=>''],500); 
+                return response()->json(['success' => false, 'msg'=>'Conflito na base de dados', 'data'=>''],500);
             }
     }
 
-    
+
 }

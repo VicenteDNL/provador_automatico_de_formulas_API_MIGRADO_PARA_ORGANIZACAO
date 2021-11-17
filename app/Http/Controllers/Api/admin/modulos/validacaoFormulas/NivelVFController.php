@@ -15,7 +15,7 @@ class NivelVFController extends Controller
 
     public function __construct(NivelMVFLP $niveis )
     {
-        $this->niveis = $niveis; 
+        $this->niveis = $niveis;
         $this->config = new Configuracao;
         $this->logicLive_nivel= new NivelVF;
     }
@@ -29,7 +29,7 @@ class NivelVFController extends Controller
         try{
         $data= $this->niveis->orderBy('created_at', 'desc')->paginate(5);
         return response()->json(['success' => true, 'msg'=>'', 'data'=>$data]);
-        
+
         }catch(\Exception $e){
             return response()->json(['success' => false, 'msg'=>'erro no servidor', 'data'=>''],500);
 
@@ -63,7 +63,7 @@ class NivelVFController extends Controller
             $nivelMVFLP->id_recompensa = $request->id_recompensa;
             $nivelMVFLP->save();
         return response()->json(['success' => true, 'msg'=>'nivel deletado do banco de dados', 'data'=>'']);
-    
+
     }catch(\Exception $e){
         return response()->json(['success' => false, 'msg'=>'erro no servidor', 'data'=>''],500);
     }
@@ -92,27 +92,27 @@ class NivelVFController extends Controller
     {
         try{
 
-            
+
 
             $nivelMVFLP = NivelMVFLP::findOrFail($id);
 
             if($this->config->ativo()){
                 $criadoLogicLive = $this->logicLive_nivel->atualizarNivel($nivelMVFLP->meu_id_logic_live,['niv_nome'=>$request->nome,'niv_descricao'=>$request->descricao,'niv_ativo'=>$request->ativo,'mod_codigo'=>$nivelMVFLP->id_modulo]);
                 if($criadoLogicLive['success']==false){
-                   
+
                     return response()->json(['success' => false, 'msg'=>$criadoLogicLive['msg'], 'data'=>''],500);
                 }
 
             }
-     
+
             $nivelMVFLP->update($request->all());
             $nivelMVFLP->save();
             return response()->json(['success' => true, 'msg'=>'nivel atualizado do banco de dados', 'data'=>''], 200);
-        
+
         }catch(\Exception $e){
             return response()->json(['success' => false, 'msg'=>'erro no servidor', 'data'=>''],500);
         }
-       
+
     }
 
 
@@ -120,7 +120,7 @@ class NivelVFController extends Controller
         try{
             $nivelMVFLP = NivelMVFLP::all();
             return response()->json(['success' => true, 'msg'=>'', 'data'=>$nivelMVFLP]);
-        
+
         }catch(\Exception $e){
             return response()->json(['success' => false, 'msg'=>'erro no servidor', 'data'=>''],500);
         }
@@ -140,7 +140,7 @@ class NivelVFController extends Controller
                 $nivelMVFLP = NivelMVFLP::findOrFail($id);
                 $criadoLogicLive = $this->logicLive_nivel->deletarNivel($nivelMVFLP->meu_id_logic_live);
                 if($criadoLogicLive['success']==false){
-                   
+
                     return response()->json(['success' => false, 'msg'=>$criadoLogicLive['msg'], 'data'=>''],500);
                 }
             }
@@ -148,10 +148,10 @@ class NivelVFController extends Controller
             $nivelMVFLP = NivelMVFLP::findOrFail($id);
             $nivelMVFLP->delete();
             return response()->json(['success' => true, 'msg'=>'nivel deletado do banco de dados', 'data'=>''], 200);
-        
+
         }catch(\Exception $e){
             return response()->json(['success' => false, 'msg'=>'erro no servidor', 'data'=>''],500);
         }
-    
+
     }
 }
