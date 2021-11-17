@@ -24,7 +24,7 @@ class UserController extends Controller
         // $user->email = 'danilo@gmail.com';
         // $user->password =  Hash::make('1234');
         // $user->save();
-       
+
 
         // return response()->json($users);
     }

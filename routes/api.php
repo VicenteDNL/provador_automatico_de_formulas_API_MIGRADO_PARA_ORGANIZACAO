@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('auth/login', 'Api\AuthController@login');
 Route::get('auth/me', 'Api\AuthController@me');
-Route::group(['middleware'=>['apiJwt']],function(){
+Route::group(['middleware'=>['auth:sanctum']],function(){
     Route::post('auth/logout', 'Api\AuthController@logout');
     Route::get('users', 'Api\UserController@index');
 
@@ -35,8 +35,8 @@ Route::group(['middleware'=>['apiJwt']],function(){
     Route::post('mvflp/niveis', 'Api\admin\modulos\validacaoFormulas\NivelVFController@store');
     Route::put('mvflp/niveis/{id}', 'Api\admin\modulos\validacaoFormulas\NivelVFController@update');
     Route::delete('mvflp/niveis/{id}', 'Api\admin\modulos\validacaoFormulas\NivelVFController@destroy');
-    
-    
+
+
     Route::get('mvflp/exercicio/nivel/{id}', 'Api\admin\modulos\validacaoFormulas\ExercicioVFController@byIdNivel');
     Route::post('mvflp/exercicio', 'Api\admin\modulos\validacaoFormulas\ExercicioVFController@store');
     Route::get('mvflp/exercicio/{id}', 'Api\admin\modulos\validacaoFormulas\ExercicioVFController@show');
@@ -62,12 +62,12 @@ Route::group(['middleware'=>['apiJwt']],function(){
 });
 
 Route::post('aluno/hash', 'Api\aluno\autenticacao\AuthHash@hash');   //Valida o HASH do aluno
-Route::post('aluno/livre/iniciar', 'Api\aluno\modulos\EstudoLivreController@iniciar'); 
-Route::post('aluno/livre/arvore', 'Api\aluno\modulos\EstudoLivreController@arvore'); 
-Route::post('aluno/livre/adiciona', 'Api\aluno\modulos\EstudoLivreController@adiciona'); 
-Route::post('aluno/livre/deriva', 'Api\aluno\modulos\EstudoLivreController@deriva'); 
-Route::post('aluno/livre/tica', 'Api\aluno\modulos\EstudoLivreController@tica'); 
-Route::post('aluno/livre/fecha', 'Api\aluno\modulos\EstudoLivreController@fecha'); 
+Route::post('aluno/livre/iniciar', 'Api\aluno\modulos\EstudoLivreController@iniciar');
+Route::post('aluno/livre/arvore', 'Api\aluno\modulos\EstudoLivreController@arvore');
+Route::post('aluno/livre/adiciona', 'Api\aluno\modulos\EstudoLivreController@adiciona');
+Route::post('aluno/livre/deriva', 'Api\aluno\modulos\EstudoLivreController@deriva');
+Route::post('aluno/livre/tica', 'Api\aluno\modulos\EstudoLivreController@tica');
+Route::post('aluno/livre/fecha', 'Api\aluno\modulos\EstudoLivreController@fecha');
 
 
 Route::post('aluno/conceitos/concluir/{id}', 'Api\aluno\modulos\EstudoConceitosController@concluir');

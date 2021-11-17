@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
@@ -14,13 +15,22 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        $credentials = $request->only(['email', 'password']);
 
-        if (!$token = auth('api')->attempt($credentials)) {
-            
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ]);
+
+        if (!Auth::attempt($credentials)) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
-        return $this->respondWithToken($token);
+        $token_name = 'authentication_token';
+        $token = $request->user()->createToken($token_name);
+        return [
+            'success' => true,
+            'access_token' => $token->plainTextToken,
+            'token_type' => 'bearer',
+            'email' => $request->user()->email];
     }
 
     /**
@@ -61,10 +71,10 @@ class AuthController extends Controller
      */
     public function me(Request $request)
     {
-        if(auth('api')->user()==null){
-            return response()->json(['success' => false,'msg' => 'Unauthorized', 'data'=>'']);
-        }
-        return response()->json(['success' => true, 'msg'=>'', 'data'=>auth('api')->user()]);
+//        if(auth('api')->user()==null){
+//            return response()->json(['success' => false,'msg' => 'Unauthorized', 'data'=>'']);
+//        }
+        return response()->json(['success' => true, 'msg'=>'', 'data'=>'']);
     }
 
 }
