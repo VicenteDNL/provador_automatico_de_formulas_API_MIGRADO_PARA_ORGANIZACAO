@@ -7,8 +7,9 @@ use \App\Http\Controllers\Api\logicLive\LogicLiveController;
 
 
 Route::post('auth/login', [AuthController::class, 'login']);
-Route::get('auth/me', [AuthController::class, 'me']);
+
 Route::group(['middleware'=>['auth:sanctum']],function(){
+    Route::get('auth/me', [AuthController::class, 'me']);
     Route::post('auth/logout', 'Api\AuthController@logout');
     Route::get('users', 'Api\UserController@index');
 
