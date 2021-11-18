@@ -38,10 +38,10 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function logout()
+    public function logout(Request $request)
     {
-        auth('api')->logout();
-        return response()->json(['success' => true, 'msg'=>'Successfully logged out', 'data'=>'']);
+        $request->user()->currentAccessToken()->delete();
+        return response()->json(['success' => true, 'msg'=>'Saiu com sucesso', 'data'=>'']);
     }
 
     /**
@@ -71,9 +71,7 @@ class AuthController extends Controller
      */
     public function me(Request $request)
     {
-//        if(auth('api')->user()==null){
-//            return response()->json(['success' => false,'msg' => 'Unauthorized', 'data'=>'']);
-//        }
+        //Verificar sê o uso do ME ainda é necessário
         return response()->json(['success' => true, 'msg'=>'', 'data'=>'']);
     }
 
