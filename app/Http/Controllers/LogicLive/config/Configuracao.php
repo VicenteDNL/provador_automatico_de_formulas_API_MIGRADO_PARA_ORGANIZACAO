@@ -6,11 +6,11 @@ class Configuracao
 {
 
 
-    public $producao=true;
-    private $ativar=true;
-    private $token = "8ff272b46de09b42f29b4c67cda80fb4ppqar34IIEIAraoOzgBG2mRM36DdHKdhReQb4y5A5zUMKh+0mOWsMHX+RmTLYC02";
-    private $url ='https://api.thelogiclive.com/api/v1/';
-    private $meuDominio ='https://arvore-refutacao.thelogiclive.com/#/';
+    public $producao;
+    private $ativar;
+    private $token;
+    private $url;
+    private $meuDominio;
 
     private $urlExercicioValidacao = 'exercicio/validacao/';
     private $urlExercicioLivre = 'exercicio/livre/';
@@ -36,7 +36,11 @@ class Configuracao
 
     public function __construct( )
     {
-        $this->meuDominio =  $this->producao==true ?'https://arvore-refutacao.thelogiclive.com/#/':'http://localhost:4200/#/';
+        $this->producao = env('LOGIC_LIVE_URL') == 'DEV'? true: false;
+        $this->ativar =  env('LOGIC_LIVE_REGISTER') == 'active'? true: false;
+        $this->token = env('LOGIC_LIVE_TOKEN');
+        $this->url = env('LOGIC_LIVE_URL');
+        $this->meuDominio = env('LOGIC_LIVE_URL_GAME');
     }
 
     public function ativo(){
