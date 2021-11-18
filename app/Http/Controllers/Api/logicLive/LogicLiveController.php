@@ -39,13 +39,16 @@ class LogicLiveController extends Controller
             $gameMinhaBaseDados = LogicLive::where('tipo', '=', 'game')->get();
 
             // Busca os dados dos modulos na sua Base de Dados
-            $modulosMinhaBaseDados = LogicLive::where('tipo', '=', 'modulo1')->get();
+            $modulo1MinhaBaseDados = LogicLive::where('tipo', '=', 'modulo1')->get();
+            $modulo2MinhaBaseDados = LogicLive::where('tipo', '=', 'modulo2')->get();
+            $modulo3MinhaBaseDados = LogicLive::where('tipo', '=', 'modulo3')->get();
 
             //Verifica sê os três modulos padroes e o game está cadastrado no Logic Live
-            $estaConfiguradoNoLogicLive = ( count($modulo['data'])==3 && count($game['data'])==1 )? true : false;
+            $estaConfiguradoNoLogicLive = count($modulo['data'])==3 && count($game['data'])==1;
 
             //Verifica sê os três modulos padroes e o game está cadastrado na sua Base de Dados
-            $estaConfiguradoNaMinhaBaseDados =  (count($modulosMinhaBaseDados)==3 && count($gameMinhaBaseDados)==1 )? true : false;
+            $estaConfiguradoNaMinhaBaseDados = count($modulo1MinhaBaseDados)==1 && count($modulo2MinhaBaseDados)==1 &&
+            count($modulo3MinhaBaseDados)==1 && count($gameMinhaBaseDados)==1;
 
             //sê as informações não estiverem cadastradas em nenhuma das bases, então pode ser cadastrada normalmente
             if( !$estaConfiguradoNoLogicLive && !$estaConfiguradoNaMinhaBaseDados  ){
@@ -61,29 +64,25 @@ class LogicLiveController extends Controller
                     return response()->json(['success' => false, 'msg'=>'Game configurado na sua Base de Dados , mas não está configurado no Logic Live', 'data'=>''],500);
                 }
             }
-            dd($estaConfiguradoNaMinhaBaseDados);
             // Verifica se o game da base de dados é o mesmo da API do Logic Live
-            if($gameMinhaBaseDados[0]->meu_id!=$game['gam_codigo']){
+            if($gameMinhaBaseDados[0]->meu_id!=$game['data'][0]['gam_codigo']){
                 return response()->json(['success' => false, 'msg'=>'O "GAME" cadastrado no LogicLive difere do cadastrado da sua base de dados', 'data'=>''],500);
             }
 
             // Verifica se o modulo1 da base de dados é o mesmo da API do Logic Live
-            $baseDados = LogicLive::where('tipo', '=', 'modulo1')->get();
-            $modulo1LogicLive =  $this->game->getModuloId($baseDados[0]->meu_id);
+            $modulo1LogicLive =  $this->game->getModuloId($modulo1MinhaBaseDados[0]->meu_id);
             if( $modulo1LogicLive['success']==false){
                 return response()->json(['success' => false, 'msg'=>$modulo1LogicLive['msg'], 'data'=>''],500);
             }
 
             // Verifica se o  modulo2 da base de dados é o mesmo da API do Logic Live
-            $baseDados = LogicLive::where('tipo', '=', 'modulo2')->get();
-            $modulo2LogicLive =  $this->game->getModuloId($baseDados[0]->meu_id);
+            $modulo2LogicLive =  $this->game->getModuloId($modulo2MinhaBaseDados[0]->meu_id);
             if( $modulo2LogicLive['success']==false){
                 return response()->json(['success' => false, 'msg'=>$modulo2LogicLive['msg'], 'data'=>''],500);
             }
 
             // Verifica se o  modulo3 da base de dados é o mesmo da API do Logic Live
-            $baseDados = LogicLive::where('tipo', '=', 'modulo3')->get();
-            $modulo3LogicLive =  $this->game->getModuloId($baseDados[0]->meu_id);
+            $modulo3LogicLive =  $this->game->getModuloId($modulo3MinhaBaseDados[0]->meu_id);
             if( $modulo3LogicLive['success']==false){
                 return response()->json(['success' => false, 'msg'=>$modulo3LogicLive['msg'], 'data'=>''],500);
             }
