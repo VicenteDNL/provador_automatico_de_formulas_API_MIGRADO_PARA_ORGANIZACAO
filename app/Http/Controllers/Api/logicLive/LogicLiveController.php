@@ -47,6 +47,11 @@ class LogicLiveController extends Controller
             //Verifica sê os três modulos padroes e o game está cadastrado na sua Base de Dados
             $estaConfiguradoNaMinhaBaseDados =  (count($modulosMinhaBaseDados)==3 && count($gameMinhaBaseDados)==1 )? true : false;
 
+            //sê as informações não estiverem cadastradas em nenhuma das bases, então pode ser cadastrada normalmente
+            if( !$estaConfiguradoNoLogicLive && !$estaConfiguradoNaMinhaBaseDados  ){
+                return response()->json(['success' => true, 'msg'=>'O Game está apto para ser cadastrado no LogicLive', 'data'=>['game'=> '', 'modulos'=>[],'cadastrados'=>false]]);
+            }
+
             // sê as informações estiverem cadastradas em apenas umas das bases, deve-se gerar um erro
             if( !$estaConfiguradoNoLogicLive || !$estaConfiguradoNaMinhaBaseDados  ){
                 if ($estaConfiguradoNoLogicLive && !$estaConfiguradoNaMinhaBaseDados){
@@ -56,7 +61,7 @@ class LogicLiveController extends Controller
                     return response()->json(['success' => false, 'msg'=>'Game configurado na sua Base de Dados , mas não está configurado no Logic Live', 'data'=>''],500);
                 }
             }
-
+            dd($estaConfiguradoNaMinhaBaseDados);
             // Verifica se o game da base de dados é o mesmo da API do Logic Live
             if($gameMinhaBaseDados[0]->meu_id!=$game['gam_codigo']){
                 return response()->json(['success' => false, 'msg'=>'O "GAME" cadastrado no LogicLive difere do cadastrado da sua base de dados', 'data'=>''],500);
