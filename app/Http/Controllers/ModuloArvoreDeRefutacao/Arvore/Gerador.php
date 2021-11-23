@@ -639,21 +639,21 @@ class Gerador extends Controller
                 if($noSemBifur->getValorNo()->getTipoPredicado()=='CONJUNCAO' and $noSemBifur->getValorNo()->getNegadoPredicado()==0){
                     foreach ($ListanosFolha as $nosFolha){
                         $array_filhos = $this->regras->conjuncao($noSemBifur->getValorNo());
-                        $noBifur->utilizado(true);
+                        $noSemBifur->utilizado(true);
                         $this->criarNoSemBifucacao($nosFolha,$arvore,$array_filhos,$noSemBifur->getLinhaNo());
                     }
                 }
                 else if ($noSemBifur->getValorNo()->getTipoPredicado()== 'DISJUNCAO' and $noSemBifur->getValorNo()->getNegadoPredicado()==1){
                     foreach ($ListanosFolha as $nosFolha){
                         $array_filhos = $this->regras->disjuncaoNeg($noSemBifur->getValorNo());
-                        $noBifur->utilizado(true);
+                        $noSemBifur->utilizado(true);
                         $this->criarNoSemBifucacao($nosFolha,$arvore,$array_filhos,$noSemBifur->getLinhaNo());
                     }
                 }
                 elseif ($noSemBifur->getValorNo()->getTipoPredicado()== 'CONDICIONAL' and $noSemBifur->getValorNo()->getNegadoPredicado()==1) {
                     foreach ($ListanosFolha as $nosFolha){
                         $array_filhos = $this->regras->condicionalNeg($noSemBifur->getValorNo());
-                        $noBifur->utilizado(true);
+                        $noSemBifur->utilizado(true);
                         $this->criarNoSemBifucacao($nosFolha,$arvore,$array_filhos,$noSemBifur->getLinhaNo());
                     }
                 }
