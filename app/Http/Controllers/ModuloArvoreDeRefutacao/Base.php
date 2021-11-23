@@ -1,12 +1,12 @@
 <?php
 
 /**
- * 
+ *
  *  Essa Classe é responsavel por se comunicar com o módulo de árvore de refutação
  *  para realizar as operações de derivações
- * 
+ *
  *  Toda Operação para criar a arvore de refutação deve passar por essa classe
- * 
+ *
  */
 
 namespace App\Http\Controllers\ModuloArvoreDeRefutacao;
@@ -16,8 +16,8 @@ use App\Formula;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Arvore\Gerador;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Formula\Argumento;
 
-class Base  
-{  
+class Base
+{
     protected $cansa_pos_y =0;             //
     protected $cansa_pos_x =350;           //
     protected $cansa_width =700;           //
@@ -71,7 +71,7 @@ class Base
         $this->lista_fechamento= [];
         $this->derivacao = new Derivacao;
         $this->inicializacao = new Inicializacao( $this->lista_argumentos);
-        
+
     }
 
 
@@ -80,7 +80,7 @@ class Base
         $arvore = $this->gerador->inicializarDerivacao($this->lista_argumentos['premissas'],$this->lista_argumentos['conclusao']);
         $this->arvore =  $this->gerador->arvoreOtimizada($arvore);
         #--------
-        
+
         #Gera lista das possicoes de cada no da tabela
         $impresaoAvr = $this->constr->geraListaArvore($this->arvore,$this->cansa_width,$this->cansa_pos_x,$this->cansa_pos_y,true, true);
         $this->lista_aresta = $impresaoAvr['arestas'];
@@ -89,6 +89,22 @@ class Base
         return true;
 
     }
+
+    public function piorArvore(){
+        #Cria a arvore passando o XML
+        $arvore = $this->gerador->inicializarDerivacao($this->lista_argumentos['premissas'],$this->lista_argumentos['conclusao']);
+        $this->arvore =  $this->gerador->piorArvore($arvore);
+        #--------
+
+        #Gera lista das possicoes de cada no da tabela
+        $impresaoAvr = $this->constr->geraListaArvore($this->arvore,$this->cansa_width,$this->cansa_pos_x,$this->cansa_pos_y,true, true);
+        $this->lista_aresta = $impresaoAvr['arestas'];
+        $this->lista_no = $impresaoAvr['nos'];
+
+        return true;
+    }
+
+
     public function validar(){
 
         $arvore = $this->gerador->validarArvore($this->arvore);
@@ -101,16 +117,16 @@ class Base
 
     }
 
-    
+
     /**
-     * 
-     * Esse metodo é responsavel por reconstruir a árvore de retutação 
-     * 
+     *
+     * Esse metodo é responsavel por reconstruir a árvore de retutação
+     *
      * parametro:
-     *    $idNo -> o identificador do nó que se deseja inserir na árvore  
+     *    $idNo -> o identificador do nó que se deseja inserir na árvore
      *    $negacao -> informar se pretende inserir o nó negado ou nao (boleano)
      *    $impressao -> informa se vai ser gerado a impressao das nos e arestas da arvore
-     * 
+     *
     */
     public function montarArvore($idNo=null,$negacao=null,$impressao=true){
 
@@ -150,30 +166,30 @@ class Base
 
         //Neste momento a arvore é reconstruida por completo,sua reconstrução segue a lista de Derivações
         $arvore = $this->gerador->gerarArvorePassoPasso($arvore['arv'], $this->derivacao->getListaDerivacoes());
-        
+
         //tica os nos já informados pelo usuario
         $arvore = $this->gerador->ticarTodosNos($arvore, $this->lista_ticagem);
         if(!$arvore['sucesso']){
             $this->error = $arvore['messagem'];
-            return  false; 
+            return  false;
         }
-       
+
         //fechar os nós já informados pelo usuario
         $arvore = $this->gerador->fecharTodosNos($arvore['arv'], $this->lista_fechamento);
         if(!$arvore['sucesso']){
             $this->error = $arvore['messagem'];
-            return  false; 
+            return  false;
         }
 
         // Cria a lista de posiçoes dos nós e arestas para serem exibidas no navegador
-       
+
         $this->arvore=$arvore['arv'];
         if($impressao){
             $impresaoAvr = $this->constr->geraListaArvore($this->arvore,$this->cansa_width,$this->cansa_pos_x,$this->cansa_pos_y,$this->ticar_automatico, $this->fechar_automatico);
             $this->lista_aresta = $impresaoAvr['arestas'];
             $this->lista_no = $impresaoAvr['nos'];
         }
-        
+
         return true;
     }
 
@@ -187,7 +203,7 @@ class Base
         $this->inicializacao->setFinalizado(true);
     }
 
-    
+
     public function retorno($exercicio,$usu_has,$exe_has, $admin =false){
           $retorno=[
             'regras'=>$exercicio!=null?$this->buscarRegras($exercicio,$admin):null,
@@ -223,7 +239,7 @@ class Base
             'finalizada'=>$this->isFinalizada(),
              'strformula'=>$this->getStrFormula(),
             'xml'=>$this->xml
-            
+
         ];
 
         if($admin==true){
@@ -231,7 +247,7 @@ class Base
 
         }
         return $retorno;
-        
+
     }
 
 
@@ -239,22 +255,22 @@ class Base
         return [
           'arestas'=>$this->lista_aresta,
           'nos'=>$this->lista_no,
-           'strformula'=>$this->getStrFormula()   
+           'strformula'=>$this->getStrFormula()
       ] ;
-      
+
    }
 
 
      /**
-     * 
+     *
      * Esse metodo é responsavel por reconstruir a árvore de retutação e derivar a arvore
      * conforme as informações do usuario
-     * 
+     *
      * parametro:
-     *    $derivacao -> o identificador do nó que se deseja derivar  
+     *    $derivacao -> o identificador do nó que se deseja derivar
      *    $insercao  -> uma lista de identificadores dos nós que receberão a nova derivação
      *    $regra     -> o identificador da regra de vai ser aplicada
-     * 
+     *
     */
     public function derivar($derivacao,$insercao,$regra){
 
@@ -278,11 +294,11 @@ class Base
 
 
     public function fecharNo($noFolha, $noContradicao){
-        
+
         $fechada = $this->gerador->fecharNo($this->arvore, $noFolha, $noContradicao);
         if(!$fechada['sucesso']){
             $this->error = $fechada['messagem'];
-            return  false;   
+            return  false;
         }
         array_push($this->lista_fechamento,['nofechado'=>$noFolha,'noContradicao'=>$noContradicao]);
 
@@ -293,13 +309,13 @@ class Base
     }
 
     public function ticarNo($no){
-        
+
         $arvorefinal = $this->gerador->ticarNo($this->arvore, $no);
         if(!$arvorefinal['sucesso']){
             $this->error = $arvorefinal['messagem'];
             return  false;
         }
-    
+
         array_push($this->lista_ticagem,$no);
         $impresaoAvr = $this->constr->geraListaArvore($this->arvore,$this->cansa_width,$this->cansa_pos_x,$this->cansa_pos_y,$this->ticar_automatico, $this->fechar_automatico);
         $this->lista_aresta = $impresaoAvr['arestas'];
@@ -315,7 +331,7 @@ class Base
         $exercicio  =  ExercicioMVFLP::findOrFail($exercicio);
         $formula =  Formula::findOrFail($exercicio->id_formula);
        return $this->gerador->arrayPerguntas($this->arvore,$formula->quantidade_regras);
-        
+
     }
 
 
@@ -338,9 +354,9 @@ class Base
             if($this->gerador->existeNoPossivelTicagem($this->arvore)!=null){
                 return false;
             }
-            
+
         }
- 
+
         return true;
     }
 
@@ -351,7 +367,7 @@ class Base
         return $this->resposta;
     }
 
-    
+
 
     public function getListaAresta(){
         return $this->lista_aresta;
@@ -394,7 +410,7 @@ class Base
     public function ticarAutomatico($dado){
         $this->ticar_automatico=$dado;
     }
-    
+
 
 
 }

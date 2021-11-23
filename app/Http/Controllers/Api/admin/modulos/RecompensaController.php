@@ -13,7 +13,7 @@ class RecompensaController extends Controller
 
     public function __construct(Recompensa $recompensa )
     {
-        $this->$recompensa = $recompensa; 
+        $this->$recompensa = $recompensa;
         $this->logicLive_recompensa= new ModulosRecompensa;
         $this->config = new Configuracao;
     }
@@ -55,7 +55,7 @@ class RecompensaController extends Controller
                 $recompensa->pontuacao = $request->pontuacao;
                 $recompensa->id_logic_live = $criadoLogicLive['data']['rec_codigo'];
                 $recompensa->save();
-          
+
             return response()->json(['success' => true, 'msg'=>'Niviel ('.$request->nome.') cadastrado com sucesso', 'data'=>'']);
         }catch(\Exception $e){
             return response()->json(['success' => false, 'msg'=>'Error interno', 'data'=>''],500);
@@ -89,15 +89,15 @@ class RecompensaController extends Controller
             if($this->config->ativo()){
                 $criadoLogicLive = $this->logicLive_recompensa->atualizarRecompensa($recompensa->id_logic_live,['rec_nome'=>$request->nome, 'rec_imagem'=>'nada sendo passado', 'rec_pontuacao'=>$request->pontuacao]);
                 if($criadoLogicLive['success']==false){
-                   
+
                     return response()->json(['success' => false, 'msg'=>$criadoLogicLive['msg'], 'data'=>''],500);
                 }
             }
-     
+
             $recompensa->update($request->all());
             $recompensa->save();
             return response()->json(['success' => true, 'msg'=>'Recompensa ('.$request->nome.') atualizado com sucesso', 'data'=>''], 200);
-        
+
         }catch(\Exception $e){
             return response()->json(['success' => false, 'msg'=>$e, 'data'=>''],500);
         }
@@ -124,6 +124,6 @@ class RecompensaController extends Controller
         }catch(\Exception $e){
             return response()->json(['success' => false, 'msg'=>$e, 'data'=>''],500);
         }
-     
+
     }
 }

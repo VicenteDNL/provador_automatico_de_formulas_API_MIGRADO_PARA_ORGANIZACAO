@@ -3,8 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use \App\Http\Controllers\Api\AuthController;
 use \App\Http\Controllers\Api\logicLive\LogicLiveController;
-
-
+use \App\Http\Controllers\Api\aluno\ArvoreRefutacaoController;
+use \App\Http\Controllers\Api\admin\modulos\validacaoFormulas\ExercicioVFController;
 
 Route::post('auth/login', [AuthController::class, 'login']);
 
@@ -26,11 +26,11 @@ Route::group(['middleware'=>['auth:sanctum']],function(){
     Route::delete('mvflp/niveis/{id}', 'Api\admin\modulos\validacaoFormulas\NivelVFController@destroy');
 
 
-    Route::get('mvflp/exercicio/nivel/{id}', 'Api\admin\modulos\validacaoFormulas\ExercicioVFController@byIdNivel');
-    Route::post('mvflp/exercicio', 'Api\admin\modulos\validacaoFormulas\ExercicioVFController@store');
-    Route::get('mvflp/exercicio/{id}', 'Api\admin\modulos\validacaoFormulas\ExercicioVFController@show');
-    Route::put('mvflp/exercicio/{id}', 'Api\admin\modulos\validacaoFormulas\ExercicioVFController@update');
-    Route::delete('mvflp/exercicio/{id}', 'Api\admin\modulos\validacaoFormulas\ExercicioVFController@destroy');
+    Route::get('mvflp/exercicio/nivel/{id}', [ExercicioVFController::class, 'byIdNivel']);
+    Route::post('mvflp/exercicio', [ExercicioVFController::class, 'store']);
+    Route::get('mvflp/exercicio/{id}', [ExercicioVFController::class, 'show']);
+    Route::put('mvflp/exercicio/{id}', [ExercicioVFController::class, 'update']);
+    Route::delete('mvflp/exercicio/{id}', [ExercicioVFController::class, 'destroy']);
 
 
     Route::get('mvflp/resposta', 'Api\admin\modulos\validacaoFormulas\RespostaController@index');
@@ -38,6 +38,7 @@ Route::group(['middleware'=>['auth:sanctum']],function(){
 
 
     Route::post('arvore/otimizada', 'Api\admin\ArvoreRefutacaoController@criarArvoreOtimizada');
+//    Route::post('arvore/otimizada', 'Api\admin\ArvoreRefutacaoController@criarPiorArvore');
     Route::post('arvore/inicializacao/premisas-conclucao', 'Api\admin\ArvoreRefutacaoController@premissasConclusao');
     Route::post('arvore/inicializacao/adiciona-no', 'Api\admin\ArvoreRefutacaoController@adicionaNoIncializacao');
     Route::post('arvore/derivacao/adiciona-no', 'Api\admin\ArvoreRefutacaoController@derivar');
@@ -75,7 +76,7 @@ Route::post('aluno/hash', 'Api\aluno\autenticacao\AuthHash@hash');
 
 Route::post('aluno/arvore/otimizada', 'Api\aluno\ArvoreRefutacaoController@criarArvoreOtimizada');
 Route::post('aluno/arvore/inicializacao/premisas-conclucao', 'Api\aluno\ArvoreRefutacaoController@premissasConclusao');
-Route::post('aluno/arvore/inicializacao/adiciona-no', 'Api\aluno\ArvoreRefutacaoController@adicionaNo');
-Route::post('aluno/arvore/derivacao/adiciona-no', 'Api\aluno\ArvoreRefutacaoController@derivar');
-Route::post('aluno/arvore/derivacao/fechar-no', 'Api\aluno\ArvoreRefutacaoController@fecharNo');
-Route::post('aluno/arvore/derivacao/ticar-no', 'Api\aluno\ArvoreRefutacaoController@ticarNo');
+Route::post('aluno/arvore/inicializacao/adiciona-no', [ArvoreRefutacaoController::class, 'adicionaNo']);
+Route::post('aluno/arvore/derivacao/adiciona-no', [ArvoreRefutacaoController::class, 'derivar']);
+Route::post('aluno/arvore/derivacao/fechar-no', [ArvoreRefutacaoController::class, 'fecharNo']);
+Route::post('aluno/arvore/derivacao/ticar-no', [ArvoreRefutacaoController::class, 'ticarNo']);

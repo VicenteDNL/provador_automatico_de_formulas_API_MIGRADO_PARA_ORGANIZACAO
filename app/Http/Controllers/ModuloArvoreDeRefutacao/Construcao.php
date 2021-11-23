@@ -34,14 +34,19 @@ class Construcao extends Controller
     }
 
 
-    public function geraListaArvore($arvore,$width,$posX,$posY, $ticar=false, $fechar=false){
-        
-        $listaNo = $this->geraListaNO($arvore,$width,$posX,$posY,$array=[],$ticar,$fechar);
+    public function geraListaArvore($arvore,$xml,$width, $ticar=false, $fechar=false){
+
+        $tamanhoMininoCanvas = $this->larguraMinimaCanvas($xml);
+        if ($width<$tamanhoMininoCanvas){
+            $width = $tamanhoMininoCanvas;
+        }
+
+        $listaNo = $this->geraListaNO($arvore,$width,$width/2,0,$array=[],$ticar,$fechar);
         $listaAresta = $this->geraListaArestas($listaNo);
         return ['nos'=>$listaNo,'arestas'=>$listaAresta];
 
     }
-        
+
 
 
     public function geraListaNO($arvore,$width,$posX,$posY,$array=[],$ticar,$fechar)
@@ -55,14 +60,14 @@ class Construcao extends Controller
 
         array_push($array,[
             'arv'=>$arvore,
-            'str'=>$str, 
+            'str'=>$str,
             'idNo'=>$arvore->getIdNo(),
             'linha'=>$arvore->getLinhaNo(),
             'noFolha'=>$arvore->isNoFolha(),
-            'posX'=>$posX, 
-            'posY'=>$posYFilho, 
-            'tmh'=>$tmh, 
-            'posXno'=>$posX-($tmh/2), 
+            'posX'=>$posX,
+            'posY'=>$posYFilho,
+            'tmh'=>$tmh,
+            'posXno'=>$posX-($tmh/2),
             'linhaDerivacao'=>$arvore->getLinhaDerivacao(),
             'posXlinhaDerivacao'=>$posX+($tmh/2),
             'utilizado'=>$utilizado,
@@ -73,28 +78,20 @@ class Construcao extends Controller
             'strokeColor'=>'#C0C0C0',
             ]);
         if ($arvore->getFilhoEsquerdaNo() != null) {
-            $divisao = $width / ($arvore->getFilhoEsquerdaNo()->getLinhaNo() + 1);
-            $posXFilho = 0;
-            for ($i = 0; $i < ($arvore->getFilhoEsquerdaNo()->getLinhaNo() + 1); $i++) {
-                if (($divisao + $posXFilho) < $posX) {
-                    $posXFilho = $posXFilho + $divisao;
-                }
-            }
-            $array = $this->geraListaNO($arvore->getFilhoEsquerdaNo(), $width, $posXFilho, $posYFilho,$array,$ticar,$fechar);
+            $areaFilho = $width / 2 ;
+            $posicaoAreaFilho = $areaFilho / 2;
+            $posXFilho = $posX - $posicaoAreaFilho ;
+            $array = $this->geraListaNO($arvore->getFilhoEsquerdaNo(), $areaFilho, $posXFilho, $posYFilho,$array,$ticar,$fechar);
         }
         if ($arvore->getFilhoCentroNo() != null) {
 
             $array = $this->geraListaNO($arvore->getFilhoCentroNo(), $width, $posX, $posYFilho,$array,$ticar,$fechar);
         }
         if ($arvore->getFilhoDireitaNo() != null) {
-            $divisao = $width / ($arvore->getFilhoDireitaNo()->getLinhaNo() + 1);
-            $posXFilho = $width;
-            for ($i = 0; $i <($arvore->getFilhoDireitaNo()->getLinhaNo() + 1); $i++) {
-                if ( $posXFilho-$divisao > $posX) {
-                    $posXFilho = $posXFilho - $divisao;
-                }
-            }
-            $array = $this->geraListaNO($arvore->getFilhoDireitaNo(), $width, $posXFilho, $posYFilho,$array,$ticar,$fechar);
+            $areaFilho = $width / 2 ;
+            $posicaoAreaFilho = $areaFilho / 2;
+            $posXFilho = $posX + $posicaoAreaFilho ;
+            $array = $this->geraListaNO($arvore->getFilhoDireitaNo(), $areaFilho, $posXFilho, $posYFilho,$array,$ticar,$fechar);
         }
         return $array;
     }
@@ -114,7 +111,7 @@ class Construcao extends Controller
                                         ]);
                             break;
                         }
-                    
+
                     }
                 }
                 else{
@@ -125,7 +122,7 @@ class Construcao extends Controller
                         'linhaY2'=>$listaNo[$i]['posY']-27
                         ]);
                 }
-                
+
 
             }
             return $listaAresta;
@@ -141,11 +138,11 @@ class Construcao extends Controller
                  unset($list['premissas'][$id]);
             }
             else{
-                
+
                 unset($list['conclusao'][$id]);
             }
         }
-        
+
         foreach($list['premissas'] as $key => $premissa){
             $str= $this->arg->stringArg($premissa->getValorObjPremissa()) ;
                 array_push($lista,[
@@ -172,8 +169,24 @@ class Construcao extends Controller
 
     }
 
+    public function larguraMinimaCanvas($xml){
 
- 
+        $listaArgumentos = $this->arg->CriaListaArgumentos($xml);
+        $arvore = $this->gerador->inicializarDerivacao($listaArgumentos['premissas'],$listaArgumentos['conclusao']);
+
+        $profundidadeArvInicializada = $this->gerador->getUltimaLinha();
+        $this->gerador->piorArvore($arvore);
+        $profundidadePiorArvore  = $this->gerador->getUltimaLinha();
+
+        //A profundidade Final considera apenas 1 dos noós inicias, pois eles nunca são bifurcados, e portanto não interferem na largura final da Arv
+        $profundidadeFinal = ($profundidadePiorArvore - $profundidadeArvInicializada) + 1;
+
+        // O valor destinada ao espaço que deverá ser ocupado por um nó ( alterar esse valor para mudar a largura)
+        $areaDoNo = 100;
+
+        return ($areaDoNo *$profundidadeFinal );
+
+    }
 
 
 

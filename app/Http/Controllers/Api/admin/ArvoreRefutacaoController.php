@@ -16,8 +16,8 @@ class ArvoreRefutacaoController extends Controller
         $this->arg = new Argumento;
         $this->gerador = new Gerador;
         $this->constr = new Construcao;
-  
-  
+
+
   }
 
     public function criarArvoreOtimizada(Request $request){
@@ -29,13 +29,13 @@ class ArvoreRefutacaoController extends Controller
             return response()->json(['success' => false, 'msg'=>'XML INVALIDO!', 'data'=>''],500);
         }
 
-       
+
         #Cria a arvore passando o XML
         $listaArgumentos = $this->arg->CriaListaArgumentos($xml);
         $arvore = $this->gerador->inicializarDerivacao($listaArgumentos['premissas'],$listaArgumentos['conclusao']);
         $arv =  $this->gerador->arvoreOtimizada($arvore);
         #--------
-        
+
         #Gera lista das possicoes de cada no da tabela
         $impresaoAvr = $this->constr->geraListaArvore($arv,$request->width,($request->width/2),0,true,true);
 
@@ -45,6 +45,32 @@ class ArvoreRefutacaoController extends Controller
          #--------
 
         return response()->json(['success' => true, 'msg'=>'', 'data'=>['impresao'=>$impresaoAvr,'str'=>$formulaGerada]]);
+
+    }
+
+    public function criarPiorArvore (Request $request){
+        try{
+            $xml = simplexml_load_string($request->xml);
+        }
+        catch(\Exception $e){
+            return response()->json(['success' => false, 'msg'=>'XML INVALIDO!', 'data'=>''],500);
+        }
+
+        #Cria a arvore passando o XML
+        $listaArgumentos = $this->arg->CriaListaArgumentos($xml);
+        $arvore = $this->gerador->inicializarDerivacao($listaArgumentos['premissas'],$listaArgumentos['conclusao']);
+        $arv =  $this->gerador->piorArvore($arvore);
+
+        #Gera lista das possicoes de cada no da tabela
+        $impresaoAvr = $this->constr->geraListaArvore($arv,$xml,700,true,true);
+
+
+        #Gera uma string da Formula XML
+        $formulaGerada = $this->arg->stringFormula($xml);
+        #--------
+
+        return response()->json(['success' => true, 'msg'=>'', 'data'=>['impresao'=>$impresaoAvr,'str'=>$formulaGerada]]);
+
 
     }
 
@@ -62,13 +88,13 @@ class ArvoreRefutacaoController extends Controller
         if(!$arvore->montarArvore()){
             return  response()->json(['success' => false, 'msg'=>'Error ar criar arvore', 'data'=>''],500);
         }
-            
+
         return  response()->json([
-                'success' => true, 
-                'msg'=>'', 
+                'success' => true,
+                'msg'=>'',
                 'data'=>$arvore->retorno(null,$request->usu_hash, $request->exe_hash, true)
             ]);
-       
+
     }
 
 
@@ -77,17 +103,17 @@ class ArvoreRefutacaoController extends Controller
 
             $arvore = new Base($request->xml);
             $arvore->setListaPassos($request->inicio['lista']);
-            
+
             if(!$arvore->montarArvore($request->inicio['no']['id'],$request->inicio['negacao'])){
                 return  response()->json([
-                    'success' => false, 
+                    'success' => false,
                     'msg'=>$arvore->getError()
-                    ]); 
-            } 
-    
+                    ]);
+            }
+
             return  response()->json([
-                'success' => true, 
-                'msg'=>'', 
+                'success' => true,
+                'msg'=>'',
                 'data'=>$arvore->retorno(null,$request->usu_hash, $request->exe_hash,true)
                 ]);
 
@@ -110,13 +136,13 @@ class ArvoreRefutacaoController extends Controller
 
         if(!$arvore->derivar($request->derivacao['no']['idNo'],$request->derivacao['folhas'],$request->derivacao['regra'])){
             return  response()->json([
-                'success' => false, 
-                'msg'=>$arvore->getError(), 
-                ]); 
+                'success' => false,
+                'msg'=>$arvore->getError(),
+                ]);
         }
- 
+
         return  response()->json([
-            'success' => true, 
+            'success' => true,
             'msg'=>'',
              'data'=>$arvore->retorno(null,$request->usu_hash, $request->exe_hash,true)
             ]);
@@ -134,21 +160,21 @@ class ArvoreRefutacaoController extends Controller
         $arvore->fecharAutomatido(false);
         $arvore->ticarAutomatico(false);
         $arvore->inicializacao->setFinalizado(true);
-        
+
         if(!$arvore->montarArvore()){
-            return  response()->json(['success' => false, 'msg'=>$arvore->getError()]); 
+            return  response()->json(['success' => false, 'msg'=>$arvore->getError()]);
         }
-        
+
         if(!$arvore->ticarNo($request->ticar['no'])){
             return  response()->json([
-                'success' => false, 
-                'msg'=>$arvore->getError() 
+                'success' => false,
+                'msg'=>$arvore->getError()
                 ]);
         }
-        
+
         return  response()->json([
-            'success' => true, 
-            'msg'=>'', 
+            'success' => true,
+            'msg'=>'',
             'data'=>$arvore->retorno(null,$request->usu_hash, $request->exe_hash,true)
             ]);
     }
@@ -166,22 +192,23 @@ class ArvoreRefutacaoController extends Controller
         $arvore->inicializacao->setFinalizado(true);
 
         if(!$arvore->montarArvore()){
-            return  response()->json(['success' => false, 'msg'=>$arvore->getError()]); 
+            return  response()->json(['success' => false, 'msg'=>$arvore->getError()]);
         }
 
         if(!$arvore->fecharNo($request->fechar['folha'], $request->fechar['no'])){
             return  response()->json([
-                'success' => false, 
-                'msg'=>$arvore->getError(), 
-                ]);  
+                'success' => false,
+                'msg'=>$arvore->getError(),
+                ]);
         }
 
         return  response()->json([
-            'success' => true, 
-            'msg'=>'', 
+            'success' => true,
+            'msg'=>'',
             'data'=>$arvore->retorno(null,$request->usu_hash, $request->exe_hash,true)
             ]);
 
 
     }
+
 }
