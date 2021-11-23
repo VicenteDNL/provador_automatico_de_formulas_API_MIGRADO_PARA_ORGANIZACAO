@@ -70,9 +70,10 @@ class Gerador extends Controller
         $ultimoNo=null;
         if ($premissas !=null){
             foreach ($premissas as $premissa){
+                $this->addLinha();
                 if ($this->arvore==null){
                     $this->idNo+=1;
-                    $this->arvore = new No($this->idNo,$premissa->getValorObjPremissa(),null,null,null,1,null,null,false,false);
+                    $this->arvore = new No($this->idNo,$premissa->getValorObjPremissa(),null,null,null,$this->getUltimaLinha(),null,null,false,false);
                     $ultimoNo=$this->arvore;
                 }
                 else{
@@ -80,7 +81,7 @@ class Gerador extends Controller
                     $ultimoNo->setFilhoCentroNo(new No( $this->idNo,$premissa->getValorObjPremissa(),null,null,null,$this->getUltimaLinha(),null,null,false,false));
                     $ultimoNo=$ultimoNo->getFilhoCentroNo();
                 }
-                $this->addLinha();
+
             }
         }
         if ($conclusao !=null){
