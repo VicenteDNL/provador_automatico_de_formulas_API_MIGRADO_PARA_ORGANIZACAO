@@ -105,14 +105,32 @@ class Base
 
     public function validar(){
 
-        $arvore = $this->gerador->validarArvore($this->arvore);
-        if($arvore['sucesso']==false){
-            $this->error = $arvore['messagem'];
+        if($this->gerador->proximoNoParaInsercao($this->arvore)!=null){
+            $this->error = 'derivação incompleta';
             return false;
         }
-        $this->resposta=$arvore['resposta'];
-        return true;
 
+        if($this->fechar_automatico==false){
+            if($this->gerador->existeNoPossivelFechamento($this->arvore)!=null){
+                $this->error = 'derivação incompleta';
+                return false;
+            }
+        }
+
+        if($this->ticar_automatico==false){
+            if($this->gerador->existeNoPossivelTicagem($this->arvore)!=null){
+                $this->error = 'derivação incompleta';
+                return false;
+            }
+
+        }
+        $nosAbertos = $this->gerador->getNosFolha($this->arvore);
+        if($nosAbertos!=null){
+            $this->resposta ='CONTRADICAO';
+        }
+        $this->resposta ='TAUTOLOGIA';
+
+        return true;
     }
 
 
@@ -136,7 +154,7 @@ class Base
             $this->error = $arvore['messagem'];
             return  false;
         }
-        // return  $arvore;
+
         //Verifica se todos os elementos de premissa e conclução estão inseridos na arvore
         $listaStr = $this->constr->geraListaPremissasConclsao($this->lista_argumentos,$arvore['lista']);
         $this->inicializacao->setListaInseridos($arvore['lista']);
@@ -267,12 +285,12 @@ class Base
      * parametro:
      *    $derivacao -> o identificador do nó que se deseja derivar
      *    $insercao  -> uma lista de identificadores dos nós que receberão a nova derivação
-     *    $regra     -> o identificador da regra de vai ser aplicada
+     *    $regra     -> o identificador da regra que vai ser aplicada
      *
     */
     public function derivar($derivacao,$insercao,$regra){
 
-        $arvore = $this->montarArvore(null,null,false);
+        $this->montarArvore(null,null,false);
         $arvore =$this->gerador->derivar($this->arvore,$derivacao,$insercao,$regra);
         if(!$arvore['sucesso']){
             $this->error = $arvore['messagem'];

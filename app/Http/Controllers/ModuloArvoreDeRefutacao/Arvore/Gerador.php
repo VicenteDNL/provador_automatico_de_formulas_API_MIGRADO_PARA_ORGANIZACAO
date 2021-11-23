@@ -1304,35 +1304,11 @@ class Gerador extends Controller
     }
 
 
-    public function validarArvore($arvore){
-        $existeNoInsercao = $this->proximoNoParaInsercao($arvore);
-        if($existeNoInsercao!=null){
-            return ['sucesso'=>false, 'messagem'=>'derivação incompleta'];
-        }
-
-        $nosAbertos = $this->getNosFolhasAberto($arvore);
-        if($nosAbertos!=null){
-            return ['sucesso'=>false, 'messagem'=>'derivação incompleta'];
-        }
-
-        $nosAbertos = $this->getNosFolha($arvore);
-        if($nosAbertos!=null){
-            return ['sucesso'=>true, 'resposta'=>'CONTRADICAO'];
-        }
-        return ['sucesso'=>true, 'resposta'=>'TAUTOLOGIA'];
-
-
-    }
-
-
-
-
-
     /*esta funçao recebe com parametro a arvore atual, e retorna uma array com a referencia de todos os nós folhas que não foram fechados pelo usuario*/
     public function getNosFolhasAberto($arvore, $ListaDeNo=null){
 
 
-        if ($arvore->getFilhoDireitaNo() ==null and  $arvore->getFilhoEsquerdaNo() ==null and  $arvore->getFilhoCentroNo() ==null  and ($arvore->isFechado()==true && $arvore->fechamentoNo()==false)){
+        if ($arvore->getFilhoDireitaNo() ==null and  $arvore->getFilhoEsquerdaNo() ==null and  $arvore->getFilhoCentroNo() ==null  and ($arvore->isFechado()==true && $arvore->isFechamento()==false)){
             $ListaDeNo[] =  $arvore;
             return  $ListaDeNo;
         }
