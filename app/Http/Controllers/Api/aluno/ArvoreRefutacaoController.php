@@ -86,7 +86,7 @@ class ArvoreRefutacaoController extends Controller
     }
 
     public function adicionaNo(Request $request){
-//        try{
+        try{
 
             $exercicio = ExercicioMVFLP::findOrFail($request->exercicio);
             $formula =  Formula::findOrFail($exercicio->id_formula);
@@ -114,9 +114,9 @@ class ArvoreRefutacaoController extends Controller
                 'msg'=>'',
                 'data'=>$arvore->retorno($exercicio->id,$request->usu_hash, $request->exe_hash)
                 ]);
-//        }catch(\Exception $e){
-//            return response()->json(['success' => false, 'msg'=>'erro interno', 'data'=>''],500);
-//        }
+        }catch(\Exception $e){
+            return response()->json(['success' => false, 'msg'=>'erro interno', 'data'=>''],500);
+        }
     }
 
     public function derivar(Request $request){
