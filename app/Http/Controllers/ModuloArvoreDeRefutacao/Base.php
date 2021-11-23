@@ -106,7 +106,7 @@ class Base
     public function validar(){
 
         $arvore = $this->gerador->validarArvore($this->arvore);
-        if($arvore['sucesso']=false){
+        if($arvore['sucesso']==false){
             $this->error = $arvore['messagem'];
             return false;
         }
