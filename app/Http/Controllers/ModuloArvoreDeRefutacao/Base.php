@@ -18,8 +18,6 @@ use App\Http\Controllers\ModuloArvoreDeRefutacao\Formula\Argumento;
 
 class Base
 {
-    protected $cansa_pos_y =0;             //
-    protected $cansa_pos_x =350;           //
     protected $cansa_width =700;           //
     protected $ticar_automatico  = false;  //
     protected $fechar_automatico =false;   //
@@ -82,7 +80,7 @@ class Base
         #--------
 
         #Gera lista das possicoes de cada no da tabela
-        $impresaoAvr = $this->constr->geraListaArvore($this->arvore,$this->cansa_width,$this->cansa_pos_x,$this->cansa_pos_y,true, true);
+        $impresaoAvr = $this->constr->geraListaArvore($this->arvore,$this->xml,$this->cansa_width,true, true);
         $this->lista_aresta = $impresaoAvr['arestas'];
         $this->lista_no = $impresaoAvr['nos'];
 
@@ -97,7 +95,7 @@ class Base
         #--------
 
         #Gera lista das possicoes de cada no da tabela
-        $impresaoAvr = $this->constr->geraListaArvore($this->arvore,$this->cansa_width,$this->cansa_pos_x,$this->cansa_pos_y,true, true);
+        $impresaoAvr = $this->constr->geraListaArvore($this->arvore,$this->xml,$this->cansa_width,true, true);
         $this->lista_aresta = $impresaoAvr['arestas'];
         $this->lista_no = $impresaoAvr['nos'];
 
@@ -155,7 +153,7 @@ class Base
                     $this->lista_no = [];
                 }
                 else{
-                    $impresaoAvr = $this->constr->geraListaArvore($this->arvore,$this->cansa_width,$this->cansa_pos_x,$this->cansa_pos_y,$this->ticar_automatico, $this->fechar_automatico);
+                    $impresaoAvr = $this->constr->geraListaArvore($this->arvore,$this->xml,$this->cansa_width,$this->ticar_automatico, $this->fechar_automatico);
                     $this->lista_aresta = $impresaoAvr['arestas'];
                     $this->lista_no = $impresaoAvr['nos'];
                 }
@@ -185,7 +183,7 @@ class Base
 
         $this->arvore=$arvore['arv'];
         if($impressao){
-            $impresaoAvr = $this->constr->geraListaArvore($this->arvore,$this->cansa_width,$this->cansa_pos_x,$this->cansa_pos_y,$this->ticar_automatico, $this->fechar_automatico);
+            $impresaoAvr = $this->constr->geraListaArvore($this->arvore,$this->xml,$this->cansa_width,$this->ticar_automatico, $this->fechar_automatico);
             $this->lista_aresta = $impresaoAvr['arestas'];
             $this->lista_no = $impresaoAvr['nos'];
         }
@@ -286,7 +284,7 @@ class Base
         #-----
 
         $this->arvore=$arvore['arv'];
-        $impresaoAvr = $this->constr->geraListaArvore($this->arvore,$this->cansa_width,$this->cansa_pos_x,$this->cansa_pos_y,$this->ticar_automatico, $this->fechar_automatico);
+        $impresaoAvr = $this->constr->geraListaArvore($this->arvore,$this->xml,$this->cansa_width,$this->ticar_automatico, $this->fechar_automatico);
         $this->lista_aresta = $impresaoAvr['arestas'];
         $this->lista_no = $impresaoAvr['nos'];
         return true;
@@ -302,7 +300,7 @@ class Base
         }
         array_push($this->lista_fechamento,['nofechado'=>$noFolha,'noContradicao'=>$noContradicao]);
 
-        $impresaoAvr = $this->constr->geraListaArvore($this->arvore,$this->cansa_width,$this->cansa_pos_x,$this->cansa_pos_y,$this->ticar_automatico, $this->fechar_automatico);
+        $impresaoAvr = $this->constr->geraListaArvore($this->arvore,$this->xml,$this->cansa_width,$this->ticar_automatico, $this->fechar_automatico);
         $this->lista_aresta = $impresaoAvr['arestas'];
         $this->lista_no = $impresaoAvr['nos'];
         return true;
@@ -317,7 +315,7 @@ class Base
         }
 
         array_push($this->lista_ticagem,$no);
-        $impresaoAvr = $this->constr->geraListaArvore($this->arvore,$this->cansa_width,$this->cansa_pos_x,$this->cansa_pos_y,$this->ticar_automatico, $this->fechar_automatico);
+        $impresaoAvr = $this->constr->geraListaArvore($this->arvore,$this->xml,$this->cansa_width,$this->ticar_automatico, $this->fechar_automatico);
         $this->lista_aresta = $impresaoAvr['arestas'];
         $this->lista_no = $impresaoAvr['nos'];
         return true;

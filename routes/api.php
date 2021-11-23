@@ -38,7 +38,6 @@ Route::group(['middleware'=>['auth:sanctum']],function(){
 
 
     Route::post('arvore/otimizada', 'Api\admin\ArvoreRefutacaoController@criarArvoreOtimizada');
-//    Route::post('arvore/otimizada', 'Api\admin\ArvoreRefutacaoController@criarPiorArvore');
     Route::post('arvore/inicializacao/premisas-conclucao', 'Api\admin\ArvoreRefutacaoController@premissasConclusao');
     Route::post('arvore/inicializacao/adiciona-no', 'Api\admin\ArvoreRefutacaoController@adicionaNoIncializacao');
     Route::post('arvore/derivacao/adiciona-no', 'Api\admin\ArvoreRefutacaoController@derivar');

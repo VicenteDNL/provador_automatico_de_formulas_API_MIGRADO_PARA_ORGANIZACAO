@@ -37,7 +37,7 @@ class ArvoreRefutacaoController extends Controller
         #--------
 
         #Gera lista das possicoes de cada no da tabela
-        $impresaoAvr = $this->constr->geraListaArvore($arv,$request->width,($request->width/2),0,true,true);
+        $impresaoAvr = $this->constr->geraListaArvore($arv,$xml,0,true,true);
 
 
          #Gera uma string da Formula XML
@@ -62,7 +62,7 @@ class ArvoreRefutacaoController extends Controller
         $arv =  $this->gerador->piorArvore($arvore);
 
         #Gera lista das possicoes de cada no da tabela
-        $impresaoAvr = $this->constr->geraListaArvore($arv,$xml,700,true,true);
+        $impresaoAvr = $this->constr->geraListaArvore($arv,$xml,0,true,true);
 
 
         #Gera uma string da Formula XML
