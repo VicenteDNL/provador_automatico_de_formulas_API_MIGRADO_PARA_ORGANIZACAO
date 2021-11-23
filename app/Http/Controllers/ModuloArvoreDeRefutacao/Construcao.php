@@ -12,7 +12,7 @@ class Construcao extends Controller
 {
  function __construct() {
         $this->arg = new Argumento;
-        $this->gerador = new Gerador;
+
  }
 
     public function stringXmlDiretorio(){
@@ -172,11 +172,12 @@ class Construcao extends Controller
     public function larguraMinimaCanvas($xml){
 
         $listaArgumentos = $this->arg->CriaListaArgumentos($xml);
-        $arvore = $this->gerador->inicializarDerivacao($listaArgumentos['premissas'],$listaArgumentos['conclusao']);
+        $gerador = new Gerador;
+        $arvore = $gerador->inicializarDerivacao($listaArgumentos['premissas'],$listaArgumentos['conclusao']);
 
-        $profundidadeArvInicializada = $this->gerador->getUltimaLinha();
-        $this->gerador->piorArvore($arvore);
-        $profundidadePiorArvore  = $this->gerador->getUltimaLinha();
+        $profundidadeArvInicializada = $gerador->getUltimaLinha();
+        $gerador->piorArvore($arvore);
+        $profundidadePiorArvore  = $gerador->getUltimaLinha();
 
         //A profundidade Final considera apenas 1 dos noós inicias, pois eles nunca são bifurcados, e portanto não interferem na largura final da Arv
         $profundidadeFinal = ($profundidadePiorArvore - $profundidadeArvInicializada) + 1;
