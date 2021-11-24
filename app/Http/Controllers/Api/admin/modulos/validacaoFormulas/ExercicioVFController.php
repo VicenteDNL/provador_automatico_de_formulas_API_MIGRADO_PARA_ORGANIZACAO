@@ -216,7 +216,7 @@ class ExercicioVFController extends Controller
                 return response()->json(['success' => false, 'msg'=>'Nivel não encontrado', 'data'=>'']);
             }
 
-            $exercicios = ExercicioMVFLP::where('id_nivel',$nivelMVFLP->id)->paginate(5);
+            $exercicios = ExercicioMVFLP::where('id_nivel',$nivelMVFLP->id)->paginate(10);
             return response()->json(['success' => true, 'msg'=>'', 'data'=>$exercicios]);
 
         }catch(\Exception $e){

@@ -27,7 +27,7 @@ class NivelVFController extends Controller
     public function index()
     {
         try{
-        $data= $this->niveis->orderBy('created_at', 'desc')->paginate(5);
+        $data= $this->niveis->orderBy('created_at', 'desc')->paginate(10);
         return response()->json(['success' => true, 'msg'=>'', 'data'=>$data]);
 
         }catch(\Exception $e){

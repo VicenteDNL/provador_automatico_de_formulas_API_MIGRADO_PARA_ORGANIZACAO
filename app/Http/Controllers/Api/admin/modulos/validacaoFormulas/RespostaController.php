@@ -41,10 +41,10 @@ class RespostaController extends Controller
             ->join('exercicios_mvflp as e', 'r.id_exercicio', '=', 'e.id')
             ->join('jogadores as j', 'r.id_jogador', '=', 'j.id')
             ->join('recompensas as re', 'e.id_recompensa', '=', 're.id')
-            ->paginate(5);
+            ->paginate(10);
             return response()->json(['success' => true, 'msg'=>'', 'data'=> $resposta]);
-        
-        
+
+
         // }catch(\Exception $e){
         //     return response()->json(['success' => false, 'msg'=>'erro no servidor', 'data'=>''],500);
         // }
