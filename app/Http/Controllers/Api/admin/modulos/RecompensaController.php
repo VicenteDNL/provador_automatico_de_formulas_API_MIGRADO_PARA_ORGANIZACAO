@@ -2,128 +2,125 @@
 
 namespace App\Http\Controllers\Api\admin\modulos;
 
+use App\Http\Controllers\Api\Action;
+use App\Http\Controllers\Api\ResponseController;
+use App\Http\Controllers\Api\Type;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\LogicLive\config\Configuracao;
 use App\Http\Controllers\LogicLive\modulos\Recompensa as ModulosRecompensa;
 use App\Recompensa;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class RecompensaController extends Controller
 {
+    private $recompensa;
+    private $logicLive_recompensa;
+    private $config;
 
-    public function __construct(Recompensa $recompensa )
+    public function __construct(Recompensa $recompensa)
     {
-        $this->$recompensa = $recompensa;
-        $this->logicLive_recompensa= new ModulosRecompensa;
-        $this->config = new Configuracao;
+        $this->recompensa = $recompensa;
+        $this->logicLive_recompensa = new ModulosRecompensa();
+        $this->config = new Configuracao();
     }
 
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function index()
     {
-        try{
-            $data= Recompensa::all();
-            return response()->json(['success' => true, 'msg'=>'', 'data'=>$data]);
-        }catch(\Exception $e){
-            return response()->json(['success' => false, 'msg'=>$e, 'data'=>''],500);
-
+        try {
+            $data = Recompensa::all();
+            return  ResponseController::json(Type::success, Action::index, $data);
+        } catch(Exception $e) {
+            return ResponseController::json(Type::error, Action::index);
         }
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @param  Request    $request
+     * @param  Recompensa $recompensa
+     * @return Response
      */
-    public function store(Request $request,Recompensa $recompensa)
+    public function store(Request $request, Recompensa $recompensa)
     {
-        try{
+        try {
+            if ($this->config->ativo()) {
+                $criadoLogicLive = $this->logicLive_recompensa->criarRecompensa(['rec_nome' => $request->nome, 'rec_imagem' => 'nada sendo passado', 'rec_pontuacao' => $request->pontuacao]);
 
-            if($this->config->ativo()){
-                $criadoLogicLive = $this->logicLive_recompensa->criarRecompensa(['rec_nome'=>$request->nome, 'rec_imagem'=>'nada sendo passado', 'rec_pontuacao'=>$request->pontuacao]);
-                if($criadoLogicLive['success']=false){
-                    return response()->json(['success' => false, 'msg'=>$criadoLogicLive['msg'], 'data'=>''],500);
+                if ($criadoLogicLive['success'] == false) {
+                    return ResponseController::json(Type::error, Action::store, null, $criadoLogicLive['msg']);
                 }
             }
-                $recompensa->nome = $request->nome;
-                $recompensa->imagem = 'nada sendo passado';
-                $recompensa->pontuacao = $request->pontuacao;
-                $recompensa->id_logic_live = $criadoLogicLive['data']['rec_codigo'];
-                $recompensa->save();
+            $recompensa->nome = $request->nome;
+            $recompensa->imagem = 'nada sendo passado';
+            $recompensa->pontuacao = $request->pontuacao;
+            $recompensa->id_logic_live = isset($criadoLogicLive) ? $criadoLogicLive['data']['rec_codigo'] : 0;
+            $recompensa->save();
 
-            return response()->json(['success' => true, 'msg'=>'Niviel ('.$request->nome.') cadastrado com sucesso', 'data'=>'']);
-        }catch(\Exception $e){
-            return response()->json(['success' => false, 'msg'=>'Error interno', 'data'=>''],500);
-
+            return ResponseController::json(Type::success, Action::store);
+        } catch(Exception $e) {
+            return ResponseController::json(Type::error, Action::store);
         }
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @param  int      $id
+     * @return Response
      */
-    public function show($id)
+    public function show(int $id)
     {
         //
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @param  Request  $request
+     * @param  int      $id
+     * @return Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id)
     {
-        try{
+        try {
             $recompensa = Recompensa::findOrFail($id);
 
-            if($this->config->ativo()){
-                $criadoLogicLive = $this->logicLive_recompensa->atualizarRecompensa($recompensa->id_logic_live,['rec_nome'=>$request->nome, 'rec_imagem'=>'nada sendo passado', 'rec_pontuacao'=>$request->pontuacao]);
-                if($criadoLogicLive['success']==false){
+            if ($this->config->ativo()) {
+                $criadoLogicLive = $this->logicLive_recompensa->atualizarRecompensa($recompensa->id_logic_live, ['rec_nome' => $request->nome, 'rec_imagem' => 'nada sendo passado', 'rec_pontuacao' => $request->pontuacao]);
 
-                    return response()->json(['success' => false, 'msg'=>$criadoLogicLive['msg'], 'data'=>''],500);
+                if ($criadoLogicLive['success'] == false) {
+                    return ResponseController::json(Type::error, Action::update, null, $criadoLogicLive['msg']);
                 }
             }
 
             $recompensa->update($request->all());
             $recompensa->save();
-            return response()->json(['success' => true, 'msg'=>'Recompensa ('.$request->nome.') atualizado com sucesso', 'data'=>''], 200);
-
-        }catch(\Exception $e){
-            return response()->json(['success' => false, 'msg'=>$e, 'data'=>''],500);
+            return ResponseController::json(Type::success, Action::update);
+        } catch(Exception $e) {
+            return ResponseController::json(Type::error, Action::update);
         }
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @param  int      $id
+     * @return Response
      */
-    public function destroy($id)
+    public function destroy(int $id)
     {
-        try{
+        try {
             $recompensa = Recompensa::findOrFail($id);
-            if($this->config->ativo()){
+
+            if ($this->config->ativo()) {
                 $criadoLogicLive = $this->logicLive_recompensa->deletarRecompensa($recompensa->id_logic_live);
-                if($criadoLogicLive['success']==false){
-                    return response()->json(['success' => false, 'msg'=>$criadoLogicLive['msg'], 'data'=>''],500);
+
+                if ($criadoLogicLive['success'] == false) {
+                    return ResponseController::json(Type::error, Action::destroy, null, $criadoLogicLive['msg']);
                 }
             }
             $recompensa->delete();
-            return response()->json(['success' => true, 'msg'=>'Niviel ('.$recompensa->nome.') deletado com sucesso', 'data'=>''], 200);
-        }catch(\Exception $e){
-            return response()->json(['success' => false, 'msg'=>$e, 'data'=>''],500);
+            return ResponseController::json(Type::success, Action::destroy);
+        } catch(Exception $e) {
+            return ResponseController::json(Type::error, Action::destroy);
         }
-
     }
 }
