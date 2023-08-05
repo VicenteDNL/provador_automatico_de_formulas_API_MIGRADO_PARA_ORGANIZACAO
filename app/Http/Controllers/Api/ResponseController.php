@@ -28,12 +28,12 @@ enum Action
     public function responseErrorMessage(): string
     {
         return match ($this) {
-            Action::update => 'Ocorreu um erro ao atualizar o registro',
-            Action::index  => 'Ocorreu um erro ao listar registros',
-            Action::store  => 'Ocorreu um erro ao criar o registros',
-            Action::show   => 'Ocorreu um erro ao encontar o registros',
-            Action::all    => 'Ocorreu um erro ao listar todos registros',
-            Action::all    => 'Ocorreu um erro ao deletar o registro',
+            Action::update  => 'Ocorreu um erro ao atualizar o registro',
+            Action::index   => 'Ocorreu um erro ao listar registros',
+            Action::store   => 'Ocorreu um erro ao criar o registros',
+            Action::show    => 'Ocorreu um erro ao encontar o registros',
+            Action::all     => 'Ocorreu um erro ao listar todos registros',
+            Action::destroy => 'Ocorreu um erro ao deletar o registro',
         };
     }
 }
