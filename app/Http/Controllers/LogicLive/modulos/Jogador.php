@@ -6,6 +6,8 @@ use App\Http\Controllers\LogicLive\request\RequestGet;
 
 class Jogador
 {
+    private $get;
+
     public function __construct()
     {
         $this->get = new RequestGet;

@@ -8,6 +8,11 @@ use App\Http\Controllers\LogicLive\request\RequestPut;
 
 class Recompensa
 {
+    
+    private $post;
+    private $put;
+    private $delete;
+
     public function __construct()
     {
 
@@ -25,6 +30,6 @@ class Recompensa
     }
 
     public function deletarRecompensa ($id){
-        return $this->put->httppput('recompensa',$id);
+        return $this->put->httpput('recompensa',$id);
     }
 }

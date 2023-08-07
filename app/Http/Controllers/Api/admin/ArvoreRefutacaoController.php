@@ -11,6 +11,9 @@ use Illuminate\Http\Request;
 
 class ArvoreRefutacaoController extends Controller
 {
+    private $arg;
+    private $gerador;
+    private $constr;
 
     function __construct() {
         $this->arg = new Argumento;
@@ -37,14 +40,14 @@ class ArvoreRefutacaoController extends Controller
         #--------
 
         #Gera lista das possicoes de cada no da tabela
-        $impresaoAvr = $this->constr->geraListaArvore($arv,$xml,0,true,true);
+        $impressaoAvr = $this->constr->geraListaArvore($arv,$xml,0,true,true);
 
 
          #Gera uma string da Formula XML
          $formulaGerada = $this->arg->stringFormula($xml);
          #--------
 
-        return response()->json(['success' => true, 'msg'=>'', 'data'=>['impresao'=>$impresaoAvr,'str'=>$formulaGerada]]);
+        return response()->json(['success' => true, 'msg'=>'', 'data'=>['impressao'=>$impressaoAvr,'str'=>$formulaGerada]]);
 
     }
 
@@ -62,14 +65,14 @@ class ArvoreRefutacaoController extends Controller
         $arv =  $this->gerador->piorArvore($arvore);
 
         #Gera lista das possicoes de cada no da tabela
-        $impresaoAvr = $this->constr->geraListaArvore($arv,$xml,0,true,true);
+        $impressaoAvr = $this->constr->geraListaArvore($arv,$xml,0,true,true);
 
 
         #Gera uma string da Formula XML
         $formulaGerada = $this->arg->stringFormula($xml);
         #--------
 
-        return response()->json(['success' => true, 'msg'=>'', 'data'=>['impresao'=>$impresaoAvr,'str'=>$formulaGerada]]);
+        return response()->json(['success' => true, 'msg'=>'', 'data'=>['impressao'=>$impressaoAvr,'str'=>$formulaGerada]]);
 
 
     }

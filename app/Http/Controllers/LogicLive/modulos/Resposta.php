@@ -8,6 +8,8 @@ use App\Http\Controllers\LogicLive\request\RequestPut;
 
 class Resposta
 {
+    private $post;
+
     public function __construct()
     {
 

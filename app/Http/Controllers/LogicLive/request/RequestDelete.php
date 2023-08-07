@@ -6,6 +6,9 @@ use App\Http\Controllers\LogicLive\config\Configuracao;
 
 class RequestDelete
 {
+
+    private $configurador;
+
     public function __construct( )
     {
         $this->configurador = new Configuracao;

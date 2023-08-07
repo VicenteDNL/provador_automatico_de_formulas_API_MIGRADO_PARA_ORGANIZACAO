@@ -15,13 +15,16 @@ use App\ExercicioMVFLP;
 use App\Formula;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Arvore\Gerador;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Formula\Argumento;
+use Exception;
 
 class Base
 {
-    protected $canvas_width =0;           //
-    protected $ticar_automatico  = false;  //
-    protected $fechar_automatico =false;   //
-
+    public $inicializacao;         //Objeto com as informaçoes da inicialização
+    public $derivacao;             //Objeto com as informaçoes da derivacao
+    public $arvore;                //Objeto com as informaçoes da arvore já montada
+    protected $canvas_width = 0;           //
+    protected $ticar_automatico = false;  //
+    protected $fechar_automatico = false;   //
     protected $resposta;           //Resposta final da arvore
     protected $error;              //insere uma mensagem de error em caso da execução não ter sucesso
     protected $xml;                //String do Xml da formula
@@ -33,106 +36,77 @@ class Base
     protected $lista_argumentos;   //Lista de argumentos da formula (Premissas e conclusao)
     protected $lista_ticagem;      //Lista dos nos já ticados
     protected $lista_fechamento;   //Lista dos nos já derivador
-    public $inicializacao;         //Objeto com as informaçoes da inicialização
-    public $derivacao;             //Objeto com as informaçoes da derivacao
-    public $arvore;                //Objeto com as informaçoes da arvore já montada
+    private $arg;
+    private $gerador;
+    private $constr;
 
-
-
-    function __construct($xml) {
-        $this->arg = new Argumento;
-        $this->gerador = new Gerador;
-        $this->constr = new Construcao;
+    public function __construct($xml)
+    {
+        $this->arg = new Argumento();
+        $this->gerador = new Gerador();
+        $this->constr = new Construcao();
         $this->prepararArvore($xml);
     }
 
-
-
-    /*
-    *
-    * Inicializa o objeto para armazenar as informaçoes da derivação da arvore
-    *
-    */
-    private function prepararArvore($xml){
-        try{$this->xml_formula = simplexml_load_string($xml);
-            $this->xml = $xml;
-        }
-        catch(\Exception $e){
-            $this->error= 'XML INVALIDO!';}
-
-        $this->lista_argumentos=$this->arg->CriaListaArgumentos($this->xml_formula);
-        $this->string_formula = $this->arg->stringFormula($this->xml_formula);
-        $this->lista_no = [];
-        $this->lista_aresta = [];
-        $this->lista_passos= [];
-        $this->lista_ticagem = [];
-        $this->lista_fechamento= [];
-        $this->derivacao = new Derivacao;
-        $this->inicializacao = new Inicializacao( $this->lista_argumentos);
-
-    }
-
-
-    public function otimizada(){
+    public function otimizada()
+    {
         #Cria a arvore passando o XML
-        $arvore = $this->gerador->inicializarDerivacao($this->lista_argumentos['premissas'],$this->lista_argumentos['conclusao']);
-        $this->arvore =  $this->gerador->arvoreOtimizada($arvore);
+        $arvore = $this->gerador->inicializarDerivacao($this->lista_argumentos['premissas'], $this->lista_argumentos['conclusao']);
+        $this->arvore = $this->gerador->arvoreOtimizada($arvore);
         #--------
 
         #Gera lista das possicoes de cada no da tabela
-        $impresaoAvr = $this->constr->geraListaArvore($this->arvore,$this->xml_formula,$this->canvas_width,true, true);
-        $this->lista_aresta = $impresaoAvr['arestas'];
-        $this->lista_no = $impresaoAvr['nos'];
-
-        return true;
-
-    }
-
-    public function piorArvore(){
-        #Cria a arvore passando o XML
-        $arvore = $this->gerador->inicializarDerivacao($this->lista_argumentos['premissas'],$this->lista_argumentos['conclusao']);
-        $this->arvore =  $this->gerador->piorArvore($arvore);
-        #--------
-
-        #Gera lista das possicoes de cada no da tabela
-        $impresaoAvr = $this->constr->geraListaArvore($this->arvore,$this->xml_formula,$this->canvas_width,true, true);
-        $this->lista_aresta = $impresaoAvr['arestas'];
-        $this->lista_no = $impresaoAvr['nos'];
+        $impressaoAvr = $this->constr->geraListaArvore($this->arvore, $this->xml_formula, $this->canvas_width, true, true);
+        $this->lista_aresta = $impressaoAvr['arestas'];
+        $this->lista_no = $impressaoAvr['nos'];
 
         return true;
     }
 
+    public function piorArvore()
+    {
+        #Cria a arvore passando o XML
+        $arvore = $this->gerador->inicializarDerivacao($this->lista_argumentos['premissas'], $this->lista_argumentos['conclusao']);
+        $this->arvore = $this->gerador->piorArvore($arvore);
+        #--------
 
-    public function validar(){
+        #Gera lista das possicoes de cada no da tabela
+        $impressaoAvr = $this->constr->geraListaArvore($this->arvore, $this->xml_formula, $this->canvas_width, true, true);
+        $this->lista_aresta = $impressaoAvr['arestas'];
+        $this->lista_no = $impressaoAvr['nos'];
 
-        if($this->gerador->proximoNoParaInsercao($this->arvore)!=null){
+        return true;
+    }
+
+    public function validar()
+    {
+        if ($this->gerador->proximoNoParaInsercao($this->arvore) != null) {
             $this->error = 'derivação incompleta';
             return false;
         }
 
-        if($this->fechar_automatico==false){
-            if($this->gerador->existeNoPossivelFechamento($this->arvore)!=null){
+        if ($this->fechar_automatico == false) {
+            if ($this->gerador->existeNoPossivelFechamento($this->arvore) != null) {
                 $this->error = 'derivação incompleta';
                 return false;
             }
         }
 
-        if($this->ticar_automatico==false){
-            if($this->gerador->existeNoPossivelTicagem($this->arvore)!=null){
+        if ($this->ticar_automatico == false) {
+            if ($this->gerador->existeNoPossivelTicagem($this->arvore) != null) {
                 $this->error = 'derivação incompleta';
                 return false;
             }
-
         }
         $nosAbertos = $this->gerador->getNosFolha($this->arvore);
-        if($nosAbertos!=null){
-            $this->resposta ='CONTRADICAO';
+
+        if ($nosAbertos != null) {
+            $this->resposta = 'CONTRADICAO';
         }
-        $this->resposta ='TAUTOLOGIA';
+        $this->resposta = 'TAUTOLOGIA';
 
         return true;
     }
-
 
     /**
      *
@@ -143,39 +117,39 @@ class Base
      *    $negacao -> informar se pretende inserir o nó negado ou nao (boleano)
      *    $impressao -> informa se vai ser gerado a impressao das nos e arestas da arvore
      *
-    */
-    public function montarArvore($idNo=null,$negacao=null,$impressao=true){
-
-
-
+     * @param mixed|null $idNo
+     * @param mixed|null $negacao
+     * @param mixed      $impressao
+     */
+    public function montarArvore($idNo = null, $negacao = null, $impressao = true)
+    {
         // Neste momento é feito a construção inicial da arvore.
-        $arvore = $this->gerador->inicializarPassoPasso($this->lista_argumentos ,$idNo,$this->lista_passos, $negacao);
-        if(!$arvore['sucesso']){
+        $arvore = $this->gerador->inicializarPassoPasso($this->lista_argumentos, $idNo, $this->lista_passos, $negacao);
+
+        if (!$arvore['sucesso']) {
             $this->error = $arvore['messagem'];
             return  false;
         }
 
         //Verifica se todos os elementos de premissa e conclução estão inseridos na arvore
-        $listaStr = $this->constr->geraListaPremissasConclsao($this->lista_argumentos,$arvore['lista']);
+        $listaStr = $this->constr->geraListaPremissasConclsao($this->lista_argumentos, $arvore['lista']);
         $this->inicializacao->setListaInseridos($arvore['lista']);
         $this->inicializacao->updateListaOpcoes($listaStr);
 
         //verifica se a etapa de inicialização já foi finalizada
-        if(!$this->inicializacao->getFinalizado()){
-            $this->inicializacao->setFinalizado(count($listaStr)==0? true:false);
-            $this->arvore=$arvore['arv'];
+        if (!$this->inicializacao->getFinalizado()) {
+            $this->inicializacao->setFinalizado(count($listaStr) == 0 ? true : false);
+            $this->arvore = $arvore['arv'];
 
-            if($impressao){
-                if($this->arvore==null){
+            if ($impressao) {
+                if ($this->arvore == null) {
                     $this->lista_aresta = [];
                     $this->lista_no = [];
+                } else {
+                    $impressaoAvr = $this->constr->geraListaArvore($this->arvore, $this->xml_formula, $this->canvas_width, $this->ticar_automatico, $this->fechar_automatico);
+                    $this->lista_aresta = $impressaoAvr['arestas'];
+                    $this->lista_no = $impressaoAvr['nos'];
                 }
-                else{
-                    $impresaoAvr = $this->constr->geraListaArvore($this->arvore,$this->xml_formula,$this->canvas_width,$this->ticar_automatico, $this->fechar_automatico);
-                    $this->lista_aresta = $impresaoAvr['arestas'];
-                    $this->lista_no = $impresaoAvr['nos'];
-                }
-
             }
             return  true;
         }
@@ -185,32 +159,36 @@ class Base
 
         //tica os nos já informados pelo usuario
         $arvore = $this->gerador->ticarTodosNos($arvore, $this->lista_ticagem);
-        if(!$arvore['sucesso']){
+
+        if (!$arvore['sucesso']) {
             $this->error = $arvore['messagem'];
             return  false;
         }
 
         //fechar os nós já informados pelo usuario
         $arvore = $this->gerador->fecharTodosNos($arvore['arv'], $this->lista_fechamento);
-        if(!$arvore['sucesso']){
+
+        if (!$arvore['sucesso']) {
             $this->error = $arvore['messagem'];
             return  false;
         }
 
         // Cria a lista de posiçoes dos nós e arestas para serem exibidas no navegador
 
-        $this->arvore=$arvore['arv'];
-        if($impressao){
-            $impresaoAvr = $this->constr->geraListaArvore($this->arvore,$this->xml_formula,$this->canvas_width,$this->ticar_automatico, $this->fechar_automatico);
-            $this->lista_aresta = $impresaoAvr['arestas'];
-            $this->lista_no = $impresaoAvr['nos'];
+        $this->arvore = $arvore['arv'];
+
+        if ($impressao) {
+            $impressaoAvr = $this->constr->geraListaArvore($this->arvore, $this->xml_formula, $this->canvas_width, $this->ticar_automatico, $this->fechar_automatico);
+            $this->lista_aresta = $impressaoAvr['arestas'];
+            $this->lista_no = $impressaoAvr['nos'];
         }
 
         return true;
     }
 
-    public function setAll($request,$fechar_auto,$ticar_auto){
-        $this->setListaPassos($request['inicio']['lista'] );
+    public function setAll($request, $fechar_auto, $ticar_auto)
+    {
+        $this->setListaPassos($request['inicio']['lista']);
         $this->setListaTicagem($request['ticar']['lista']);
         $this->setListaFechamento($request['fechar']['lista']);
         $this->fecharAutomatido($fechar_auto);
@@ -219,214 +197,249 @@ class Base
         $this->inicializacao->setFinalizado(true);
     }
 
-
-    public function retorno($exercicio,$usu_has,$exe_has, $admin =false){
-          $retorno=[
-            'regras'=>$exercicio!=null?$this->buscarRegras($exercicio,$admin):null,
-            'exe_hash'=>$exe_has!=null?$exe_has:null,
-            'usu_hash'=>$usu_has!=null?$usu_has:null,
-            'exercicio'=>$exercicio,
-            'arestas'=>$this->lista_aresta,
-            'nos'=>$this->lista_no,
-            'derivacao'=> (object) [
-                'lista'=> $this->derivacao->getListaDerivacoes(),
-                'folhas'=>[],
-                'no'=> null,
-                'regra'=>null,
+    public function retorno($exercicio, $usu_has, $exe_has, $admin = false)
+    {
+        $retorno = [
+            'regras'    => $exercicio != null ? $this->buscarRegras($exercicio, $admin) : null,
+            'exe_hash'  => $exe_has != null ? $exe_has : null,
+            'usu_hash'  => $usu_has != null ? $usu_has : null,
+            'exercicio' => $exercicio,
+            'arestas'   => $this->lista_aresta,
+            'nos'       => $this->lista_no,
+            'derivacao' => (object)[
+                'lista'  => $this->derivacao->getListaDerivacoes(),
+                'folhas' => [],
+                'no'     => null,
+                'regra'  => null,
             ],
-            'fechar'=> (object) [
-                'lista'=>$this->lista_fechamento,
-                'no'=>null,
-                'folha'=>null,
-                'auto'=> $this->fechar_automatico
+            'fechar' => (object)[
+                'lista' => $this->lista_fechamento,
+                'no'    => null,
+                'folha' => null,
+                'auto'  => $this->fechar_automatico,
             ],
-            'inicio'=>(object)[
-                'completa'=>$this->inicializacao->getFinalizado(),
-                'lista'=> $this->inicializacao->getListaInseridos(),
-                'negacao'=>null,
-                'no'=>null,
-                'opcoes'=>$this->inicializacao->getListaOpcoes()
+            'inicio' => (object)[
+                'completa' => $this->inicializacao->getFinalizado(),
+                'lista'    => $this->inicializacao->getListaInseridos(),
+                'negacao'  => null,
+                'no'       => null,
+                'opcoes'   => $this->inicializacao->getListaOpcoes(),
             ],
-            'ticar'=>(object)[
-                'auto'=> $this->ticar_automatico,
-                'lista'=> $this->lista_ticagem,
-                'no'=>null,
+            'ticar' => (object)[
+                'auto'  => $this->ticar_automatico,
+                'lista' => $this->lista_ticagem,
+                'no'    => null,
             ],
-            'finalizada'=>$this->isFinalizada(),
-             'strformula'=>$this->getStrFormula(),
-            'xml'=>$this->xml
+            'finalizada' => $this->isFinalizada(),
+            'strformula' => $this->getStrFormula(),
+            'xml'        => $this->xml,
 
         ];
 
-        if($admin==true){
+        if ($admin == true) {
             array_splice($retorno, 0, 4);
-
         }
         return $retorno;
-
     }
 
-
-    public function retornoOtimizada(){
+    public function retornoOtimizada()
+    {
         return [
-          'arestas'=>$this->lista_aresta,
-          'nos'=>$this->lista_no,
-           'strformula'=>$this->getStrFormula()
-      ] ;
-
-   }
-
+            'arestas'    => $this->lista_aresta,
+            'nos'        => $this->lista_no,
+            'strformula' => $this->getStrFormula(),
+        ] ;
+    }
 
      /**
-     *
-     * Esse metodo é responsavel por reconstruir a árvore de retutação e derivar a arvore
-     * conforme as informações do usuario
-     *
-     * parametro:
-     *    $derivacao -> o identificador do nó que se deseja derivar
-     *    $insercao  -> uma lista de identificadores dos nós que receberão a nova derivação
-     *    $regra     -> o identificador da regra que vai ser aplicada
-     *
-    */
-    public function derivar($derivacao,$insercao,$regra){
+      *
+      * Esse metodo é responsavel por reconstruir a árvore de retutação e derivar a arvore
+      * conforme as informações do usuario
+      *
+      * parametro:
+      *    $derivacao -> o identificador do nó que se deseja derivar
+      *    $insercao  -> uma lista de identificadores dos nós que receberão a nova derivação
+      *    $regra     -> o identificador da regra que vai ser aplicada
+      *
+      * @param mixed $derivacao
+      * @param mixed $insercao
+      * @param mixed $regra
+      */
+    public function derivar($derivacao, $insercao, $regra)
+    {
+        $this->montarArvore(null, null, false);
+        $arvore = $this->gerador->derivar($this->arvore, $derivacao, $insercao, $regra);
 
-        $this->montarArvore(null,null,false);
-        $arvore =$this->gerador->derivar($this->arvore,$derivacao,$insercao,$regra);
-        if(!$arvore['sucesso']){
+        if (!$arvore['sucesso']) {
             $this->error = $arvore['messagem'];
             return  false;
         }
 
         #Adiciona a nova dericação a lista
-        $this->derivacao->setDerivacao($insercao,$derivacao,$regra);
+        $this->derivacao->setDerivacao($insercao, $derivacao, $regra);
         #-----
 
-        $this->arvore=$arvore['arv'];
-        $impresaoAvr = $this->constr->geraListaArvore($this->arvore,$this->xml_formula,$this->canvas_width,$this->ticar_automatico, $this->fechar_automatico);
-        $this->lista_aresta = $impresaoAvr['arestas'];
-        $this->lista_no = $impresaoAvr['nos'];
+        $this->arvore = $arvore['arv'];
+        $impressaoAvr = $this->constr->geraListaArvore($this->arvore, $this->xml_formula, $this->canvas_width, $this->ticar_automatico, $this->fechar_automatico);
+        $this->lista_aresta = $impressaoAvr['arestas'];
+        $this->lista_no = $impressaoAvr['nos'];
         return true;
     }
 
-
-    public function fecharNo($noFolha, $noContradicao){
-
+    public function fecharNo($noFolha, $noContradicao)
+    {
         $fechada = $this->gerador->fecharNo($this->arvore, $noFolha, $noContradicao);
-        if(!$fechada['sucesso']){
+
+        if (!$fechada['sucesso']) {
             $this->error = $fechada['messagem'];
             return  false;
         }
-        array_push($this->lista_fechamento,['nofechado'=>$noFolha,'noContradicao'=>$noContradicao]);
+        array_push($this->lista_fechamento, ['nofechado' => $noFolha, 'noContradicao' => $noContradicao]);
 
-        $impresaoAvr = $this->constr->geraListaArvore($this->arvore,$this->xml_formula,$this->canvas_width,$this->ticar_automatico, $this->fechar_automatico);
-        $this->lista_aresta = $impresaoAvr['arestas'];
-        $this->lista_no = $impresaoAvr['nos'];
+        $impressaoAvr = $this->constr->geraListaArvore($this->arvore, $this->xml_formula, $this->canvas_width, $this->ticar_automatico, $this->fechar_automatico);
+        $this->lista_aresta = $impressaoAvr['arestas'];
+        $this->lista_no = $impressaoAvr['nos'];
         return true;
     }
 
-    public function ticarNo($no){
-
+    public function ticarNo($no)
+    {
         $arvorefinal = $this->gerador->ticarNo($this->arvore, $no);
-        if(!$arvorefinal['sucesso']){
+
+        if (!$arvorefinal['sucesso']) {
             $this->error = $arvorefinal['messagem'];
             return  false;
         }
 
-        array_push($this->lista_ticagem,$no);
-        $impresaoAvr = $this->constr->geraListaArvore($this->arvore,$this->xml_formula,$this->canvas_width,$this->ticar_automatico, $this->fechar_automatico);
-        $this->lista_aresta = $impresaoAvr['arestas'];
-        $this->lista_no = $impresaoAvr['nos'];
+        array_push($this->lista_ticagem, $no);
+        $impressaoAvr = $this->constr->geraListaArvore($this->arvore, $this->xml_formula, $this->canvas_width, $this->ticar_automatico, $this->fechar_automatico);
+        $this->lista_aresta = $impressaoAvr['arestas'];
+        $this->lista_no = $impressaoAvr['nos'];
         return true;
     }
 
-
-    private function buscarRegras($exercicio,$admin){
-        if(!$this->inicializacao->getFinalizado() || $admin){
-            return [];
-        }
-        $exercicio  =  ExercicioMVFLP::findOrFail($exercicio);
-        $formula =  Formula::findOrFail($exercicio->id_formula);
-       return $this->gerador->arrayPerguntas($this->arvore,$formula->quantidade_regras);
-
-    }
-
-
-    private function isFinalizada(){
-
-        if(!$this->inicializacao->getFinalizado()){
-            return false;
-        }
-        if($this->gerador->proximoNoParaInsercao($this->arvore)!=null){
-            return false;
-        }
-
-        if($this->fechar_automatico==false){
-            if($this->gerador->existeNoPossivelFechamento($this->arvore)!=null){
-                return false;
-            }
-        }
-
-        if($this->ticar_automatico==false){
-            if($this->gerador->existeNoPossivelTicagem($this->arvore)!=null){
-                return false;
-            }
-
-        }
-
-        return true;
-    }
-
-    public function getListaNo(){
+    public function getListaNo()
+    {
         return $this->lista_no;
     }
-    public function getResposta(){
+
+    public function getResposta()
+    {
         return $this->resposta;
     }
 
-
-
-    public function getListaAresta(){
+    public function getListaAresta()
+    {
         return $this->lista_aresta;
     }
 
-    public function getStrFormula(){
+    public function getStrFormula()
+    {
         return $this->string_formula;
     }
 
-    public function setListaPassos($lista){
-        $this->lista_passos=$lista;
+    public function setListaPassos($lista)
+    {
+        $this->lista_passos = $lista;
     }
-    public function getListaPassos(){
+
+    public function getListaPassos()
+    {
         return $this->lista_passos;
     }
 
-    public function setListaTicagem($lista){
-        $this->lista_ticagem=$lista;
-    }
-    public function setListaFechamento($lista){
-        $this->lista_fechamento=$lista;
+    public function setListaTicagem($lista)
+    {
+        $this->lista_ticagem = $lista;
     }
 
-    public function getArvore(){
+    public function setListaFechamento($lista)
+    {
+        $this->lista_fechamento = $lista;
+    }
+
+    public function getArvore()
+    {
         return $this->arvore;
     }
 
-    public function getListaArgumentos(){
+    public function getListaArgumentos()
+    {
         return $this->lista_argumentos;
     }
 
-    public function getError(){
+    public function getError()
+    {
         return $this->error;
     }
 
-    public function fecharAutomatido($dado){
-        $this->fechar_automatico=$dado;
+    public function fecharAutomatido($dado)
+    {
+        $this->fechar_automatico = $dado;
     }
 
-    public function ticarAutomatico($dado){
-        $this->ticar_automatico=$dado;
+    public function ticarAutomatico($dado)
+    {
+        $this->ticar_automatico = $dado;
     }
 
+    /*
+     *
+     * Inicializa o objeto para armazenar as informaçoes da derivação da arvore
+     *
+     */
+    private function prepararArvore($xml)
+    {
+        try {
+            $this->xml_formula = simplexml_load_string($xml);
+            $this->xml = $xml;
+        } catch(Exception $e) {
+            $this->error = 'XML INVALIDO!';
+        }
 
+        $this->lista_argumentos = $this->arg->CriaListaArgumentos($this->xml_formula);
+        $this->string_formula = $this->arg->stringFormula($this->xml_formula);
+        $this->lista_no = [];
+        $this->lista_aresta = [];
+        $this->lista_passos = [];
+        $this->lista_ticagem = [];
+        $this->lista_fechamento = [];
+        $this->derivacao = new Derivacao();
+        $this->inicializacao = new Inicializacao($this->lista_argumentos);
+    }
 
+    private function buscarRegras($exercicio, $admin)
+    {
+        if (!$this->inicializacao->getFinalizado() || $admin) {
+            return [];
+        }
+        $exercicio = ExercicioMVFLP::findOrFail($exercicio);
+        $formula = Formula::findOrFail($exercicio->id_formula);
+        return $this->gerador->arrayPerguntas($this->arvore, $formula->quantidade_regras);
+    }
+
+    private function isFinalizada()
+    {
+        if (!$this->inicializacao->getFinalizado()) {
+            return false;
+        }
+
+        if ($this->gerador->proximoNoParaInsercao($this->arvore) != null) {
+            return false;
+        }
+
+        if ($this->fechar_automatico == false) {
+            if ($this->gerador->existeNoPossivelFechamento($this->arvore) != null) {
+                return false;
+            }
+        }
+
+        if ($this->ticar_automatico == false) {
+            if ($this->gerador->existeNoPossivelTicagem($this->arvore) != null) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

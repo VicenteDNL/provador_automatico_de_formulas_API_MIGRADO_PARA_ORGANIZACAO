@@ -7,13 +7,15 @@ use App\Http\Controllers\LogicLive\request\RequestPost;
 
 class Game
 {
+    private $config;
+    private $post;
+    private $get;
+
     public function __construct( )
     {
         $this->config = new Configuracao;
         $this->post = new RequestPost;
         $this->get = new RequestGet;
-
-        
     }
 
     /**

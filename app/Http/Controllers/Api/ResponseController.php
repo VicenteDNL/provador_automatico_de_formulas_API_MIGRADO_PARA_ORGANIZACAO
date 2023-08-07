@@ -12,28 +12,31 @@ enum Action
     case show;
     case all;
     case destroy;
+    case listbyId;
 
     public function responseSucessoMessage(): string
     {
         return match ($this) {
-            Action::update  => 'Atualizado com sucesso',
-            Action::index   => 'Sucesso ao listar registros',
-            Action::store   => 'Criado com sucesso',
-            Action::show    => 'Registro encontrado',
-            Action::all     => 'Sucesso ao listar todos registros',
-            Action::destroy => 'Deletado com sucesso',
+            Action::update   => 'Atualizado com sucesso',
+            Action::index    => 'Sucesso ao listar registros',
+            Action::store    => 'Criado com sucesso',
+            Action::show     => 'Registro encontrado',
+            Action::all      => 'Sucesso ao listar todos registros',
+            Action::destroy  => 'Deletado com sucesso',
+            Action::listbyId => 'Sucesso ao listar registros',
         };
     }
 
     public function responseErrorMessage(): string
     {
         return match ($this) {
-            Action::update  => 'Ocorreu um erro ao atualizar o registro',
-            Action::index   => 'Ocorreu um erro ao listar registros',
-            Action::store   => 'Ocorreu um erro ao criar o registros',
-            Action::show    => 'Ocorreu um erro ao encontar o registros',
-            Action::all     => 'Ocorreu um erro ao listar todos registros',
-            Action::destroy => 'Ocorreu um erro ao deletar o registro',
+            Action::update     => 'Ocorreu um erro ao atualizar o registro',
+            Action::index      => 'Ocorreu um erro ao listar registros',
+            Action::store      => 'Ocorreu um erro ao criar o registros',
+            Action::show       => 'Ocorreu um erro ao encontar o registros',
+            Action::all        => 'Ocorreu um erro ao listar todos registros',
+            Action::destroy    => 'Ocorreu um erro ao deletar o registro',
+            Action::listbyId   => 'Ocorreu um erro ao listar registros',
         };
     }
 }
@@ -69,7 +72,7 @@ class ResponseController extends Controller
                 'success' => $type->boolValue(),
                 'msg'
                     => is_null($customMsg)
-                    ? ($type::success == Type::success
+                    ? ($type->boolValue()
                         ? $action->responseSucessoMessage()
                         : $action->responseErrorMessage())
                     : $customMsg,

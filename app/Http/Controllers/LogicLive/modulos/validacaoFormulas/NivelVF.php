@@ -9,6 +9,9 @@ use App\Http\Controllers\LogicLive\request\RequestPut;
 
 class NivelVF
 {
+    private $post;
+    private $put;
+    private $delete;
 
     public function __construct()
     {

@@ -6,6 +6,8 @@ use App\Http\Controllers\LogicLive\config\Configuracao;
 
 class RequestGet
 {
+    private $configurador;
+
     public function __construct( )
     {
         $this->configurador = new Configuracao;
