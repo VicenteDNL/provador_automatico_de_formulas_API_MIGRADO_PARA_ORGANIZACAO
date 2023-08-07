@@ -12,6 +12,7 @@ use App\Recompensa;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 
 class RecompensaController extends Controller
 {
@@ -47,21 +48,27 @@ class RecompensaController extends Controller
     public function store(Request $request, Recompensa $recompensa)
     {
         try {
+            DB::beginTransaction();
+            $recompensa->nome = $request->nome;
+            $recompensa->imagem = 'nada sendo passado';
+            $recompensa->pontuacao = $request->pontuacao;
+            $recompensa->id_logic_live = 0;
+            $recompensa->save();
+
             if ($this->config->ativo()) {
                 $criadoLogicLive = $this->logicLive_recompensa->criarRecompensa(['rec_nome' => $request->nome, 'rec_imagem' => 'nada sendo passado', 'rec_pontuacao' => $request->pontuacao]);
 
                 if ($criadoLogicLive['success'] == false) {
+                    DB::rollBack();
                     return ResponseController::json(Type::error, Action::store, null, $criadoLogicLive['msg']);
                 }
+                $recompensa->id_logic_live = $criadoLogicLive['data']['rec_codigo'] ;
+                $recompensa->save();
             }
-            $recompensa->nome = $request->nome;
-            $recompensa->imagem = 'nada sendo passado';
-            $recompensa->pontuacao = $request->pontuacao;
-            $recompensa->id_logic_live = isset($criadoLogicLive) ? $criadoLogicLive['data']['rec_codigo'] : 0;
-            $recompensa->save();
-
+            DB::commit();
             return ResponseController::json(Type::success, Action::store);
         } catch(Exception $e) {
+            DB::rollBack();
             return ResponseController::json(Type::error, Action::store);
         }
     }
@@ -83,20 +90,23 @@ class RecompensaController extends Controller
     public function update(Request $request, int $id)
     {
         try {
+            DB::beginTransaction();
             $recompensa = Recompensa::findOrFail($id);
+            $recompensa->update($request->all());
+            $recompensa->save();
 
             if ($this->config->ativo()) {
                 $criadoLogicLive = $this->logicLive_recompensa->atualizarRecompensa($recompensa->id_logic_live, ['rec_nome' => $request->nome, 'rec_imagem' => 'nada sendo passado', 'rec_pontuacao' => $request->pontuacao]);
 
                 if ($criadoLogicLive['success'] == false) {
+                    DB::rollBack();
                     return ResponseController::json(Type::error, Action::update, null, $criadoLogicLive['msg']);
                 }
             }
-
-            $recompensa->update($request->all());
-            $recompensa->save();
+            DB::commit();
             return ResponseController::json(Type::success, Action::update);
         } catch(Exception $e) {
+            DB::rollBack();
             return ResponseController::json(Type::error, Action::update);
         }
     }
@@ -108,18 +118,22 @@ class RecompensaController extends Controller
     public function destroy(int $id)
     {
         try {
+            DB::beginTransaction();
             $recompensa = Recompensa::findOrFail($id);
+            $recompensa->delete();
 
             if ($this->config->ativo()) {
                 $criadoLogicLive = $this->logicLive_recompensa->deletarRecompensa($recompensa->id_logic_live);
 
                 if ($criadoLogicLive['success'] == false) {
+                    DB::rollBack();
                     return ResponseController::json(Type::error, Action::destroy, null, $criadoLogicLive['msg']);
                 }
             }
-            $recompensa->delete();
+            DB::commit();
             return ResponseController::json(Type::success, Action::destroy);
         } catch(Exception $e) {
+            DB::rollBack();
             return ResponseController::json(Type::error, Action::destroy);
         }
     }

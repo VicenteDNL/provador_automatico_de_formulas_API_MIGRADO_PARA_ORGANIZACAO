@@ -13,6 +13,7 @@ use App\NivelMVFLP;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 
 class NivelVFController extends Controller
 {
@@ -49,16 +50,8 @@ class NivelVFController extends Controller
     public function store(Request $request, NivelMVFLP $nivelMVFLP)
     {
         try {
-            if ($this->config->ativo()) {
-                $baseDados = LogicLive::where('tipo', '=', 'modulo1')->get();
-                $baseDados = $baseDados[0];
-                $criadoLogicLive = $this->logicLive_nivel->criarNivel(['mod_codigo' => $baseDados->meu_id, 'niv_nome' => $request->nome, 'niv_descricao' => $request->descricao, 'niv_ativo' => $request->ativo]);
-
-                if ($criadoLogicLive['success'] = false) {
-                    return ResponseController::json(Type::error, Action::store, null, $criadoLogicLive['msg']);
-                }
-            }
-            $nivelMVFLP->meu_id_logic_live = isset($criadoLogicLive) ? $criadoLogicLive['data']['niv_codigo'] : 0;
+            DB::beginTransaction();
+            $nivelMVFLP->meu_id_logic_live = 0;
             $nivelMVFLP->id_modulo = isset($baseDados) ? $baseDados->meu_id : 0;
             $nivelMVFLP->nome = $request->nome;
             $nivelMVFLP->descricao = $request->descricao;
@@ -66,8 +59,22 @@ class NivelVFController extends Controller
             $nivelMVFLP->id_recompensa = $request->id_recompensa;
             $nivelMVFLP->save();
 
+            if ($this->config->ativo()) {
+                $baseDados = LogicLive::where('tipo', '=', 'modulo1')->get();
+                $baseDados = $baseDados[0];
+                $criadoLogicLive = $this->logicLive_nivel->criarNivel(['mod_codigo' => $baseDados->meu_id, 'niv_nome' => $request->nome, 'niv_descricao' => $request->descricao, 'niv_ativo' => $request->ativo]);
+
+                if ($criadoLogicLive['success'] == false) {
+                    DB::rollBack();
+                    return ResponseController::json(Type::error, Action::store, null, $criadoLogicLive['msg']);
+                }
+                $nivelMVFLP->meu_id_logic_live = $criadoLogicLive['data']['niv_codigo'];
+                $nivelMVFLP->save();
+            }
+            DB::commit();
             return  ResponseController::json(Type::success, Action::store);
         } catch(Exception $e) {
+            DB::rollBack();
             return  ResponseController::json(Type::error, Action::store);
         }
     }
@@ -91,20 +98,23 @@ class NivelVFController extends Controller
     public function update(Request $request, int $id)
     {
         try {
+            DB::beginTransaction();
             $nivelMVFLP = NivelMVFLP::findOrFail($id);
+            $nivelMVFLP->update($request->all());
+            $nivelMVFLP->save();
 
             if ($this->config->ativo()) {
                 $criadoLogicLive = $this->logicLive_nivel->atualizarNivel($nivelMVFLP->meu_id_logic_live, ['niv_nome' => $request->nome, 'niv_descricao' => $request->descricao, 'niv_ativo' => $request->ativo, 'mod_codigo' => $nivelMVFLP->id_modulo]);
 
                 if ($criadoLogicLive['success'] == false) {
+                    DB::rollBack();
                     return ResponseController::json(Type::error, Action::update, null, $criadoLogicLive['msg']);
                 }
             }
-
-            $nivelMVFLP->update($request->all());
-            $nivelMVFLP->save();
+            DB::commit();
             return ResponseController::json(Type::success, Action::update);
         } catch(Exception $e) {
+            DB::rollBack();
             return ResponseController::json(Type::error, Action::update);
         }
     }
@@ -129,19 +139,22 @@ class NivelVFController extends Controller
     public function destroy(int $id)
     {
         try {
+            DB::beginTransaction();
+            $nivelMVFLP = NivelMVFLP::findOrFail($id);
+            $nivelMVFLP->delete();
+
             if ($this->config->ativo()) {
-                $nivelMVFLP = NivelMVFLP::findOrFail($id);
                 $criadoLogicLive = $this->logicLive_nivel->deletarNivel($nivelMVFLP->meu_id_logic_live);
 
                 if ($criadoLogicLive['success'] == false) {
+                    DB::rollBack();
                     return ResponseController::json(Type::error, Action::destroy, null, $criadoLogicLive['msg']);
                 }
             }
-
-            $nivelMVFLP = NivelMVFLP::findOrFail($id);
-            $nivelMVFLP->delete();
+            DB::commit();
             return  ResponseController::json(Type::success, Action::destroy);
         } catch(Exception $e) {
+            DB::rollBack();
             return  ResponseController::json(Type::error, Action::destroy);
         }
     }
