@@ -16,6 +16,10 @@ use Illuminate\Http\Request;
 
 class ArvoreRefutacaoController extends Controller
 {
+    private $gerador;
+    private $constr;
+    private $resposta;
+    private $logiclive_resposta;
 
     function __construct() {
         $this->gerador = new Gerador;

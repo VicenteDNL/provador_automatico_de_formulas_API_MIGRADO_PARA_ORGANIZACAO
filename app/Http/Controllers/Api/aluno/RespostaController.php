@@ -14,6 +14,8 @@ use Illuminate\Http\Request;
 
 class RespostaController extends Controller
 {
+    private $logicLive_jogador;
+    
     public function __construct()
     {
 

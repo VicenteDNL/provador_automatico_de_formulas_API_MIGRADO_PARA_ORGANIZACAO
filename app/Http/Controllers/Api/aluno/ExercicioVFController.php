@@ -16,7 +16,13 @@ use Illuminate\Http\Request;
 
 class ExercicioVFController extends Controller
 {
-
+    private $exercicio; 
+    private $arg;
+    private $gerador;
+    private $constr;
+    private $config;
+    private $logicLive_jogador;
+    private $resposta;
 
     public function __construct(ExercicioMVFLP $exercicio)
     {

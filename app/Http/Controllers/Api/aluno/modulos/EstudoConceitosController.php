@@ -12,6 +12,8 @@ use Illuminate\Http\Request;
 
 class EstudoConceitosController extends Controller
 {
+    private $logicLive_jogador;
+    private $logiclive_resposta;
 
     public function __construct()
     {

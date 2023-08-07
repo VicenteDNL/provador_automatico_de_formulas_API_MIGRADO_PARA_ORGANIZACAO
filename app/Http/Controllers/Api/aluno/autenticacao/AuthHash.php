@@ -9,6 +9,8 @@ use App\Http\Controllers\LogicLive\modulos\Jogador as ModulosJogador;
 
 class AuthHash extends Controller
 {
+        
+    private $logicLive_jogador;
 
     public function __construct()
     {

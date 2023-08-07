@@ -10,7 +10,8 @@ use Illuminate\Http\Request;
 
 class LogicLiveController extends Controller
 {
-
+    private $config;
+    private $game;
     private $logicLive;
 
     function __construct(LogicLive $logicLive) {
