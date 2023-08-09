@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Regra;
+namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Regras;
 
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Formula\Predicado;
 
