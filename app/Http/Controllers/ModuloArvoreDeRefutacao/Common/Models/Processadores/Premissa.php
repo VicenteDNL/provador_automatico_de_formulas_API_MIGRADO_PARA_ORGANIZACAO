@@ -1,25 +1,22 @@
 <?php
 
-namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Formula;
+namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores;
 
-class Conclusao
+class Premissa
 {
-    /** String do caracter que representa o simbolo de conclusão */
-    protected string $simbolo;
     protected string $valor_str;
     protected Predicado $valor_obj;
 
     public function __construct(string $valor_str, Predicado $valor_obj)
     {
         $this->valor_str = $valor_str;
-        $this->simbolo = '|- ';
         $this->valor_obj = $valor_obj;
     }
 
     /**
      * @return string
      */
-    public function getValorStrConclusao(): string
+    public function getValorStrPremissa(): ?string
     {
         return $this->valor_str;
     }
@@ -28,7 +25,7 @@ class Conclusao
      * @param  string $valor_str
      * @return void
      */
-    public function setValorStrConclusao($valor_str): void
+    public function setValorStrPremissa($valor_str): void
     {
         $this->valor_str = $valor_str;
     }
@@ -36,25 +33,17 @@ class Conclusao
     /**
      * @return Predicado
      */
-    public function getValorObjConclusao(): Predicado
+    public function getValorObjPremissa(): Predicado
     {
         return $this->valor_obj;
     }
 
     /**
-     * @param  string $valor_obj
+     * @param  Predicado $valor_obj
      * @return void
      */
-    public function setValorObjConclusao($valor_obj): void
+    public function setValorObjPremissa($valor_obj): void
     {
         $this->valor_obj = $valor_obj;
-    }
-
-    /**
-     * @return string
-     */
-    public function getSimboloConclusao(): string
-    {
-        return $this->simbolo;
     }
 }

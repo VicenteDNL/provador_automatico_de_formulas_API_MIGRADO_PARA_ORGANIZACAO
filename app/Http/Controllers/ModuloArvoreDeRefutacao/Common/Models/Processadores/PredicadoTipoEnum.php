@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Formula;
+namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores;
 
 enum PredicadoTipoEnum
 {

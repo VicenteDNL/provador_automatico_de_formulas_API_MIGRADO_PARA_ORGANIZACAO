@@ -1,10 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Arvore;
-
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Formula\Conclusao;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Formula\Predicado;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Formula\Premissa;
+namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores;
 
 class No
 {

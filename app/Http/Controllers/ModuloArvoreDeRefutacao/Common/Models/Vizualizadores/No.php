@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Visualizacao;
+namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Vizualizadores;
 
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Serializa;
 
