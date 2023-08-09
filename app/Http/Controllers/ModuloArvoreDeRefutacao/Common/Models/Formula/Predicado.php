@@ -8,10 +8,10 @@ class Predicado
     protected int $negado;
     protected string $valor;
     protected PredicadoTipoEnum $tipo;
-    protected Predicado $esquerda;
-    protected Predicado $direita;
+    protected ?Predicado $esquerda;
+    protected ?Predicado $direita;
 
-    public function __construct(string $valor, int $negado, PredicadoTipoEnum $tipo, Predicado $esquerda, Predicado $direita)
+    public function __construct(string $valor, int $negado, PredicadoTipoEnum $tipo, ?Predicado $esquerda = null, ?Predicado $direita = null)
     {
         $this->valor = $valor;
         $this->negado = $negado;
@@ -55,9 +55,9 @@ class Predicado
     }
 
     /**
-     * @return Predicado
+     * @return Predicado|null
      */
-    public function getDireitaPredicado(): Predicado
+    public function getDireitaPredicado(): ?Predicado
     {
         return $this->direita;
     }
@@ -72,9 +72,9 @@ class Predicado
     }
 
     /**
-     * @return Predicado
+     * @return Predicado|null
      */
-    public function getEsquerdaPredicado(): Predicado
+    public function getEsquerdaPredicado(): ?Predicado
     {
         return $this->esquerda;
     }
