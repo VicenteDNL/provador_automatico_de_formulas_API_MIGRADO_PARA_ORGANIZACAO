@@ -11,7 +11,7 @@ class Regras
      * @param  Predicado      $predicado
      * @return RegrasResponse
      */
-    public function DuplaNeg(Predicado $predicado): RegrasResponse
+    public function duplaNeg(Predicado $predicado): RegrasResponse
     {
         $centro = clone $predicado;
         $centro->removeNegacaoPredicado();

@@ -29,7 +29,7 @@ class No
     protected int $linha;
 
     /** A linha do nó que encontrou sua contradição */
-    protected ?No $noContradicao;
+    protected ?int $linhaContradicao;
 
     /** A linha do nó no qual foi derivado */
     protected ?int $linhaDerivacao;
@@ -56,7 +56,7 @@ class No
         ?No $filho_centro = null,
         ?No $filho_direita = null,
         int $linha,
-        ?No $noContradicao = null,
+        ?int $linhaContradicao = null,
         ?int $linhaDerivacao = null,
         bool $utilizada,
         bool $fechado
@@ -67,7 +67,7 @@ class No
         $this->filho_esquerda = $filho_esquerda;
         $this->filho_centro = $filho_centro;
         $this->linha = $linha;
-        $this->noContradicao = $noContradicao;
+        $this->linhaContradicao = $linhaContradicao;
         $this->linhaDerivacao = $linhaDerivacao;
         $this->utilizada = $utilizada;
         $this->fechado = $fechado;
@@ -202,13 +202,13 @@ class No
     }
 
     /**
-     * @param  No   $no
+     * @param  int  $linha
      * @return void
      */
-    public function fecharRamo(No $no): void
+    public function fecharRamo(int $linha): void
     {
         $this->fechado = true;
-        $this->noContradicao = $no;
+        $this->linhaContradicao = $linha;
     }
 
     /**
@@ -229,11 +229,11 @@ class No
     }
 
     /**
-     * @return No
+     * @return int|null
      */
-    public function getNoContradicao(): ?No
+    public function getLinhaContradicao(): ?int
     {
-        return $this->noContradicao;
+        return $this->linhaContradicao;
     }
 
     /**
