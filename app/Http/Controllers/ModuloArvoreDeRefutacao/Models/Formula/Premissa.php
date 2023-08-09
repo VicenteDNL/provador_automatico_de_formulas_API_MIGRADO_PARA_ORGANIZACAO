@@ -2,35 +2,48 @@
 
 namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Models\Formula;
 
-use Illuminate\Database\Eloquent\Model;
-
 class Premissa
 {
-    protected $valor_str; //String conteudo
-    protected $valor_obj; //Objeto (Predicado)
+    protected string $valor_str;
+    protected Predicado $valor_obj;
 
-    function __construct($valor_str,$valor_obj) {
-       $this->valor_str=$valor_str;
-       $this->valor_obj=$valor_obj;
-   }
+    public function __construct(string $valor_str, Predicado $valor_obj)
+    {
+        $this->valor_str = $valor_str;
+        $this->valor_obj = $valor_obj;
+    }
 
-   public function getValorStrPremissa(){
-       return $this->valor_str;
-   }
+    /**
+     * @return string
+     */
+    public function getValorStrPremissa(): ?string
+    {
+        return $this->valor_str;
+    }
 
-   public function setValorStrPremissa($valor_str){
-      $this->valor_str=$valor_str;
-       
-  }
+    /**
+     * @param  string $valor_str
+     * @return void
+     */
+    public function setValorStrPremissa($valor_str): void
+    {
+        $this->valor_str = $valor_str;
+    }
 
-  public function getValorObjPremissa(){
-   return $this->valor_obj;
-}
+    /**
+     * @return Predicado
+     */
+    public function getValorObjPremissa(): Predicado
+    {
+        return $this->valor_obj;
+    }
 
-   public function setValorObjPremissa($valor_obj){
-   $this->valor_obj=$valor_obj;
-       
-   }
-
-
+    /**
+     * @param  Predicado $valor_obj
+     * @return void
+     */
+    public function setValorObjPremissa($valor_obj): void
+    {
+        $this->valor_obj = $valor_obj;
+    }
 }

@@ -2,73 +2,124 @@
 
 namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Models\Formula;
 
-use Illuminate\Database\Eloquent\Model;
-
-class Predicado 
+class Predicado
 {
-    protected $valor; //String conteudo
-    protected $negado; //Int onde 0=não negado, 1=negado, 2=dupla negação...
-    protected $tipo; //String do tipo do Predicado, se ele é um: CONDICIONAL, BICONDICIONAL, DISJUNÇÃO, CONJUNÇÃO, PREDICATIVO
-    protected $esquerda; //OBJECT(Predicado)
-    protected $direita; //OBJECT(Predicado)
+    /**  Onde 0 = não negado, 1  = negado, 2 = dupla negação... */
+    protected int $negado;
+    protected string $valor;
+    protected PredicadoTipoEnum $tipo;
+    protected Predicado $esquerda;
+    protected Predicado $direita;
 
-    function __construct($valor,$negado,$tipo,$esquerda,$direita) {
-       $this->valor=$valor;
-       $this->negado=$negado;
-       $this->tipo=$tipo;
-       $this->direita=$direita;
-       $this->esquerda=$esquerda;
-   }
+    public function __construct(string $valor, int $negado, PredicadoTipoEnum $tipo, Predicado $esquerda, Predicado $direita)
+    {
+        $this->valor = $valor;
+        $this->negado = $negado;
+        $this->tipo = $tipo;
+        $this->direita = $direita;
+        $this->esquerda = $esquerda;
+    }
 
-    public function getValorPredicado(){
+    /**
+     * @return string
+     */
+    public function getValorPredicado(): string
+    {
         return $this->valor;
     }
 
-    public function setValorPredicado($valor){
-       $this->valor=$valor;
-        
-   }
+    /**
+     * @param  string $valor
+     * @return void
+     */
+    public function setValorPredicado($valor): void
+    {
+        $this->valor = $valor;
+    }
 
-   public function getTipoPredicado(){
-       return $this->tipo;
-   }
+    /**
+     * @return PredicadoTipoEnum
+     */
+    public function getTipoPredicado(): PredicadoTipoEnum
+    {
+        return $this->tipo;
+    }
 
-   public function setTipoPredicado($tipo){
-      $this->tipo=$tipo;
-  }
+    /**
+     * @param  PredicadoTipoEnum $tipo
+     * @return void
+     */
+    public function setTipoPredicado($tipo)
+    {
+        $this->tipo = $tipo;
+    }
 
-   public function getDireitaPredicado(){
-       return $this->direita;
-   }
+    /**
+     * @return Predicado
+     */
+    public function getDireitaPredicado(): Predicado
+    {
+        return $this->direita;
+    }
 
-   public function setDireitaPredicado($direita){
-      $this->direita=$direita;
-  }
+    /**
+     * @param  Predicado $direita
+     * @return void
+     */
+    public function setDireitaPredicado($direita)
+    {
+        $this->direita = $direita;
+    }
 
-  public function getEsquerdaPredicado(){
-       return $this->esquerda;
-   }
+    /**
+     * @return Predicado
+     */
+    public function getEsquerdaPredicado(): Predicado
+    {
+        return $this->esquerda;
+    }
 
-   public function setEsquerdaPredicado($esquerda){
-      $this->esquerda=$esquerda;
-       
-  }
+    /**
+     * @param  Predicado $esquerda
+     * @return void
+     */
+    public function setEsquerdaPredicado($esquerda)
+    {
+        $this->esquerda = $esquerda;
+    }
 
-  public function getNegadoPredicado(){
+    /**
+     * @return string
+     */
+    public function getNegadoPredicado(): string
+    {
         return $this->negado;
-   }
+    }
 
-   public function addNegacaoPredicado(){
-        $this->negado= $this->negado+1;
-   }
+     /**
+      * @return void
+      */
+    public function addNegacaoPredicado(): void
+    {
+        $this->negado = $this->negado + 1;
+    }
 
-   public function removeNegacaoPredicado(){
-       $this->negado= $this->negado-1;
-   }
-   public function existeEsqDirPredicado(){
-       if ($this->esquerda==null && $this->direita==null){
-           return true;
-       }
-       return false;
-   }
+    /**
+     * @return void
+     */
+    public function removeNegacaoPredicado(): void
+    {
+        $this->negado = $this->negado - 1;
+    }
+
+    /**
+     * @return bool
+     */
+    public function existeEsqDirPredicado(): bool
+    {
+        if ($this->esquerda == null && $this->direita == null) {
+            return true;
+        }
+        return false;
+    }
 }
