@@ -10,12 +10,21 @@ class Serializa
     {
         $reflect = new ReflectionClass($this);
         $properties = $reflect->getProperties();
+        $methods = $reflect->getMethods();
 
         foreach ($values as  $key => $value) {
-            $find = array_filter($properties, fn ($v) => $v->getName() == $key);
+            $method = 'set' . implode(array_map(fn ($v) => ucfirst($v), explode('_', $key)));
+            $property = $key;
 
-            if (!empty($find)) {
-                $this->$key = $value;
+            $findproperty = array_filter($properties, fn ($v) => $v->getName() == $key);
+            $findMethod = array_filter($methods, fn ($v) => $v->getName() == $method);
+
+            if (!empty($findMethod)) {
+                $this->$method($value);
+            }
+
+            if (!empty($findproperty)) {
+                $this->$property = $value;
             }
         }
     }
