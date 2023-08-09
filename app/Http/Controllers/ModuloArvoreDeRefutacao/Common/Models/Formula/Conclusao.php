@@ -34,7 +34,7 @@ class Conclusao
     }
 
     /**
-     * @return string
+     * @return Predicado
      */
     public function getValorObjConclusao(): Predicado
     {
