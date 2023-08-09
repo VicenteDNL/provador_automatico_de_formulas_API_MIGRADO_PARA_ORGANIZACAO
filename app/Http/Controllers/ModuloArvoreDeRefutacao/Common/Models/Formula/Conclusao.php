@@ -9,10 +9,10 @@ class Conclusao
     protected string $valor_str;
     protected Predicado $valor_obj;
 
-    public function __construct(string $valor_str, string $simbolo, Predicado $valor_obj)
+    public function __construct(string $valor_str, Predicado $valor_obj)
     {
         $this->valor_str = $valor_str;
-        $this->simbolo = $simbolo;
+        $this->simbolo = '|- ';
         $this->valor_obj = $valor_obj;
     }
 
