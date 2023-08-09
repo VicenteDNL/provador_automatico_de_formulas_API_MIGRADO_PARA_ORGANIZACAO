@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Models\Arvore;
+namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Arvore;
 
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Models\Formula\Conclusao;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Models\Formula\Predicado;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Models\Formula\Premissa;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Formula\Conclusao;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Formula\Predicado;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Formula\Premissa;
 
 class No
 {

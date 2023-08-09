@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Models\Formula;
+namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Formula;
 
 class Conclusao
 {
