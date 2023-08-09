@@ -1,13 +1,13 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
 class ExercicioMVFLP extends Model
 {
     protected $table = 'exercicios_mvflp';
-    protected $fillable = ['nome', 'ativo', 'descricao','enunciado'];
+    protected $fillable = ['nome', 'ativo', 'descricao', 'enunciado'];
 
     public function resposta()
     {
