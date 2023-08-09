@@ -11,7 +11,7 @@ class No
     /** Indentificador unico que deve ser atribuido na criacao da arvore */
     protected int $id;
 
-    /** OBJECT (Premissa)ou(Conclusao)ou(Predicado) - conteudo do "No"
+    /** (Premissa)ou(Conclusao)ou(Predicado) - conteudo do "No"
      * @var Conclusao|Predicado|Premissa
      */
     protected object $valor;
@@ -32,7 +32,7 @@ class No
     protected ?No $noContradicao;
 
     /** A linha do nó no qual foi derivado */
-    protected int $linhaDerivacao;
+    protected ?int $linhaDerivacao;
 
     /** Sê o No já foi utilizado para derivação */
     protected bool $utilizada;
@@ -49,8 +49,18 @@ class No
     /** informa sê o usuario já informou a ticagem do nó */
     protected bool $ticar;
 
-    public function __construct($id, $valor, $filho_esquerda, $filho_centro, $filho_direita, $linha, $noContradicao, $linhaDerivacao, $utilizada, $fechado)
-    {
+    public function __construct(
+        int $id,
+        object $valor,
+        ?No $filho_esquerda = null,
+        ?No $filho_centro = null,
+        ?No $filho_direita = null,
+        int $linha,
+        ?No $noContradicao = null,
+        ?int $linhaDerivacao = null,
+        bool $utilizada,
+        bool $fechado
+    ) {
         $this->id = $id;
         $this->valor = $valor;
         $this->filho_direita = $filho_direita;
@@ -211,9 +221,9 @@ class No
     }
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getLinhaDerivacao(): int
+    public function getLinhaDerivacao(): ?int
     {
         return $this->linhaDerivacao;
     }
