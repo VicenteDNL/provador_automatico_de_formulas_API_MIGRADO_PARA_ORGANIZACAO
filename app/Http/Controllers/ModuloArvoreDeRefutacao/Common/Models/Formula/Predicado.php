@@ -89,9 +89,9 @@ class Predicado
     }
 
     /**
-     * @return string
+     * @return int
      */
-    public function getNegadoPredicado(): string
+    public function getNegadoPredicado(): int
     {
         return $this->negado;
     }
