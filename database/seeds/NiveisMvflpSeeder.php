@@ -1,6 +1,6 @@
 <?php
 
-use App\NivelMVFLP;
+use App\Models\NivelMVFLP;
 use Illuminate\Database\Seeder;
 
 class NiveisMvflpSeeder extends Seeder
@@ -12,7 +12,7 @@ class NiveisMvflpSeeder extends Seeder
      */
     public function run()
     {
-        factory(NivelMVFLP::class,1)->create() 
+        factory(NivelMVFLP::class, 1)->create()
         // ->each(function($u) {
         //     var_dump($u);
         //     $u->recompensas()->save(factory(App\Recompensa::class)->make());

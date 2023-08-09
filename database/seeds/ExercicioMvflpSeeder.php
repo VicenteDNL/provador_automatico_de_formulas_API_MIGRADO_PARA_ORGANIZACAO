@@ -1,6 +1,6 @@
 <?php
 
-use App\ExercicioMVFLP;
+use App\Models\ExercicioMVFLP;
 use Illuminate\Database\Seeder;
 
 class ExercicioMvflpSeeder extends Seeder
@@ -12,6 +12,6 @@ class ExercicioMvflpSeeder extends Seeder
      */
     public function run()
     {
-         factory(ExercicioMVFLP::class,4)->create();
+        factory(ExercicioMVFLP::class, 4)->create();
     }
 }
