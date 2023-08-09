@@ -2,172 +2,306 @@
 
 namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Models\Arvore;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Models\Formula\Conclusao;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Models\Formula\Predicado;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Models\Formula\Premissa;
 
 class No
 {
-    protected $id;// Indentificador unico que deve ser atribuido na criacao da arvore
-    protected $valor; // OBJECT (Premissa)ou(Conclusao)ou(Predicado) - conteudo do "No"
-    protected $filho_esquerda; // OBJECT (No) - ramo descendo no esquerda (aplicação da regra)
-    protected $filho_centro; // OBJECT (No) - ramo descendo no centro (separação das premissas)
-    protected $filho_direita; // OBJECT (No) - ramo descendo no direita (aplicação da regra)
-    protected $linha; // INT - Linha em que esta o No
-    protected $linhaContradicao;// INT - A linha do nó que encontrou sua contradição 
-    protected $linhaDerivacao; // INT - A linha do nó no qual foi derivado
-    protected $utilizada; // BOOLEAN - Sê o No já foi utilizado para derivação
-    protected $fechado; // true ou false - Indica sê o nó está fechado
-    protected $noFolha=false; // Verifica sê é um NÓ folha, essa verificação e feita automatacamente
-    protected $fechamento=false;  // informa sê o usuario já informou o fechamento
-    protected $ticar=false; // informa sê o usuario já informou a ticagem do nó
+    /** Indentificador unico que deve ser atribuido na criacao da arvore */
+    protected int $id;
 
-    public function __construct($id,$valor,$filho_esquerda,$filho_centro,$filho_direita,$linha,$linhaContradicao,$linhaDerivacao,$utilizada,$fechado){
+    /** OBJECT (Premissa)ou(Conclusao)ou(Predicado) - conteudo do "No"
+     * @var Conclusao|Predicado|Premissa
+     */
+    protected object $valor;
+
+    /** Ramo descendo no esquerda (aplicação da regra) */
+    protected ?No $filho_esquerda;
+
+    /** Ramo descendo no centro (separação das premissas) */
+    protected ?No $filho_centro;
+
+    /** Ramo descendo no direita (aplicação da regra) */
+    protected ?No $filho_direita;
+
+    /** Linha em que esta o No */
+    protected int $linha;
+
+    /** A linha do nó que encontrou sua contradição */
+    protected ?No $noContradicao;
+
+    /** A linha do nó no qual foi derivado */
+    protected int $linhaDerivacao;
+
+    /** Sê o No já foi utilizado para derivação */
+    protected bool $utilizada;
+
+    /** Indica sê o nó está fechado */
+    protected bool $fechado;
+
+    /** Verifica sê é um NÓ folha, essa verificação e feita automatacamente */
+    protected bool $noFolha;
+
+    /** informa sê o usuario já informou o fechamento */
+    protected bool $fechamento;
+
+    /** informa sê o usuario já informou a ticagem do nó */
+    protected bool $ticar;
+
+    public function __construct($id, $valor, $filho_esquerda, $filho_centro, $filho_direita, $linha, $noContradicao, $linhaDerivacao, $utilizada, $fechado)
+    {
         $this->id = $id;
         $this->valor = $valor;
         $this->filho_direita = $filho_direita;
         $this->filho_esquerda = $filho_esquerda;
         $this->filho_centro = $filho_centro;
         $this->linha = $linha;
-        $this->linhaContradicao = $linhaContradicao;
+        $this->noContradicao = $noContradicao;
         $this->linhaDerivacao = $linhaDerivacao;
         $this->utilizada = $utilizada;
         $this->fechado = $fechado;
+        $this->fechamento = false;
+        $this->ticar = false;
 
-        if($filho_direita==null && $filho_centro==null && $filho_direita==null ){
+        if ($filho_direita == null && $filho_centro == null && $filho_direita == null) {
             $this->noFolha = true;
-        }
-        else{
-            $this->noFolha = true;   
+        } else {
+            $this->noFolha = false;
         }
     }
 
-    public function getIdNo(){
+    /**
+     * @return int
+     */
+    public function getIdNo(): int
+    {
         return $this->id;
     }
 
-    public function setIdNo($id){
-       $this->id=$id;
+    /**
+     * @param  int  $id
+     * @return void
+     */
+    public function setIdNo(int $id): void
+    {
+        $this->id = $id;
     }
 
-
-    public function getValorNo(){
+    /**
+     * @return Conclusao|Predicado|Premissa
+     */
+    public function getValorNo(): object
+    {
         return $this->valor;
     }
 
-    public function setValorNo($valor){
-       $this->valor=$valor;
+    /**
+     * @param  Conclusao|Predicado|Premissa $valor
+     * @return void
+     */
+    public function setValorNo(object $valor): void
+    {
+        $this->valor = $valor;
     }
 
-    public function getFilhoCentroNo(){
+    /**
+     * @return No|null
+     */
+    public function getFilhoCentroNo(): ?No
+    {
         return $this->filho_centro;
     }
 
-    public function setFilhoCentroNo($centro){
-        $this->filho_centro=$centro;
-        $this->noFolha = false; 
+    /**
+     * @param  No   $centro
+     * @return void
+     */
+    public function setFilhoCentroNo(No $centro): void
+    {
+        $this->filho_centro = $centro;
+        $this->noFolha = false;
     }
 
-    public function removeFilhoCentroNo(){
-        $this->filho_centro=null;
+    /**
+     * @return void
+     */
+    public function removeFilhoCentroNo(): void
+    {
+        $this->filho_centro = null;
 
-        if( $this->filho_direita==null &&  $this->filho_centro==null &&  $this->filho_direita==null ){
+        if ($this->filho_direita == null && $this->filho_centro == null && $this->filho_direita == null) {
             $this->noFolha = true;
-        }
-        else{
-            $this->noFolha = false;   
+        } else {
+            $this->noFolha = false;
         }
     }
-   
-    public function getFilhoDireitaNo(){
+
+    /**
+     * @return No|null
+     */
+    public function getFilhoDireitaNo(): ?No
+    {
         return $this->filho_direita;
     }
 
-    public function setFilhoDireitaNo($direita){
-        $this->filho_direita=$direita;
+    /**
+     * @param  No   $direita
+     * @param  No   $no
+     * @return void
+     */
+    public function setFilhoDireitaNo(No $no): void
+    {
+        $this->filho_direita = $no;
         $this->noFolha = false;
     }
 
-    public function getFilhoEsquerdaNo(){
+    /**
+     * @return No|null
+     */
+    public function getFilhoEsquerdaNo(): ?No
+    {
         return $this->filho_esquerda;
     }
 
-    public function setFilhoEsquerdaNo($esquerda){
-        $this->filho_esquerda=$esquerda;
+    /**
+     * @param  No   $no
+     * @return void
+     */
+    public function setFilhoEsquerdaNo(No $no): void
+    {
+        $this->filho_esquerda = $no;
         $this->noFolha = false;
     }
 
-    public function getLinhaNo(){
+    /**
+     * @return int
+     */
+    public function getLinhaNo(): int
+    {
         return $this->linha;
     }
 
-    public function setLinhaNo($linha){
-        $this->linha=$linha;
+    /**
+     * @param  int  $linha
+     * @return void
+     */
+    public function setLinhaNo(int $linha): void
+    {
+        $this->linha = $linha;
     }
 
-    public function FecharRamo($linha_contradicao){
-        $this->fechado=true;
-        $this->linhaContradicao=$linha_contradicao;
-   }
-
-    public function setLinhaDerivacao($linhaDerivacao){
-        $this->linhaDerivacao=$linhaDerivacao;
+    /**
+     * @param  No   $no
+     * @return void
+     */
+    public function fecharRamo(No $no): void
+    {
+        $this->fechado = true;
+        $this->noContradicao = $no;
     }
 
-    public function getLinhaDerivacao(){
+    /**
+     * @param  int  $linha
+     * @return void
+     */
+    public function setLinhaDerivacao(int $linha): void
+    {
+        $this->linhaDerivacao = $linha;
+    }
+
+    /**
+     * @return int
+     */
+    public function getLinhaDerivacao(): int
+    {
         return $this->linhaDerivacao;
     }
 
-    public function getLinhaContradicao(){
-        return $this->linhaContradicao;
+    /**
+     * @return No
+     */
+    public function getNoContradicao(): ?No
+    {
+        return $this->noContradicao;
     }
 
-    public function isFechado(){
+    /**
+     * @return bool
+     */
+    public function isFechado(): bool
+    {
         return $this->fechado;
     }
 
-
-    public function isUtilizado(){
-       return $this->utilizada;
-   }
-
-    public function utilizado($valor){
-        $this->utilizada=$valor;
+    /**
+     * @return bool
+     */
+    public function isUtilizado(): bool
+    {
+        return $this->utilizada;
     }
 
+    /**
+     * @param  bool $valor
+     * @return void
+     */
+    public function utilizado(bool $valor): void
+    {
+        $this->utilizada = $valor;
+    }
 
-    public function isNoFolha(){
+    /**
+     * @return bool
+     */
+    public function isNoFolha(): bool
+    {
         return $this->noFolha;
     }
 
-
-    public function getStringNo(){
-
-        if(is_a($this->valor, 'Premissa')){
+    /**
+     * @return string
+     */
+    public function getStringNo(): string
+    {
+        if (is_a($this->valor, 'Premissa')) {
             return $this->valor->getValorStrPremissa();
-        }
-        elseif(is_a($this->valor, 'Conclusao')){
+        } elseif (is_a($this->valor, 'Conclusao')) {
             return $this->valor->getValorStrConclusao();
-        }
-        else{
+        } else {
             return $this->valor->getValorPredicado();
         }
-        
     }
 
-    public function ticarNo(){
-        $this->ticar=true;
+    /**
+     * @return void
+     */
+    public function ticarNo(): void
+    {
+        $this->ticar = true;
     }
 
-    public function isTicado(){
+    /**
+     * @return bool
+     */
+    public function isTicado(): bool
+    {
         return $this->ticar;
     }
 
-
-    public function fechamentoNo(){
-        $this->fechamento=true;
+    /**
+     * @return void
+     */
+    public function fechamentoNo(): void
+    {
+        $this->fechamento = true;
     }
 
-    public function isFechamento(){
+    /**
+     * @return bool
+     */
+    public function isFechamento(): bool
+    {
         return $this->fechamento;
     }
-    
 }
