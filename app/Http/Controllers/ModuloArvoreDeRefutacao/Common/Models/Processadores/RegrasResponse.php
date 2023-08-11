@@ -1,20 +1,17 @@
 <?php
 
-namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Regras;
+namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores;
 
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Formula\Predicado;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Serializa;
-
-class RegrasResponse extends Serializa
+class RegrasResponse
 {
     /** @var Predicado[] */
-    private ?array $esquerda;
+    protected ?array $esquerda;
 
     /** @var Predicado[] */
-    private ?array $centro;
+    protected ?array $centro;
 
     /** @var Predicado[] */
-    private ?array $direita;
+    protected ?array $direita;
 
     /**
      * @return Predicado[]|null

@@ -7,10 +7,8 @@ class No
     /** Indentificador unico que deve ser atribuido na criacao da arvore */
     protected int $id;
 
-    /** (Premissa)ou(Conclusao)ou(Predicado) - conteudo do "No"
-     * @var Conclusao|Predicado|Premissa
-     */
-    protected object $valor;
+    /** Conteudo do "No" */
+    protected Predicado $valor;
 
     /** Ramo descendo no esquerda (aplicação da regra) */
     protected ?No $filho_esquerda;
@@ -95,18 +93,18 @@ class No
     }
 
     /**
-     * @return Conclusao|Predicado|Premissa
+     * @return Predicado
      */
-    public function getValorNo(): object
+    public function getValorNo(): Predicado
     {
         return $this->valor;
     }
 
     /**
-     * @param  Conclusao|Predicado|Premissa $valor
+     * @param  Predicado $valor
      * @return void
      */
-    public function setValorNo(object $valor): void
+    public function setValorNo(Predicado $valor): void
     {
         $this->valor = $valor;
     }
