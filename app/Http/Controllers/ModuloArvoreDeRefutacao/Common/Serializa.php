@@ -6,7 +6,7 @@ use ReflectionClass;
 
 class Serializa
 {
-    public function __construct(array $values)
+    public function __construct(array $values = [])
     {
         $reflect = new ReflectionClass($this);
         $properties = $reflect->getProperties();

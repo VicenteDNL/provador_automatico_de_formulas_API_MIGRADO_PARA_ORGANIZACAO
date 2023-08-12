@@ -2,39 +2,71 @@
 
 namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Manipuladores;
 
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\No;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\PassoFechamento;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\TentativaFechamento;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Buscadores\EncontraNoPeloId;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Validadores\IsDecendente;
+
 class FecharNo
 {
-    public function fecharNo($arvore, $folha, $contradicao)
+    /**
+     *
+     * @param No              $arvore
+     * @param PassoFechamento $passo
+     */
+    public static function exec(No &$arvore, PassoFechamento $passo): TentativaFechamento
     {
-        $noContradicao = $this->getNoPeloId($arvore, $contradicao['idNo']);
-        $noFolha = $this->getNoPeloId($arvore, $folha['idNo']);
-        $descendente = $this->isDecendente($noContradicao, $noFolha);
+        $noContradicao = EncontraNoPeloId::exec($arvore, $passo->getIdNoContraditorio());
+        $noFolha = EncontraNoPeloId::exec($arvore, $passo->getIdNoFolha());
 
-        if ($descendente == true) {
+        if (IsDecendente::exec($noContradicao, $noFolha)) {
             if ($noContradicao->getValorNo()->getValorPredicado() == $noFolha->getValorNo()->getValorPredicado()) {
                 $negacaoContradicao = $noContradicao->getValorNo()->getNegadoPredicado();
                 $negacaoFolha = $noFolha->getValorNo()->getNegadoPredicado();
 
                 if ($negacaoContradicao == 1 and $negacaoFolha == 0) {
                     if ($noFolha->isFechamento()) {
-                        return ['sucesso' => false, 'messagem' => 'O ramo já foi fechado'];
+                        return new TentativaFechamento([
+                            'sucesso'  => false,
+                            'messagem' => 'O ramo já foi fechado',
+                        ]);
                     }
                     $noFolha->fechamentoNo();
-                    return ['sucesso' => true, 'messagem' => '', 'arv' => $arvore];
+                    return new TentativaFechamento(
+                        [
+                            'sucesso'  => true,
+                            'messagem' => 'Fechado com sucesso']
+                    );
                 } elseif ($negacaoContradicao == 0 and $negacaoFolha == 1) {
                     if ($noFolha->isFechamento()) {
-                        return ['sucesso' => false, 'messagem' => 'O ramo já foi fechado'];
+                        return new TentativaFechamento([
+                            'sucesso'  => false,
+                            'messagem' => 'O ramo já foi fechado',
+                        ]);
                     }
                     $noFolha->fechamentoNo();
-                    return ['sucesso' => true, 'messagem' => '', 'arv' => $arvore];
+                    return new TentativaFechamento([
+                        'sucesso'  => true,
+                        'messagem' => 'Fechado com sucesso',
+                    ]);
                 } else {
-                    return ['sucesso' => false, 'messagem' => 'Os argumentos iguais mas não contraditórios'];
+                    return new TentativaFechamento([
+                        'sucesso'  => false,
+                        'messagem' => 'Os argumentos iguais mas não contraditórios',
+                    ]);
                 }
             } else {
-                return ['sucesso' => false, 'messagem' => 'Os argumentos não são iguais'];
+                return new TentativaFechamento([
+                    'sucesso'  => false,
+                    'messagem' => 'Os argumentos não são iguais',
+                ]);
             }
         } else {
-            return ['sucesso' => false, 'messagem' => 'O nó não pertence ao mesmo ramo'];
+            return new TentativaFechamento([
+                'sucesso'  => false,
+                'messagem' => 'O nó não pertence ao mesmo ramo',
+            ]);
         }
     }
 }

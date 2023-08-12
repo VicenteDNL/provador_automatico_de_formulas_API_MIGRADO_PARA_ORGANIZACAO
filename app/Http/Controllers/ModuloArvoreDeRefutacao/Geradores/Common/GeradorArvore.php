@@ -2,8 +2,15 @@
 
 namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common;
 
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\Formula;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\No;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\PassoDerivacao;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\PredicadoTipoEnum;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\RegrasEnum;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\TentativaDerivacao;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Buscadores\EncontraNoPeloId;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Buscadores\EncontraNosFolha;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Buscadores\EncontraProximoNoParaInsercao;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Criadores\CriarNoBifurcado;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Criadores\CriarNoBifurcadoDuplo;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Criadores\CriarNoCentro;
@@ -29,13 +36,24 @@ class GeradorArvore
     }
 
     /**
-     * @param No         $noDerivacao
-     * @param No[]       $listaNoInsercao
-     * @param RegrasEnum $regra
+     * @param No             $noDerivacao
+     * @param No[]           $listaNoInsercao
+     * @param RegrasEnum     $regra
+     * @param PassoDerivacao $novoPasso
+     * @param PassoDerivacao $passo
      */
-    protected function derivarByRegra(No $noDerivacao, array $listaNoInsercao, RegrasEnum $regra)
+    public function derivar(PassoDerivacao $passo): TentativaDerivacao
     {
-        switch($regra) {
+        $tentativa = $this->validarDerivacao($passo);
+
+        if (!$tentativa->getSucesso()) {
+            return  $tentativa;
+        }
+
+        $listaNoInsercao = array_map(fn ($id) => EncontraNoPeloId::exec($this->arvore, $id), $passo->getIdNoInsercoes());
+        $noDerivacao = EncontraNoPeloId::exec($this->arvore, $passo->getIdNoDerivacao());
+
+        switch($passo->getRegra()) {
             case RegrasEnum::DUPLANEGACAO:
                 foreach ($listaNoInsercao as $nosFolha) {
                     $array_filhos = $this->regras->duplaNeg($noDerivacao->getValorNo());
@@ -100,6 +118,60 @@ class GeradorArvore
                 }
                 break;
         }
+        return new TentativaDerivacao([
+            'sucesso'  => true,
+            'mensagem' => 'sucesso',
+            'arvore'   => $this->arvore,
+            'passos'   => [$passo],
+        ]);
+    }
+
+    /**
+     * @param  Formula                      $formula
+     * @param  int                          $idInsersao
+     * @param  bool                         $negacao
+     * @param  ?No                          $ultimoNo
+     * @return Array<string,bool|No|string>
+     */
+    protected function inserirNoIncializacao(Formula $formula, int $idInsersao, bool $negacao, $ultimoNo = null): array
+    {
+        $identificador = str_split($idInsersao, strrpos($idInsersao, '_'));
+
+        if ($identificador[0] == 'premissa' && $negacao == false) {
+            $premissa = $formula->getPremissas();
+            $premissa = $premissa[substr($identificador[1], 1)];
+
+            if ($this->arvore == null) {
+                $this->arvore = new No($this->genereteIdNo(), $premissa->getValorObjPremissa(), null, null, null, 1, null, null, false, false);
+                $ultimoNo = $this->arvore;
+            } else {
+                $ultimoNo->setFilhoCentroNo(new No($this->genereteIdNo(), $premissa->getValorObjPremissa(), null, null, null, $ultimoNo->getLinhaNo() + 1, null, null, false, false));
+                $ultimoNo = $ultimoNo->getFilhoCentroNo();
+            }
+
+            return ['sucesso' => true, 'ultimoNo' => $ultimoNo];
+        } elseif ($identificador[0] == 'conclusao' && $negacao == true) {
+            $conclusao = $formula->getConclusao();
+
+            if ($this->arvore == null) {
+                $this->arvore = (new No($this->genereteIdNo(), $conclusao->getValorObjConclusao(), null, null, null, 1, null, null, false, false));
+                $ultimoNo = $this->arvore;
+            } else {
+                $ultimoNo->setFilhoCentroNo(new No($this->genereteIdNo(), $conclusao->getValorObjConclusao(), null, null, null, $ultimoNo->getLinhaNo() + 1, null, null, false, false));
+                $ultimoNo = $ultimoNo->getFilhoCentroNo();
+            }
+            return ['sucesso' => true, 'ultimoNo' => $ultimoNo];
+        } else {
+            if ($identificador[0] == 'premissa' && $negacao == true) {
+                return ['sucesso' => false, 'mensagem' => 'Atenção!! Esto é uma premissa!', 'ultimoNo' => ''];
+            }
+
+            if ($identificador[0] == 'conclusao' && $negacao == false) {
+                return ['sucesso' => false, 'mensagem' => 'Atenção!! Esto é uma conclusão!', 'ultimoNo' => ''];
+            }
+
+            return ['sucesso' => false, 'mensagem' => 'Atenção!!', 'ultimoNo' => ''];
+        }
     }
 
     /**
@@ -110,5 +182,68 @@ class GeradorArvore
     {
         $this->idNo += 1;
         return $this->idNo;
+    }
+
+    private function validarDerivacao(PassoDerivacao $passoNovo): TentativaDerivacao
+    {
+        $noDerivacao = EncontraNoPeloId::exec($this->arvore, $passoNovo->getIdNoDerivacao());
+        $predicado = $noDerivacao->getValorNo();
+        $qntdNegado = $predicado->getNegadoPredicado();
+        $listaNoInsercao = array_map(fn ($id): No => EncontraNoPeloId::exec($this->arvore, $id), $passoNovo->getIdNoInsercoes());
+
+        if (is_null(EncontraProximoNoParaInsercao::exec($this->arvore))) {
+            return new TentativaDerivacao(['sucesso' => false, 'mensagem' => 'não existe mais derivações possiveis']);
+        }
+
+        if ($noDerivacao->isUtilizado() == true) {
+            return new TentativaDerivacao(['sucesso' => false, 'mensagem' => 'Este argumento já foi derivado']);
+        }
+
+        $nosFolha = EncontraNosFolha::exec($noDerivacao);
+
+        if (count($nosFolha) == count($listaNoInsercao)) {
+            foreach ($listaNoInsercao as $noInsercao) {
+                if (in_array($noInsercao, $nosFolha) == false) {
+                    return $noInsercao->isFechado() == true
+                    ? new TentativaDerivacao([
+                        'sucesso'  => false,
+                        'mensagem' => "O nó '" . $noInsercao->getStringNo() . "' da linha'" . $noInsercao->getLinhaNo() . "' já foi fechado",
+                    ])
+                    : new TentativaDerivacao([
+                        'sucesso'  => false,
+                        'mensagem' => "O nó '" . $noInsercao->getStringNo() . "' da linha'" . $noInsercao->getLinhaNo() . "' não é nó folha",
+                    ]);
+                }
+            }
+        } else {
+            return new TentativaDerivacao([
+                'sucesso' => false,
+                'mensagem'
+                => count($nosFolha) > count($listaNoInsercao)
+                ? 'Existe mais nós válidos para inseção'
+                : 'Algum dos nós de inserção não são válidos',
+            ]);
+        }
+
+        if ($predicado->getTipoPredicado() == PredicadoTipoEnum::PREDICATIVO and $qntdNegado < 2) {
+            return new TentativaDerivacao([
+                'sucesso'  => false,
+                'mensagem' => 'Não existe derivação para este argumento',
+            ]);
+        }
+
+        $regraValida = $predicado->getTipoPredicado()->regra($qntdNegado);
+
+        if ($regraValida == $passoNovo->getRegra()) {
+            return new TentativaDerivacao([
+                'sucesso'  => false,
+                'mensagem' => 'Regra inválida',
+            ]);
+        }
+
+        return new TentativaDerivacao([
+            'sucesso'  => true,
+            'mensagem' => 'sucesso',
+        ]);
     }
 }
