@@ -35,7 +35,7 @@ class EstudoLivreController extends Controller
         }
     }
 
-    public function iniciar(EstudoLivreIniciarRequest $request)
+    public function inicia(EstudoLivreIniciarRequest $request)
     {
         try {
             $arvore = new Base($request->xml);
