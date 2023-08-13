@@ -23,8 +23,9 @@ class AplicadorRegras
 
         if (count($possibilidades) < $qtdRegras) {
             $qntdRestante = $qtdRegras - count($possibilidades);
-            $inteseccao = array_intersect($possibilidades, RegrasEnum::cases());
-            $aleatorias = array_rand($inteseccao, $qntdRestante);
+            $inteseccao = array_filter(RegrasEnum::cases(), fn ($r) => !in_array($r, $possibilidades));
+            shuffle($inteseccao);
+            $aleatorias = array_slice($inteseccao, 0, $qntdRestante);
             $selecionadas = [...$possibilidades, ...$aleatorias];
         } elseif (count($possibilidades) > $qtdRegras) {
             $selecionadas = array_rand($possibilidades, $qtdRegras);
@@ -45,10 +46,13 @@ class AplicadorRegras
      */
     private static function possibilidades(No $arvore, array $array = []): array
     {
-        if ($arvore->isUtilizado() == false) {
+        if (!$arvore->isUtilizado()) {
             $qntdNegado = $arvore->getValorNo()->getNegadoPredicado();
             $regra = $arvore->getValorNo()->getTipoPredicado()->regra($qntdNegado);
-            array_push($array, $regra);
+
+            if (!is_null($regra)) {
+                array_push($array, $regra);
+            }
         }
 
         if ($arvore->getFilhoCentroNo() != null) {

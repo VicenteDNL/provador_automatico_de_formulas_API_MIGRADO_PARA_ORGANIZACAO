@@ -24,6 +24,7 @@ class GeradorArvore
 
     public function __construct()
     {
+        $this->arvore = null;
         $this->regras = new AplicadorRegras();
         $this->idNo = 0;
     }
@@ -129,12 +130,12 @@ class GeradorArvore
 
     /**
      * @param  Formula                      $formula
-     * @param  int                          $idInsersao
+     * @param  string                       $idInsersao
      * @param  bool                         $negacao
      * @param  ?No                          $ultimoNo
      * @return Array<string,bool|No|string>
      */
-    protected function inserirNoIncializacao(Formula $formula, int $idInsersao, bool $negacao, $ultimoNo = null): array
+    protected function inserirNoIncializacao(Formula $formula, string $idInsersao, bool $negacao, $ultimoNo = null): array
     {
         $identificador = str_split($idInsersao, strrpos($idInsersao, '_'));
 

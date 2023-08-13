@@ -2,21 +2,25 @@
 
 namespace App\Http\Controllers\ModuloArvoreDeRefutacao;
 
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\Formula;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\No;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\PassoDerivacao;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\PassoFechamento;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\PassoInicializacao;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\PassoTicagem;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Exceptions\ArvoreDeRefutacaoExecption;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\Formula;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\No;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\PassoDerivacao;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\PassoFechamento;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\PassoInicializacao;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\PassoTicagem;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Vizualizadores\Arvore;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\AplicadorRegras;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Buscadores\EncontraNoPossivelFechamento;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Buscadores\EncontraNoPossivelTicagem;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Buscadores\EncontraNosFolha;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Buscadores\EncontraProximoNoParaInsercao;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\GeradorAutomatico;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\GeradorFormula;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\GeradorPorPasso;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\AplicadorRegras;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Buscadores\EncontraNoPossivelFechamento;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Buscadores\EncontraNoPossivelTicagem;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Buscadores\EncontraNosFolha;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Buscadores\EncontraProximoNoParaInsercao;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\GeradorFormula;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\GeradorAutomatico;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\GeradorPorPasso;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Visualizadores\Common\Visualizador;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Visualizadores\Derivacao;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Visualizadores\Inicializacao;
 use App\Models\ExercicioMVFLP;
 use Exception;
 use SimpleXMLElement;
@@ -36,7 +40,7 @@ class Base
     public Derivacao $derivacao;
 
     /** Informações da arvore já montada */
-    public No $arvore;
+    public ?No $arvore;
 
     /** Tamanho da area de desenho */
     protected float $canvas_width = 0.0;
@@ -50,8 +54,8 @@ class Base
     /** Resposta final da arvore */
     protected string $resposta;
 
-    /** Mensagem de error em caso da execução não ter sucesso */
-    protected string $error;
+    /** Mensagem de erro em caso da execução não ter sucesso */
+    protected string $erro;
 
     /** String do XML da formula */
     protected string $xmlTexto;
@@ -79,31 +83,41 @@ class Base
      * @var PassosFechamento[]
      */
     protected $fechados;
+
+    /** Quantidade de regras que devem retornar*/
+    protected int $quantidaRegra;
     private GeradorFormula $geradorFormula;
     private GeradorAutomatico $geradorAutomatico;
     private GeradorPorPasso $geradorPorPasso;
     private Visualizador $visualizador;
     private AplicadorRegras $aplicadorRegras;
 
+    /**
+     * @param  string                     $xml
+     * @throws ArvoreDeRefutacaoExecption
+     */
     public function __construct(string $xml)
     {
+        $this->arvore = null;
         $this->geradorFormula = new GeradorFormula();
         $this->geradorAutomatico = new GeradorAutomatico();
         $this->geradorPorPasso = new GeradorPorPasso();
         $this->visualizador = new Visualizador();
         $this->xmlTexto = $xml;
-        $this->formula = $this->geradorFormula->criarFormula($this->xmlElement);
-        $this->formulaTexto = $this->geradorFormula->stringFormula($this->xmlElement);
         $this->arvoreVisualizacao = new Arvore();
         $this->fechados = [];
         $this->ticados = [];
+        $this->quantidaRegra = 9;
         $this->derivacao = new Derivacao();
         $this->inicializacao = new Inicializacao();
+        $this->aplicadorRegras = new AplicadorRegras();
 
         try {
             $this->xmlElement = simplexml_load_string($xml);
+            $this->formula = $this->geradorFormula->criarFormula($this->xmlElement);
+            $this->formulaTexto = $this->geradorFormula->stringFormula($this->xmlElement);
         } catch(Exception $e) {
-            $this->error = 'XML INVALIDO!';
+            throw new ArvoreDeRefutacaoExecption('XML INVALIDO!');
         }
     }
 
@@ -129,6 +143,7 @@ class Base
 
             return true;
         } catch(Exception $e) {
+            $this->erro = 'Erro ao criar arvore otimizada';
             return false;
         }
     }
@@ -164,20 +179,20 @@ class Base
     public function concluirDerivacao(): bool
     {
         if (!is_null(EncontraProximoNoParaInsercao::exec($this->arvore))) {
-            $this->error = 'derivação incompleta';
+            $this->erro = 'derivação incompleta';
             return false;
         }
 
         if (!$this->fechamentoAutomatico) {
             if (!is_null(EncontraNoPossivelFechamento::exec($this->arvore))) {
-                $this->error = 'derivação incompleta';
+                $this->erro = 'derivação incompleta';
                 return false;
             }
         }
 
         if (!$this->ticagemAutomatica) {
             if (!is_null(EncontraNoPossivelTicagem::exec($this->arvore))) {
-                $this->error = 'derivação incompleta';
+                $this->erro = 'derivação incompleta';
                 return false;
             }
         }
@@ -203,7 +218,7 @@ class Base
         );
 
         if (!$tentativa->getSucesso()) {
-            $this->error = $tentativa->getMensagem();
+            $this->erro = $tentativa->getMensagem();
             return  false;
         }
 
@@ -234,35 +249,35 @@ class Base
         $tentativa = $this->geradorPorPasso->reconstruirInicializacao($this->formula, $this->inicializacao->getPassosExecutados());
 
         if (!$tentativa->getSucesso()) {
-            $this->error = $tentativa->getMensagem();
+            $this->erro = $tentativa->getMensagem();
             return  false;
         }
 
         $tentativa = $this->geradorPorPasso->reconstruirArvore($this->derivacao->getPassosExecutados());
 
         if (!$tentativa->getSucesso()) {
-            $this->error = $tentativa->getMensagem();
+            $this->erro = $tentativa->getMensagem();
             return  false;
         }
 
         $tentativa = $this->geradorPorPasso->reconstruirTicagem($this->ticados);
 
         if (!$tentativa->getSucesso()) {
-            $this->error = $tentativa->getMensagem();
+            $this->erro = $tentativa->getMensagem();
             return  false;
         }
 
         $tentativa = $this->geradorPorPasso->reconstruirFechamento($this->fechados);
 
         if (!$tentativa->getSucesso()) {
-            $this->error = $tentativa->getMensagem();
+            $this->erro = $tentativa->getMensagem();
             return  false;
         }
 
         $tentativa = $this->geradorPorPasso->derivar($novoPasso);
 
         if (!$tentativa->getSucesso()) {
-            $this->error = $tentativa->getMensagem();
+            $this->erro = $tentativa->getMensagem();
             return  false;
         }
 
@@ -291,28 +306,28 @@ class Base
         $tentativa = $this->geradorPorPasso->reconstruirInicializacao($this->formula, $this->inicializacao->getPassosExecutados());
 
         if (!$tentativa->getSucesso()) {
-            $this->error = $tentativa->getMensagem();
+            $this->erro = $tentativa->getMensagem();
             return  false;
         }
 
         $tentativa = $this->geradorPorPasso->reconstruirArvore($this->derivacao->getPassosExecutados());
 
         if (!$tentativa->getSucesso()) {
-            $this->error = $tentativa->getMensagem();
+            $this->erro = $tentativa->getMensagem();
             return  false;
         }
 
         $tentativa = $this->geradorPorPasso->reconstruirTicagem($this->ticados);
 
         if (!$tentativa->getSucesso()) {
-            $this->error = $tentativa->getMensagem();
+            $this->erro = $tentativa->getMensagem();
             return  false;
         }
 
         $tentativa = $this->geradorPorPasso->reconstruirFechamento($this->fechados, $passo);
 
         if (!$tentativa->getSucesso()) {
-            $this->error = $tentativa->getMensagem();
+            $this->erro = $tentativa->getMensagem();
             return  false;
         }
         $this->arvore = $tentativa->getArvore();
@@ -340,28 +355,28 @@ class Base
         $tentativa = $this->geradorPorPasso->reconstruirInicializacao($this->formula, $this->inicializacao->getPassosExecutados());
 
         if (!$tentativa->getSucesso()) {
-            $this->error = $tentativa->getMensagem();
+            $this->erro = $tentativa->getMensagem();
             return  false;
         }
 
         $tentativa = $this->geradorPorPasso->reconstruirArvore($this->derivacao->getPassosExecutados());
 
         if (!$tentativa->getSucesso()) {
-            $this->error = $tentativa->getMensagem();
+            $this->erro = $tentativa->getMensagem();
             return  false;
         }
 
         $tentativa = $this->geradorPorPasso->reconstruirFechamento($this->fechados);
 
         if (!$tentativa->getSucesso()) {
-            $this->error = $tentativa->getMensagem();
+            $this->erro = $tentativa->getMensagem();
             return  false;
         }
 
         $tentativa = $this->geradorPorPasso->reconstruirTicagem($this->ticados, $passo);
 
         if (!$tentativa->getSucesso()) {
-            $this->error = $tentativa->getMensagem();
+            $this->erro = $tentativa->getMensagem();
             return  false;
         }
 
@@ -382,74 +397,68 @@ class Base
         return true;
     }
 
-    public function setAll($request, $fechar_auto, $ticar_auto)
+    /**
+     * recebe como paramentro o request e adiciona o
+     * valores essenciais para o processo de derivação
+     * @param mixed $request
+     */
+    public function carregarCamposEssenciais($request): void
     {
-        $this->setListaPassos($request['inicio']['lista']);
-        $this->setListaTicagem($request['ticar']['lista']);
-        $this->setListaFechamento($request['fechar']['lista']);
-        $this->fecharAutomatido($fechar_auto);
-        $this->ticarAutomatico($ticar_auto);
-        $this->derivacao->setPassosExecutados($request['derivacao']['lista']);
-        $this->inicializacao->isFinalizado(true);
+        $this->inicializacao->setPassosExecutados($request['arvore']['iniciar']['passosExecutados'] ?? []);
+        $this->derivacao->setPassosExecutados($request['arvore']['derivar']['passosExecutados'] ?? []);
+        $this->fechados = $request['arvore']['fechar']['passosExecutados'] ?? [];
+        $this->ticados = $request['arvore']['ticar']['passosExecutados'] ?? [];
+        $this->ticagemAutomatica = $request['arvore']['ticar']['automatico'] ?? false;
+        $this->fechamentoAutomatico = $request['arvore']['fechar']['automatico'] ?? false;
     }
 
-    public function retorno($exercicio, $usu_has, $exe_has, $admin = false)
+    public function imprimir()
     {
         $retorno = [
-            'regras'       => $exercicio != null ? $this->buscarRegras($exercicio, $admin) : null,
-            'exe_hash'     => $exe_has != null ? $exe_has : null,
-            'usu_hash'     => $usu_has != null ? $usu_has : null,
-            'id_exercicio' => $exercicio,
-            'arestas'      => $this->arestas,
-            'nos'          => $this->nos,
-            'derivacao'    => (object)[
-                'lista'  => $this->derivacao->getListaDerivacoes(),
-                'folhas' => [],
-                'no'     => null,
-                'regra'  => null,
+
+            'visualizar'   => $this->arvoreVisualizacao,
+            'derivar'      => (object)[
+                'passosExecutados' => $this->derivacao->getPassosExecutados(),
+                'regras'           => is_null($this->arvore) ? [] : $this->aplicadorRegras->listaPosibilidades($this->arvore, $this->quantidaRegra),
             ],
-            'fechar' => (object)[
-                'lista' => $this->fechados,
-                'no'    => null,
-                'folha' => null,
-                'auto'  => $this->fechamentoAutomatico,
+            'fechar'       => (object)[
+                'passosExecutados'       => $this->fechados,
+                'automatico'             => $this->fechamentoAutomatico,
             ],
-            'inicio' => (object)[
-                'completa' => $this->inicializacao->getFinalizado(),
-                'lista'    => $this->inicializacao->getListaInseridos(),
-                'negacao'  => null,
-                'no'       => null,
-                'opcoes'   => $this->inicializacao->getListaOpcoes(),
+            'iniciar' => (object)[
+                'passosExecutados'    => $this->inicializacao->getPassosExecutados(),
+                'opcoes'              => $this->visualizador->gerarOpcoesInicializacao($this->formula, $this->inicializacao->getPassosExecutados()),
+                'isCompleto'          => $this->inicializacao->isFinalizado(),
             ],
             'ticar' => (object)[
-                'auto'  => $this->ticagemAutomatica,
-                'lista' => $this->ticados,
-                'no'    => null,
+                'passosExecutados'    => $this->ticados,
+                'automatico'          => $this->ticagemAutomatica,
             ],
-            'finalizada' => $this->isFinalizada(),
-            'strformula' => $this->getStrFormula(),
-            'xml'        => $this->xml,
+            'formula' => [
+                'xml'        => $this->xmlTexto,
+                'strformula' => $this->formulaTexto,
+            ],
 
         ];
 
-        if ($admin == true) {
-            array_splice($retorno, 0, 4);
-        }
         return $retorno;
     }
 
-//     public function retornoOtimizada()
-//     {
-//         return [
-//             'arestas'    => $this->arestas,
-//             'nos'        => $this->nos,
-//             'strformula' => $this->getStrFormula(),
-//         ] ;
-//     }
+    /**
+     * @return array{ arestas: Aresta[], nos:No[] ,strformula:string }
+     */
+    public function imprimirArvore()
+    {
+        return [
+            'arestas'    => $this->arvoreVisualizacao->getArestas(),
+            'nos'        => $this->arvoreVisualizacao->getNos(),
+            'strformula' => $this->formulaTexto,
+        ] ;
+    }
 
 //     private function buscarRegras($exercicio, $admin)
 //     {
-        
+
 //         if (!$this->inicializacao->isFinalizado() || $admin) {
 //             return [];
 //         }
@@ -483,4 +492,12 @@ class Base
 
 //         return true;
 //     }
-// }
+
+    /**
+     * @return string
+     */
+    public function getErro(): string
+    {
+        return $this->erro;
+    }
+}

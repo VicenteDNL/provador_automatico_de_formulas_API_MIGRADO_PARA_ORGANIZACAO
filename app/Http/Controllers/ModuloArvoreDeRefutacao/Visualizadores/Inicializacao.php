@@ -4,8 +4,9 @@ namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Visualizadores;
 
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\PassoInicializacao;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Vizualizadores\OpcaoInicializacao;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Serializa;
 
-class Inicializacao
+class Inicializacao extends Serializa
 {
     /**
      * Nos disponiveis para insercao na arvore
@@ -57,6 +58,7 @@ class Inicializacao
      */
     public function setPassosExecutados(array $passos)
     {
+        parent::arrayToObject($passos, PassoInicializacao::class);
         $this->passosExecutados = $passos;
     }
 

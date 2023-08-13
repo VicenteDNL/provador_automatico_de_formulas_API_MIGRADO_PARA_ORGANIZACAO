@@ -6,22 +6,22 @@ use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Serializa;
 
 class PassoInicializacao extends Serializa
 {
-    protected int $idNo;
+    protected string $idNo;
     protected bool $negacao;
 
     /**
-     * @return int
+     * @return string
      */
-    public function getIdNo(): int
+    public function getIdNo(): string
     {
         return $this->idNo;
     }
 
     /**
-     * @param  int  $idNo
+     * @param  string $idNo
      * @return void
      */
-    public function setIdNo(int $idNo): void
+    public function setIdNo(string $idNo): void
     {
         $this->idNo = $idNo;
     }

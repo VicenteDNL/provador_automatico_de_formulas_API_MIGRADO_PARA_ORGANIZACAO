@@ -59,4 +59,15 @@ class Serializa implements JsonSerializable
         }
         return $values;
     }
+
+    protected function arrayToObject(?array &$lista, string $classe)
+    {
+        if (is_array($lista)) {
+            for ($i = 0; $i < count($lista); ++$i) {
+                if (!($lista[$i] instanceof $classe)) {
+                    $lista[$i] = new $classe($lista[$i]);
+                }
+            }
+        }
+    }
 }

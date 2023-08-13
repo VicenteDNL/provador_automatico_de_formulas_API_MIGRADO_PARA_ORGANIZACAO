@@ -56,7 +56,6 @@ class GeradorPorPasso extends GeradorArvore
         }
 
         $result = $this->inserirNoIncializacao($formula, $novoPasso->getIdNo(), $novoPasso->getNegacao(), $ultimoNo);
-        array_push($passos, $novoPasso);
 
         if ($result['sucesso'] == false) {
             return  new TentativaInicializacao([
@@ -65,11 +64,12 @@ class GeradorPorPasso extends GeradorArvore
             ]);
         }
 
+        array_push($passosExecutados, $novoPasso);
         return new TentativaInicializacao([
             'sucesso'  => true,
             'mensagem' => 'sucesso',
             'arvore'   => $this->arvore,
-            'passos'   => $passos,
+            'passos'   => $passosExecutados,
         ]);
     }
 

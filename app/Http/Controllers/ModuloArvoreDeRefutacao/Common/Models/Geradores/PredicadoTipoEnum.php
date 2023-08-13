@@ -21,7 +21,7 @@ enum PredicadoTipoEnum
         };
     }
 
-    public function regra(int $qntNegado): RegrasEnum
+    public function regra(int $qntNegado): ?RegrasEnum
     {
         switch($qntNegado) {
             case 0:
@@ -30,6 +30,7 @@ enum PredicadoTipoEnum
                     PredicadoTipoEnum::BICONDICIONAL    => RegrasEnum::BICONDICIONAL,
                     PredicadoTipoEnum::DISJUNCAO        => RegrasEnum::DISJUNCAO,
                     PredicadoTipoEnum::CONJUNCAO        => RegrasEnum::CONJUNCAO,
+                    PredicadoTipoEnum::PREDICATIVO      => null
                 };
             case 1:
                 return match ($this) {
@@ -37,6 +38,7 @@ enum PredicadoTipoEnum
                     PredicadoTipoEnum::BICONDICIONAL    => RegrasEnum::BICONDICIONALNEGADA,
                     PredicadoTipoEnum::DISJUNCAO        => RegrasEnum::DISJUNCAONEGADA,
                     PredicadoTipoEnum::CONJUNCAO        => RegrasEnum::CONJUNCAONEGADA,
+                    PredicadoTipoEnum::PREDICATIVO      => null
                 };
             default:
                 return match ($this) {

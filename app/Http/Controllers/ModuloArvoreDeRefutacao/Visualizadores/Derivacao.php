@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Visualizadores;
 
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\PassoDerivacao;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Serializa;
 
-class Derivacao
+class Derivacao extends Serializa
 {
     /** @var PassoDerivacao[] */
     protected array $passosExecutados;
@@ -16,11 +17,12 @@ class Derivacao
 
     /**
      *
-     * @param  array $lista
+     * @param  PassoDerivacao[] $lista
      * @return void
      */
     public function setPassosExecutados(array $lista): void
     {
+        parent::arrayToObject($lista, PassoDerivacao::class);
         $this->passosExecutados = $lista;
     }
 
