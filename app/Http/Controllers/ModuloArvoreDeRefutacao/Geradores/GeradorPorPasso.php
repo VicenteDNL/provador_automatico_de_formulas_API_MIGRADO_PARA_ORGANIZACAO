@@ -1,21 +1,21 @@
 <?php
 
-namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores;
+namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores;
 
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\Formula;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\PassoDerivacao;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\PassoFechamento;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\PassoInicializacao;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\PassoTicagem;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\TentativaDerivacao;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\TentativaFechamento;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\TentativaInicializacao;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\TentativaTicagem;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\GeradorArvore;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Manipuladores\FecharNo;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Manipuladores\FecharTodosNos;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Manipuladores\TicarNo;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Manipuladores\TicarTodosNos;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\Formula;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\PassoDerivacao;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\PassoFechamento;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\PassoInicializacao;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\PassoTicagem;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\TentativaDerivacao;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\TentativaFechamento;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\TentativaInicializacao;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\TentativaTicagem;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\GeradorArvore;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Manipuladores\FecharNo;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Manipuladores\FecharTodosNos;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Manipuladores\TicarNo;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Manipuladores\TicarTodosNos;
 
 class GeradorPorPasso extends GeradorArvore
 {

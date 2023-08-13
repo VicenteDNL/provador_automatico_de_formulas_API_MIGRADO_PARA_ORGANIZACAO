@@ -1,20 +1,20 @@
 <?php
 
-namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores;
+namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores;
 
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Serializa;
 
 /**
  * @template T
  */
-class TentativaTicagem extends Serializa
+class TentativaInicializacao extends Serializa
 {
     protected bool $sucesso;
     protected string $mensagem;
     protected ?No $arvore;
 
-    /** @var ?PassoTicagem[] */
-    protected array $passos;
+    /** @var PassoInicializacao[] */
+    protected ?array $passos;
 
     /**
      *@return bool
@@ -68,7 +68,7 @@ class TentativaTicagem extends Serializa
     }
 
     /**
-     *@return PassoTicagem[]|null
+     *@return PassoInicializacao[]|null
      */
     public function getPassos(): ?array
     {
@@ -76,7 +76,7 @@ class TentativaTicagem extends Serializa
     }
 
     /**
-     * @param  PassoTicagem[] $passos
+     * @param  PassoInicializacao[] $passos
      * @return void
      */
     public function setPassos(array $passos): void

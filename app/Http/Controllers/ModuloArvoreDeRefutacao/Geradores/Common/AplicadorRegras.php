@@ -1,46 +1,41 @@
 <?php
 
-namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common;
+namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common;
 
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\No;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\Predicado;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\RegrasEnum;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\RegrasResponse;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\No;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\Predicado;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\RegrasEnum;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\RegrasResponse;
 
 class AplicadorRegras
 {
     /**
+     * Analisa a arvore e retorna as regras ainda possiveis,
+     * caso a arvore seja nula nen.
      * @param  No           $arvore
      * @param  int          $qtdRegras
      * @return RegrasEnum[]
      */
     public static function listaPosibilidades(No $arvore, int $qtdRegras): array
     {
-        $todasRegras = [
-            RegrasEnum::DUPLANEGACAO,
-            RegrasEnum::CONJUNCAO,
-            RegrasEnum::DISJUNCAONEGADA,
-            RegrasEnum::CONDICIONALNEGADA,
-            RegrasEnum::DISJUNCAO,
-            RegrasEnum::CONDICIONAL,
-            RegrasEnum::BICONDICIONAL,
-            RegrasEnum::CONJUNCAONEGADA,
-            RegrasEnum::BICONDICIONALNEGADA,
-        ];
-
         $possibilidades = self::possibilidades($arvore);
         $selecionadas = [];
 
         if (count($possibilidades) < $qtdRegras) {
             $qntdRestante = $qtdRegras - count($possibilidades);
-            $inteseccao = array_intersect($possibilidades, $todasRegras);
+            $inteseccao = array_intersect($possibilidades, RegrasEnum::cases());
             $aleatorias = array_rand($inteseccao, $qntdRestante);
             $selecionadas = [...$possibilidades, ...$aleatorias];
         } elseif (count($possibilidades) > $qtdRegras) {
             $selecionadas = array_rand($possibilidades, $qtdRegras);
         }
         shuffle($selecionadas);
-        return $selecionadas;
+
+        return  array_reduce(
+            $selecionadas,
+            fn ($carry, $r) => [...$carry, ['codigo' => $r->name, 'nome' => $r->descricao()]],
+            []
+        );
     }
 
     /**

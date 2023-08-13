@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Criadores;
+namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Criadores;
 
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\No;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\RegrasResponse;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Buscadores\EncontraContradicao;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\No;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\RegrasResponse;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Buscadores\EncontraContradicao;
 
 class CriarNoCentroDuplo
 {

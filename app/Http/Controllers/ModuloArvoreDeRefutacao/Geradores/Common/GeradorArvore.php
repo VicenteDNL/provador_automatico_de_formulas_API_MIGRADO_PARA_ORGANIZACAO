@@ -1,20 +1,20 @@
 <?php
 
-namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common;
+namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common;
 
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\Formula;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\No;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\PassoDerivacao;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\PredicadoTipoEnum;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\RegrasEnum;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\TentativaDerivacao;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Buscadores\EncontraNoPeloId;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Buscadores\EncontraNosFolha;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Buscadores\EncontraProximoNoParaInsercao;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Criadores\CriarNoBifurcado;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Criadores\CriarNoBifurcadoDuplo;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Criadores\CriarNoCentro;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Criadores\CriarNoCentroDuplo;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\Formula;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\No;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\PassoDerivacao;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\PredicadoTipoEnum;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\RegrasEnum;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\TentativaDerivacao;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Buscadores\EncontraNoPeloId;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Buscadores\EncontraNosFolha;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Buscadores\EncontraProximoNoParaInsercao;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Criadores\CriarNoBifurcado;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Criadores\CriarNoBifurcadoDuplo;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Criadores\CriarNoCentro;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Criadores\CriarNoCentroDuplo;
 
 class GeradorArvore
 {
@@ -25,6 +25,7 @@ class GeradorArvore
     public function __construct()
     {
         $this->regras = new AplicadorRegras();
+        $this->idNo = 0;
     }
 
     /**
@@ -234,7 +235,7 @@ class GeradorArvore
 
         $regraValida = $predicado->getTipoPredicado()->regra($qntdNegado);
 
-        if ($regraValida == $passoNovo->getRegra()) {
+        if ($regraValida != $passoNovo->getRegra()) {
             return new TentativaDerivacao([
                 'sucesso'  => false,
                 'mensagem' => 'Regra inválida',

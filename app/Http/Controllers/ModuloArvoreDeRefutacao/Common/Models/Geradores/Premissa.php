@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores;
+namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores;
 
 class Premissa
 {

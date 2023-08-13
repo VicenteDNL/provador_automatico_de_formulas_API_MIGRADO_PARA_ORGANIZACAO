@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Buscadores;
+namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Buscadores;
 
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\No;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\No;
 
 class EncontraNoPossivelFechamento
 {
@@ -16,20 +16,23 @@ class EncontraNoPossivelFechamento
     public static function exec(No &$arvore): ?No
     {
         $proximoNo = null;
+        $ramoCentro = $arvore->getFilhoCentroNo();
+        $ramoEsquerdo = $arvore->getFilhoEsquerdaNo();
+        $ramoDireito = $arvore->getFilhoDireitaNo();
 
-        if ($arvore->getFilhoDireitaNo() == null and $arvore->getFilhoEsquerdaNo() == null and $arvore->getFilhoCentroNo() == null and $arvore->isFechamento() == false and $arvore->isFechado() == true) {
+        if (is_null($ramoDireito) and is_null($ramoEsquerdo) and is_null($ramoCentro) and $arvore->isFechamento() == false and $arvore->isFechado() == true) {
             return $arvore;
         } else {
-            if ($arvore->getFilhoCentroNo() != null and $proximoNo == null) {
-                $proximoNo = self::exec($arvore->getFilhoCentroNo());
+            if (!is_null($ramoCentro) and is_null($proximoNo)) {
+                $proximoNo = self::exec($ramoCentro);
             }
 
-            if ($arvore->getFilhoEsquerdaNo() != null and $proximoNo == null) {
-                $proximoNo = self::exec($arvore->getFilhoEsquerdaNo());
+            if (!is_null($ramoEsquerdo) and is_null($proximoNo)) {
+                $proximoNo = self::exec($ramoEsquerdo);
             }
 
-            if ($arvore->getFilhoDireitaNo() != null and $proximoNo == null) {
-                $proximoNo = self::exec($arvore->getFilhoDireitaNo());
+            if (!is_null($ramoDireito) and is_null($proximoNo)) {
+                $proximoNo = self::exec($ramoDireito);
             }
             return $proximoNo;
         }

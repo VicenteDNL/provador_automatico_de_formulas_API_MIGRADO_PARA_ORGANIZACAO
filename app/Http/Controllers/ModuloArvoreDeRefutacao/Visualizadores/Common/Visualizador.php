@@ -1,18 +1,18 @@
 <?php
 
-namespace App\Http\Controllers\ModuloArvoreDeRefutacao;
+namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Visualizadores\Common;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\Formula;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\No as ProcessadoresNo;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\PassoInicializacao;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\Formula;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\No as ProcessadoresNo;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\PassoInicializacao;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Vizualizadores\Aresta;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Vizualizadores\Arvore;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Vizualizadores\No as VizualizadoresNo;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Vizualizadores\OpcaoInicializacao;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Buscadores\EncontraNoMaisProfundo;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\GeradorAutomatico;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\GeradorFormula;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Buscadores\EncontraNoMaisProfundo;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\GeradorFormula;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\GeradorAutomatico;
 use SimpleXMLElement;
 
 class Visualizador extends Controller
@@ -100,11 +100,13 @@ class Visualizador extends Controller
     protected function larguraMinimaCanvas(Formula $formula): float
     {
         $gerador = new GeradorAutomatico();
+        $arvoreIni = $gerador->inicializar($formula);
 
-        $nosProfundoInici = EncontraNoMaisProfundo::exec($gerador->inicializar($formula));
+        $nosProfundoInici = EncontraNoMaisProfundo::exec($arvoreIni);
         $profundidadeArvInicializada = empty($nosProfundoInici) ? 0 : $nosProfundoInici[0]->getLinhaNo();
 
-        $nosProfundoPiorArvore = EncontraNoMaisProfundo::exec($gerador->piorArvore());
+        $arvorePior = $gerador->piorArvore();
+        $nosProfundoPiorArvore = EncontraNoMaisProfundo::exec($arvorePior);
         $profundidadePiorArvore = empty($nosProfundoPiorArvore) ? 0 : $nosProfundoPiorArvore[0]->getLinhaNo();
 
         //A profundidade Final considera apenas 1 dos noós inicias, pois eles nunca são bifurcados, e portanto não interferem na largura final da Arv
@@ -172,7 +174,6 @@ class Visualizador extends Controller
         $fechado = $fechar == false ? $arvore->isFechamento() : $arvore->isFechado();
 
         $no = new VizualizadoresNo([
-            'arv'                => $arvore,
             'str'                => $str,
             'idNo'               => $arvore->getIdNo(),
             'linha'              => $arvore->getLinhaNo(),
@@ -196,18 +197,18 @@ class Visualizador extends Controller
             $areaFilho = $width / 2 ;
             $posicaoAreaFilho = $areaFilho / 2;
             $posXFilho = $posX - $posicaoAreaFilho ;
-            $listaNosVisualizadores = $this->geraListaNO($arvore->getFilhoEsquerdaNo(), $areaFilho, $posXFilho, $posYFilho, $listaNosVisualizadores, $ticar, $fechar);
+            $listaNosVisualizadores = $this->imprimirNos($arvore->getFilhoEsquerdaNo(), $areaFilho, $posXFilho, $posYFilho, $ticar, $fechar, $listaNosVisualizadores);
         }
 
         if (!is_null($arvore->getFilhoCentroNo())) {
-            $listaNosVisualizadores = $this->geraListaNO($arvore->getFilhoCentroNo(), $width, $posX, $posYFilho, $listaNosVisualizadores, $ticar, $fechar);
+            $listaNosVisualizadores = $this->imprimirNos($arvore->getFilhoCentroNo(), $width, $posX, $posYFilho, $ticar, $fechar, $listaNosVisualizadores);
         }
 
         if (!is_null($arvore->getFilhoDireitaNo())) {
             $areaFilho = $width / 2 ;
             $posicaoAreaFilho = $areaFilho / 2;
             $posXFilho = $posX + $posicaoAreaFilho ;
-            $listaNosVisualizadores = $this->geraListaNO($arvore->getFilhoDireitaNo(), $areaFilho, $posXFilho, $posYFilho, $listaNosVisualizadores, $ticar, $fechar);
+            $listaNosVisualizadores = $this->imprimirNos($arvore->getFilhoDireitaNo(), $areaFilho, $posXFilho, $posYFilho, $ticar, $fechar, $listaNosVisualizadores);
         }
         return $listaNosVisualizadores;
     }

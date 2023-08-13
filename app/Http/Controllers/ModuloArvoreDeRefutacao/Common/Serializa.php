@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Common;
 
+use JsonSerializable;
 use ReflectionClass;
+use ReflectionProperty;
 
-class Serializa
+class Serializa implements JsonSerializable
 {
     public function __construct(array $values = [])
     {
@@ -32,5 +34,29 @@ class Serializa
     public function toArray(): array
     {
         return json_decode(json_encode($this));
+    }
+
+    public function jsonSerialize()
+    {
+        $values = [];
+        $reflect = new ReflectionClass($this);
+        $properties = $reflect->getProperties(ReflectionProperty::IS_PROTECTED | ReflectionProperty::IS_PUBLIC);
+        $methods = $reflect->getMethods();
+
+        foreach ($properties as  $key => $property) {
+            $method = 'get' . implode(array_map(fn ($v) => ucfirst($v), explode('_', $property->getName())));
+            $property = $property->getName();
+
+            $findMethod = array_filter($methods, fn ($v) => $v->getName() == $method);
+
+            if (!empty($findMethod)) {
+                $values[$property] = $this->$method();
+            }
+
+            if (!empty($findproperty)) {
+                $values[$property] = $this->$property;
+            }
+        }
+        return $values;
     }
 }

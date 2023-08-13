@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\ModuloArvoreDeRefutacao;
+namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Visualizadores;
 
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\PassoInicializacao;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\PassoInicializacao;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Vizualizadores\OpcaoInicializacao;
 
 class Inicializacao

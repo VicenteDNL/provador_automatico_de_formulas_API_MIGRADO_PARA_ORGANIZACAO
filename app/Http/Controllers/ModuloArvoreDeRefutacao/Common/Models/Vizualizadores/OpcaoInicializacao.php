@@ -14,16 +14,34 @@ class OpcaoInicializacao extends Serializa
     /**
      * @return int
      */
-    public function getId(): int
+    public function getPosicao(): int
+    {
+        return $this->posicao;
+    }
+
+    /**
+     * @param  int   $id
+     * @param  mixed $posicao
+     * @return void
+     */
+    public function setPosicao($posicao): void
+    {
+        $this->posicao = $posicao;
+    }
+
+    /**
+     * @return string
+     */
+    public function getId(): string
     {
         return $this->id;
     }
 
     /**
-     * @param  int  $id
+     * @param  string $id
      * @return void
      */
-    public function setId(int $id): void
+    public function setId(string $id): void
     {
         $this->id = $id;
     }

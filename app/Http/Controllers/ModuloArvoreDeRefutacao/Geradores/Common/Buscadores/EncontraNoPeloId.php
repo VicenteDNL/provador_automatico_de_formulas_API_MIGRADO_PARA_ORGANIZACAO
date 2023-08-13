@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Buscadores;
+namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Buscadores;
 
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\No;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\No;
 
 class EncontraNoPeloId
 {
@@ -15,21 +15,24 @@ class EncontraNoPeloId
     public static function exec(No &$arvore, int $id): ?No
     {
         $no = null;
+        $ramoCentro = $arvore->getFilhoCentroNo();
+        $ramoEsquerdo = $arvore->getFilhoEsquerdaNo();
+        $ramoDireito = $arvore->getFilhoDireitaNo();
 
         if ($arvore->getIdNo() == $id) {
             return $arvore;
         } else {
-            if ($arvore->getFilhoEsquerdaNo() != null and $no == null) {
+            if (!is_null($ramoEsquerdo) and is_null($no)) {
                 ;
-                $no = self::exec($arvore->getFilhoEsquerdaNo(), $id);
+                $no = self::exec($ramoEsquerdo, $id);
             }
 
-            if ($arvore->getFilhoCentroNo() != null and $no == null) {
-                $no = self::exec($arvore->getFilhoCentroNo(), $id);
+            if (!is_null($ramoCentro) and is_null($no)) {
+                $no = self::exec($ramoCentro, $id);
             }
 
-            if ($arvore->getFilhoDireitaNo() != null and $no == null) {
-                $no = self::exec($arvore->getFilhoDireitaNo(), $id);
+            if (!is_null($ramoDireito) and is_null($no)) {
+                $no = self::exec($ramoDireito, $id);
             }
             return $no;
         }

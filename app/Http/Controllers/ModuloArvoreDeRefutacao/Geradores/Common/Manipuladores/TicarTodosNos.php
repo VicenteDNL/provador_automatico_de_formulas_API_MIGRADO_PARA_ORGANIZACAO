@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Manipuladores;
+namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Manipuladores;
 
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\No;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\PredicadoTipoEnum;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\TentativaTicagem;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Buscadores\EncontraNoPeloId;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\No;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\PredicadoTipoEnum;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\TentativaTicagem;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Buscadores\EncontraNoPeloId;
 
 class TicarTodosNos
 {

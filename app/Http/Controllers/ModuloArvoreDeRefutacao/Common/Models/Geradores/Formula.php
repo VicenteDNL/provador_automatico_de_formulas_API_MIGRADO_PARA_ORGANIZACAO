@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores;
+namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores;
 
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Serializa;
 

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Buscadores;
+namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Buscadores;
 
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\No;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\PredicadoTipoEnum;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Validadores\IsDecendente;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\No;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\PredicadoTipoEnum;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Validadores\IsDecendente;
 
 class EncontraNoBifurca
 {
@@ -19,6 +19,9 @@ class EncontraNoBifurca
     public static function exec(No &$arvore, No &$noInsercao): ?No
     {
         $noBifucacao = null;
+        $ramoCentro = $arvore->getFilhoCentroNo();
+        $ramoEsquerdo = $arvore->getFilhoEsquerdaNo();
+        $ramoDireito = $arvore->getFilhoDireitaNo();
 
         if (in_array($arvore->getValorNo()->getTipoPredicado(), [PredicadoTipoEnum::DISJUNCAO, PredicadoTipoEnum::CONDICIONAL, PredicadoTipoEnum::BICONDICIONAL]) and $arvore->getValorNo()->getNegadoPredicado() == 0 and $arvore->isUtilizado() == false) {
             if (IsDecendente::exec($arvore, $noInsercao)) {
@@ -29,16 +32,16 @@ class EncontraNoBifurca
                 return $arvore;
             }
         } else {
-            if ($arvore->getFilhoEsquerdaNo() != null and $noBifucacao == null) {
-                $noBifucacao = self::exec($arvore->getFilhoEsquerdaNo(), $noInsercao);
+            if (!is_null($ramoEsquerdo) and is_null($noBifucacao)) {
+                $noBifucacao = self::exec($ramoEsquerdo, $noInsercao);
             }
 
-            if ($arvore->getFilhoCentroNo() != null and $noBifucacao == null) {
-                $noBifucacao = self::exec($arvore->getFilhoCentroNo(), $noInsercao);
+            if (!is_null($ramoCentro) and is_null($noBifucacao)) {
+                $noBifucacao = self::exec($ramoCentro, $noInsercao);
             }
 
-            if ($arvore->getFilhoDireitaNo() != null and $noBifucacao == null) {
-                $noBifucacao = self::exec($arvore->getFilhoDireitaNo(), $noInsercao);
+            if (!is_null($ramoDireito) and is_null($noBifucacao)) {
+                $noBifucacao = self::exec($ramoDireito, $noInsercao);
             }
             return  $noBifucacao;
         }

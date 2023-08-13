@@ -1,8 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores;
+namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores;
 
-class RegrasResponse
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Serializa;
+
+class RegrasResponse extends Serializa
 {
     /** @var Predicado[] */
     protected ?array $esquerda;
@@ -23,10 +25,10 @@ class RegrasResponse
 
     /**
      * @param Predicado[]
-     * @param  array $esquerda
+     * @param  Predicado[]|null $esquerda
      * @return void
      */
-    public function setEsquerda(array $esquerda): void
+    public function setEsquerda(?array $esquerda): void
     {
         $this->esquerda = $esquerda;
     }
@@ -41,10 +43,10 @@ class RegrasResponse
 
     /**
      * @param Predicado[]
-     * @param  mixed $centro
+     * @param  Predicado[]|null $centro
      * @return void
      */
-    public function setCentro($centro): void
+    public function setCentro(?array $centro): void
     {
         $this->centro = $centro;
     }
@@ -59,10 +61,10 @@ class RegrasResponse
 
     /**
      * @param Predicado[]
-     * @param  mixed $direita
+     * @param  Predicado[]|null $direita
      * @return void
      */
-    public function setDireita($direita): void
+    public function setDireita(?array $direita): void
     {
         $this->direita = $direita;
     }

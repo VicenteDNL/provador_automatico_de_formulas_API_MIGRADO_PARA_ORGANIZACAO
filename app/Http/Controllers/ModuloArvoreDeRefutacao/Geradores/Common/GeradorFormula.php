@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores;
+namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common;
 
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\Conclusao;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\Formula;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\Predicado;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\PredicadoTipoEnum;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\Premissa;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\Conclusao;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\Formula;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\Predicado;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\PredicadoTipoEnum;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\Premissa;
 use SimpleXMLElement;
 
 class GeradorFormula
@@ -49,7 +49,7 @@ class GeradorFormula
         }
 
         if (in_array($arg->getTipoPredicado(), [PredicadoTipoEnum::CONJUNCAO, PredicadoTipoEnum::BICONDICIONAL, PredicadoTipoEnum::CONDICIONAL, PredicadoTipoEnum::DISJUNCAO])) {
-            return $negacao . ' (' . $this->stringArg($arg->getEsquerdaPredicado()) . $arg->getTipoPredicado()->symbol() . $this->stringArg($arg->getDireitaPredicado()) . ')';
+            return $negacao . ' (' . $this->stringArg($arg->getEsquerdaPredicado()) . $arg->getTipoPredicado()->simbolo() . $this->stringArg($arg->getDireitaPredicado()) . ')';
         } else {
             return $negacao . ' ' . $arg->getValorPredicado();
         }
@@ -153,7 +153,7 @@ class GeradorFormula
         } else {
             $consequente_no = $this->encontraFilho($consequente_xml);
         }
-        $valor = $antecendente_no->getValorPredicado() . PredicadoTipoEnum::CONDICIONAL->symbol() . $consequente_no->getValorPredicado();
+        $valor = $antecendente_no->getValorPredicado() . PredicadoTipoEnum::CONDICIONAL->simbolo() . $consequente_no->getValorPredicado();
         return new Predicado($valor, $this->qntdNegacao($condicional->attributes()['NEG'] ?? ''), PredicadoTipoEnum::CONDICIONAL, $antecendente_no, $consequente_no);
     }
 
@@ -180,7 +180,7 @@ class GeradorFormula
         } else {
             $secundario_no = $this->encontraFilho($secundario_xml);
         }
-        $valor = $primario_no->getValorPredicado() . PredicadoTipoEnum::BICONDICIONAL->symbol() . $secundario_no->getValorPredicado();
+        $valor = $primario_no->getValorPredicado() . PredicadoTipoEnum::BICONDICIONAL->simbolo() . $secundario_no->getValorPredicado();
         return new Predicado($valor, $this->qntdNegacao($bicondicional->attributes()['NEG'] ?? ''), PredicadoTipoEnum::BICONDICIONAL, $primario_no, $secundario_no);
     }
 
@@ -207,7 +207,7 @@ class GeradorFormula
         } else {
             $secundario_no = $this->encontraFilho($secundario_xml);
         }
-        $valor = $primario_no->getValorPredicado() . PredicadoTipoEnum::DISJUNCAO->symbol() . $secundario_no->getValorPredicado();
+        $valor = $primario_no->getValorPredicado() . PredicadoTipoEnum::DISJUNCAO->simbolo() . $secundario_no->getValorPredicado();
         return new Predicado($valor, $this->qntdNegacao($disjuncao->attributes()['NEG'] ?? ''), PredicadoTipoEnum::DISJUNCAO, $primario_no, $secundario_no);
     }
 
@@ -234,7 +234,7 @@ class GeradorFormula
         } else {
             $secundario_no = $this->encontraFilho($secundario_xml);
         }
-        $valor = $primario_no->getValorPredicado() . PredicadoTipoEnum::CONJUNCAO->symbol() . $secundario_no->getValorPredicado();
+        $valor = $primario_no->getValorPredicado() . PredicadoTipoEnum::CONJUNCAO->simbolo() . $secundario_no->getValorPredicado();
         return new Predicado($valor, $this->qntdNegacao($conjuncao->attributes()['NEG'] ?? ''), PredicadoTipoEnum::CONJUNCAO, $primario_no, $secundario_no);
     }
 

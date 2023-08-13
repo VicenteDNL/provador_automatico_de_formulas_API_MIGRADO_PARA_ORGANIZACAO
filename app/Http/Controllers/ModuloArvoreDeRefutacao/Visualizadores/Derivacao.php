@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\ModuloArvoreDeRefutacao;
+namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Visualizadores;
 
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\PassoDerivacao;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\PassoDerivacao;
 
 class Derivacao
 {

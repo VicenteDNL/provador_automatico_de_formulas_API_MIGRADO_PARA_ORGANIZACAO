@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Validadores;
+namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Validadores;
 
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\No;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\No;
 
 class IsDecendente
 {

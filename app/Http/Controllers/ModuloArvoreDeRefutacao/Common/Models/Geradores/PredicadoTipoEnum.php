@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores;
+namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores;
 
 enum PredicadoTipoEnum
 {
@@ -10,19 +10,20 @@ enum PredicadoTipoEnum
     case CONJUNCAO;
     case PREDICATIVO;
 
-    public function symbol(): string
+    public function simbolo(): string
     {
         return match ($this) {
-            PredicadoTipoEnum::CONDICIONAL      => RegrasEnum::,
+            PredicadoTipoEnum::CONDICIONAL      => '->',
             PredicadoTipoEnum::BICONDICIONAL    => '<->',
             PredicadoTipoEnum::DISJUNCAO        => 'v',
             PredicadoTipoEnum::CONJUNCAO        => '^',
             PredicadoTipoEnum::PREDICATIVO      => '',
         };
     }
+
     public function regra(int $qntNegado): RegrasEnum
     {
-        switch($qntNegado){
+        switch($qntNegado) {
             case 0:
                 return match ($this) {
                     PredicadoTipoEnum::CONDICIONAL      => RegrasEnum::CONDICIONAL,
@@ -37,7 +38,7 @@ enum PredicadoTipoEnum
                     PredicadoTipoEnum::DISJUNCAO        => RegrasEnum::DISJUNCAONEGADA,
                     PredicadoTipoEnum::CONJUNCAO        => RegrasEnum::CONJUNCAONEGADA,
                 };
-            default :
+            default:
                 return match ($this) {
                     PredicadoTipoEnum::CONDICIONAL      => RegrasEnum::DUPLANEGACAO,
                     PredicadoTipoEnum::BICONDICIONAL    => RegrasEnum::DUPLANEGACAO,
@@ -46,7 +47,5 @@ enum PredicadoTipoEnum
                     PredicadoTipoEnum::PREDICATIVO      => RegrasEnum::DUPLANEGACAO,
                 };
         }
-
     }
-
 }

@@ -2,13 +2,10 @@
 
 namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Vizualizadores;
 
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\No as ProcessadoresNo;
-
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Serializa;
 
 class No extends Serializa
 {
-    protected ProcessadoresNo $arv;
     protected string $str;
     protected int $idNo;
     protected int $linha;
@@ -25,23 +22,6 @@ class No extends Serializa
     protected string $fill;
     protected int $strokeWidth;
     protected string $strokeColor;
-
-    /**
-     * @return ProcessadoresNo
-     */
-    public function getArv(): ProcessadoresNo
-    {
-        return $this->arv;
-    }
-
-    /**
-     * @param  ProcessadoresNo $arv
-     * @return void
-     */
-    public function setArv(ProcessadoresNo $arv): void
-    {
-        $this->arv = $arv;
-    }
 
     /**
      * @return string
@@ -188,10 +168,10 @@ class No extends Serializa
     }
 
     /**
-     * @param  int  $linhaDerivacao
+     * @param  int|null $linhaDerivacao
      * @return void
      */
-    public function setLinhaDerivacao(int $linhaDerivacao): void
+    public function setLinhaDerivacao(?int $linhaDerivacao): void
     {
         $this->linhaDerivacao = $linhaDerivacao;
     }
@@ -256,10 +236,10 @@ class No extends Serializa
     }
 
     /**
-     * @param  int  $linhaContradicao
+     * @param  int|null $linhaContradicao
      * @return void
      */
-    public function setLinhaContradicao(int $linhaContradicao): void
+    public function setLinhaContradicao(?int $linhaContradicao): void
     {
         $this->linhaContradicao = $linhaContradicao;
     }

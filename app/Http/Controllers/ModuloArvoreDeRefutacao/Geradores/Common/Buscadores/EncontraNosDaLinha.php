@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Buscadores;
+namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Buscadores;
 
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\No;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\No;
 
 class EncontraNosDaLinha
 {
@@ -15,15 +15,19 @@ class EncontraNosDaLinha
      */
     public static function exec(No &$arvore, int $linha, array $nos = []): array
     {
+        $ramoCentro = $arvore->getFilhoCentroNo();
+        $ramoEsquerdo = $arvore->getFilhoEsquerdaNo();
+        $ramoDireito = $arvore->getFilhoDireitaNo();
+
         if ($arvore->getLinhaNo() == $linha) {
             array_push($nos, $arvore);
         }
 
-        if ($arvore->getFilhoCentroNo() != null) {
-            $nos = self::exec($arvore->getFilhoCentroNo(), $linha, $nos);
-        } elseif ($arvore->getFilhoEsquerdaNo() != null and $arvore->getFilhoDireitaNo() != null) {
-            $nos = self::exec($arvore->getFilhoEsquerdaNo(), $linha, $nos);
-            $nos = self::exec($arvore->getFilhoDireitaNo(), $linha, $nos);
+        if (!is_null($ramoCentro)) {
+            $nos = self::exec($ramoCentro, $linha, $nos);
+        } elseif (!is_null($ramoEsquerdo) and !is_null($ramoDireito)) {
+            $nos = self::exec($ramoEsquerdo, $linha, $nos);
+            $nos = self::exec($ramoDireito, $linha, $nos);
         }
         return $nos;
     }

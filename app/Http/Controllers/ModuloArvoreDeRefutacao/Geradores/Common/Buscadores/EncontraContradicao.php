@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Buscadores;
+namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Buscadores;
 
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\No;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Validadores\IsDecendente;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\No;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Validadores\IsDecendente;
 
 class EncontraContradicao
 {
@@ -17,6 +17,9 @@ class EncontraContradicao
     public static function exec(No $arvore, No $no): ?No
     {
         $contradicao = null;
+        $ramoCentro = $arvore->getFilhoCentroNo();
+        $ramoEsquerdo = $arvore->getFilhoEsquerdaNo();
+        $ramoDireito = $arvore->getFilhoDireitaNo();
 
         if ($arvore->getValorNo()->getValorPredicado() == $no->getValorNo()->getValorPredicado()) {
             $negacaoNo = $no->getValorNo()->getNegadoPredicado();
@@ -30,30 +33,30 @@ class EncontraContradicao
                     return $arvore;
                 }
             } else {
-                if ($arvore->getFilhoCentroNo() != null and $contradicao == null) {
-                    $contradicao = self::exec($arvore->getFilhoCentroNo(), $no);
+                if (!is_null($ramoCentro) and is_null($contradicao)) {
+                    $contradicao = self::exec($ramoCentro, $no);
                 }
 
-                if ($arvore->getFilhoEsquerdaNo() != null and $contradicao == null) {
-                    $contradicao = self::exec($arvore->getFilhoEsquerdaNo(), $no);
+                if (!is_null($ramoEsquerdo) and is_null($contradicao)) {
+                    $contradicao = self::exec($ramoEsquerdo, $no);
                 }
 
-                if ($arvore->getFilhoDireitaNo() != null and $contradicao == null) {
-                    $contradicao = self::exec($arvore->getFilhoDireitaNo(), $no);
+                if (!is_null($ramoDireito) and is_null($contradicao)) {
+                    $contradicao = self::exec($ramoDireito, $no);
                 }
                 return $contradicao;
             }
         } else {
-            if ($arvore->getFilhoCentroNo() != null and $contradicao == null) {
-                $contradicao = self::exec($arvore->getFilhoCentroNo(), $no);
+            if (!is_null($ramoCentro) and is_null($contradicao)) {
+                $contradicao = self::exec($ramoCentro, $no);
             }
 
-            if ($arvore->getFilhoEsquerdaNo() != null and $contradicao == null) {
-                $contradicao = self::exec($arvore->getFilhoEsquerdaNo(), $no);
+            if (!is_null($ramoEsquerdo) and is_null($contradicao)) {
+                $contradicao = self::exec($ramoEsquerdo, $no);
             }
 
-            if ($arvore->getFilhoDireitaNo() != null and $contradicao == null) {
-                $contradicao = self::exec($arvore->getFilhoDireitaNo(), $no);
+            if (!is_null($ramoDireito) and is_null($contradicao)) {
+                $contradicao = self::exec($ramoDireito, $no);
             }
             return $contradicao;
         }

@@ -1,7 +1,9 @@
 <?php
 
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\No;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Validadores\IsDecendente;
+namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Buscadores;
+
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\No;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Validadores\IsDecendente;
 
 class EncontraDuplaNegacao
 {
@@ -16,22 +18,25 @@ class EncontraDuplaNegacao
     public static function exec(No &$arvore, No &$noInsercao): ?No
     {
         $negacao = null;
+        $ramoCentro = $arvore->getFilhoCentroNo();
+        $ramoEsquerdo = $arvore->getFilhoEsquerdaNo();
+        $ramoDireito = $arvore->getFilhoDireitaNo();
 
         if ($arvore->getValorNo()->getNegadoPredicado() >= 2 and $arvore->isUtilizado() == false) {
             if (IsDecendente::exec($arvore, $noInsercao)) {
                 return $arvore;
             }
         } else {
-            if ($arvore->getFilhoEsquerdaNo() != null and $negacao == null) {
-                $negacao = self::exec($arvore->getFilhoEsquerdaNo(), $noInsercao);
+            if (!is_null($ramoEsquerdo) and is_null($negacao)) {
+                $negacao = self::exec($ramoEsquerdo, $noInsercao);
             }
 
-            if ($arvore->getFilhoCentroNo() != null and $negacao == null) {
-                $negacao = self::exec($arvore->getFilhoCentroNo(), $noInsercao);
+            if (!is_null($ramoCentro) and is_null($negacao)) {
+                $negacao = self::exec($ramoCentro, $noInsercao);
             }
 
-            if ($arvore->getFilhoDireitaNo() != null and $negacao == null) {
-                $negacao = self::exec($arvore->getFilhoDireitaNo(), $noInsercao);
+            if (!is_null($ramoDireito) and is_null($negacao)) {
+                $negacao = self::exec($ramoDireito, $noInsercao);
             }
             return $negacao;
         }

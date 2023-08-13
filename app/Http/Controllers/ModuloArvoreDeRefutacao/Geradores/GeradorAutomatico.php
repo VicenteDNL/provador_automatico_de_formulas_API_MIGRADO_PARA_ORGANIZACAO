@@ -1,16 +1,17 @@
 <?php
 
-namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores;
+namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores;
 
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\Formula;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\No;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Buscadores\EncontraNoBifurca;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Buscadores\EncontraNoSemBifucacao;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Buscadores\EncontraNosFolhas;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Buscadores\EncontraProximoNoParaInsercao;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\GeradorArvore;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Validadores\IsDecendente;
-use EncontraDuplaNegacao;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\Formula;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\No;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\PassoDerivacao;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Buscadores\EncontraDuplaNegacao;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Buscadores\EncontraNoBifurca;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Buscadores\EncontraNoSemBifucacao;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Buscadores\EncontraNosFolha;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Buscadores\EncontraProximoNoParaInsercao;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\GeradorArvore;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Validadores\IsDecendente;
 
 class GeradorAutomatico extends GeradorArvore
 {
@@ -43,7 +44,7 @@ class GeradorAutomatico extends GeradorArvore
             $this->arvore = (new No($this->genereteIdNo(), $conclusao->getValorObjConclusao(), null, null, null, 1, null, null, false, false));
             $ultimoNo = $this->arvore;
         } else {
-            $ultimoNo->setFilhoCentroNo(new No($this->genereteIdNo(), $conclusao[0]->getValorObjConclusao(), null, null, null, $ultimoNo->getLinhaNo() + 1, null, null, false, false));
+            $ultimoNo->setFilhoCentroNo(new No($this->genereteIdNo(), $conclusao->getValorObjConclusao(), null, null, null, $ultimoNo->getLinhaNo() + 1, null, null, false, false));
             $ultimoNo = $ultimoNo->getFilhoCentroNo();
         }
 
@@ -68,20 +69,32 @@ class GeradorAutomatico extends GeradorArvore
             if (!is_null($no)) {
                 $qntdNegado = $no->getValorNo()->getNegadoPredicado();
                 $regra = $no->getValorNo()->getTipoPredicado()->regra($qntdNegado);
-                $this->derivarByRegra($no, [$noInsercao], $regra);
-
+                $passo = new PassoDerivacao([
+                    'idNoDerivacao' => $no->getIdNo(),
+                    'idNoInsercoes' => [$noInsercao->getIdNo()],
+                    'regra'         => $regra,
+                ]);
+                $this->derivar($passo);
                 return $this->arvoreOtimizada();
             } elseif (!is_null($noSemBifur)) {
                 $qntdNegado = $noSemBifur->getValorNo()->getNegadoPredicado();
                 $regra = $noSemBifur->getValorNo()->getTipoPredicado()->regra($qntdNegado);
-                $this->derivarByRegra($no, [$noInsercao], $regra);
-
+                $passo = new PassoDerivacao([
+                    'idNoDerivacao' => $noSemBifur->getIdNo(),
+                    'idNoInsercoes' => [$noInsercao->getIdNo()],
+                    'regra'         => $regra,
+                ]);
+                $this->derivar($passo);
                 return $this->arvoreOtimizada($this->arvore);
             } elseif (!is_null($noBifur)) {
                 $qntdNegado = $noBifur->getValorNo()->getNegadoPredicado();
                 $regra = $noBifur->getValorNo()->getTipoPredicado()->regra($qntdNegado);
-                $this->derivarByRegra($no, [$noInsercao], $regra);
-
+                $passo = new PassoDerivacao([
+                    'idNoDerivacao' => $noBifur->getIdNo(),
+                    'idNoInsercoes' => [$noInsercao->getIdNo()],
+                    'regra'         => $regra,
+                ]);
+                $this->derivar($passo);
                 return $this->arvoreOtimizada($this->arvore);
             }
             return $this->arvore;
@@ -95,7 +108,7 @@ class GeradorAutomatico extends GeradorArvore
      */
     public function piorArvore(): No
     {
-        $listaNosFolha = EncontraNosFolhas::exec($this->arvore);
+        $listaNosFolha = EncontraNosFolha::exec($this->arvore);
 
         if ($listaNosFolha == null) {
             return $this->arvore;
@@ -113,7 +126,14 @@ class GeradorAutomatico extends GeradorArvore
 
                 $qntdNegado = $noBifur->getValorNo()->getNegadoPredicado();
                 $regra = $noBifur->getValorNo()->getTipoPredicado()->regra($qntdNegado);
-                $this->derivarByRegra($noBifur, [$listaNosFolha], $regra);
+
+                $passo = new PassoDerivacao([
+                    'idNoDerivacao' => $noBifur->getIdNo(),
+                    'idNoInsercoes' => array_map(fn (No $nof) => $nof->getIdNo(), $listaNosFolha),
+                    'regra'         => $regra,
+                ]);
+
+                $this->derivar($passo);
                 return $this->piorArvore();
             } elseif ($noSemBifur) {
                 for ($i = 0 ; $i < count($listaNosFolha) ; ++$i) {
@@ -124,8 +144,13 @@ class GeradorAutomatico extends GeradorArvore
 
                 $qntdNegado = $noSemBifur->getValorNo()->getNegadoPredicado();
                 $regra = $noSemBifur->getValorNo()->getTipoPredicado()->regra($qntdNegado);
-                $this->derivarByRegra($noSemBifur, [$listaNosFolha], $regra);
+                $passo = new PassoDerivacao([
+                    'idNoDerivacao' => $noSemBifur->getIdNo(),
+                    'idNoInsercoes' => array_map(fn (No $nof) => $nof->getIdNo(), $listaNosFolha),
+                    'regra'         => $regra,
+                ]);
 
+                $this->derivar($passo);
                 return $this->piorArvore();
             } elseif ($no) {
                 for ($i = 0 ; $i < count($listaNosFolha) ; ++$i) {
@@ -136,8 +161,12 @@ class GeradorAutomatico extends GeradorArvore
 
                 $qntdNegado = $no->getValorNo()->getNegadoPredicado();
                 $regra = $no->getValorNo()->getTipoPredicado()->regra($qntdNegado);
-                $this->derivarByRegra($no, [$listaNosFolha], $regra);
-
+                $passo = new PassoDerivacao([
+                    'idNoDerivacao' => $no->getIdNo(),
+                    'idNoInsercoes' => array_map(fn (No $nof) => $nof->getIdNo(), $listaNosFolha),
+                    'regra'         => $regra,
+                ]);
+                $this->derivar($passo);
                 return $this->piorArvore();
             }
             return $this->arvore;

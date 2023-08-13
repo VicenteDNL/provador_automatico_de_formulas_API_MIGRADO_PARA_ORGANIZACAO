@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores;
+namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores;
 
 class No
 {
@@ -206,10 +206,10 @@ class No
     }
 
     /**
-     * @param  int  $linha
+     * @param  int|null $linha
      * @return void
      */
-    public function setLinhaDerivacao(int $linha): void
+    public function setLinhaDerivacao(?int $linha): void
     {
         $this->linhaDerivacao = $linha;
     }

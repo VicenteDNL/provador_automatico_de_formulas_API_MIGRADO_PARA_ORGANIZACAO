@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Processadores\Common\Buscadores;
+namespace App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Buscadores;
 
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Processadores\No;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\No;
 
 class EncontraNosFolhasAberto
 {
@@ -15,20 +15,24 @@ class EncontraNosFolhasAberto
      * */
     public static function exec(No &$arvore, array $nos = []): array
     {
-        if ($arvore->getFilhoDireitaNo() == null and $arvore->getFilhoEsquerdaNo() == null and $arvore->getFilhoCentroNo() == null and ($arvore->isFechado() == true && $arvore->isFechamento() == false)) {
+        $ramoCentro = $arvore->getFilhoCentroNo();
+        $ramoEsquerdo = $arvore->getFilhoEsquerdaNo();
+        $ramoDireito = $arvore->getFilhoDireitaNo();
+
+        if (is_null($ramoDireito) and is_null($ramoEsquerdo) and is_null($ramoCentro) and ($arvore->isFechado() == true && $arvore->isFechamento() == false)) {
             $nos[] = $arvore;
             return  $nos;
         } else {
-            if ($arvore->getFilhoCentroNo() != null) {
-                $nos = self::exec($arvore->getFilhoCentroNo(), $nos);
+            if (!is_null($ramoCentro)) {
+                $nos = self::exec($ramoCentro, $nos);
             }
 
-            if ($arvore->getFilhoEsquerdaNo() != null) {
-                $nos = self::exec($arvore->getFilhoEsquerdaNo(), $nos);
+            if (!is_null($ramoEsquerdo)) {
+                $nos = self::exec($ramoEsquerdo, $nos);
             }
 
-            if ($arvore->getFilhoDireitaNo() != null) {
-                $nos = self::exec($arvore->getFilhoDireitaNo(), $nos);
+            if (!is_null($ramoDireito)) {
+                $nos = self::exec($ramoDireito, $nos);
             }
             return $nos;
         }
