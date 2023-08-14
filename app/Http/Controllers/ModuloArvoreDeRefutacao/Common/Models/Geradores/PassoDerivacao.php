@@ -7,35 +7,35 @@ use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Serializa;
 class PassoDerivacao extends Serializa
 {
     /** @var Array<int>  */
-    protected array $idNoInsercoes;
+    protected array $idsNoInsercoes;
     protected int $idNoDerivacao;
     protected RegrasEnum $regra;
 
     /**
      * @return Array<int>
      */
-    public function getIdNoInsercoes(): array
+    public function getIdsNoInsercoes(): array
     {
-        return $this->idNoInsercoes;
+        return $this->idsNoInsercoes;
     }
 
     /**
-     * @param  Array<int> $idNoInsercoes
+     * @param  Array<int> $idsNoInsercoes
      * @return void
      */
-    public function setIdNoInsercoes(array $idNoInsercoes): void
+    public function setIdsNoInsercoes(array $idsNoInsercoes): void
     {
-        $this->idNoInsercoes = $idNoInsercoes;
+        $this->idsNoInsercoes = $idsNoInsercoes;
     }
 
     /**
-     * @param  int   $idNoInsercoes
+     * @param  int   $idsNoInsercoes
      * @param  array $idNoinsercao
      * @return void
      */
     public function addIdNoInsercoes(array $idNoinsercao): void
     {
-        array_push($this->idNoInsercoes, $idNoinsercao);
+        array_push($this->idsNoInsercoes, $idNoinsercao);
     }
 
     /**

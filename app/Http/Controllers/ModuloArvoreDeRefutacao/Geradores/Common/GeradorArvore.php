@@ -52,7 +52,7 @@ class GeradorArvore
             return  $tentativa;
         }
 
-        $listaNoInsercao = array_map(fn ($id) => EncontraNoPeloId::exec($this->arvore, $id), $passo->getIdNoInsercoes());
+        $listaNoInsercao = array_map(fn ($id) => EncontraNoPeloId::exec($this->arvore, $id), $passo->getIdsNoInsercoes());
         $noDerivacao = EncontraNoPeloId::exec($this->arvore, $passo->getIdNoDerivacao());
 
         switch($passo->getRegra()) {
@@ -191,7 +191,7 @@ class GeradorArvore
         $noDerivacao = EncontraNoPeloId::exec($this->arvore, $passoNovo->getIdNoDerivacao());
         $predicado = $noDerivacao->getValorNo();
         $qntdNegado = $predicado->getNegadoPredicado();
-        $listaNoInsercao = array_map(fn ($id): No => EncontraNoPeloId::exec($this->arvore, $id), $passoNovo->getIdNoInsercoes());
+        $listaNoInsercao = array_map(fn ($id): No => EncontraNoPeloId::exec($this->arvore, $id), $passoNovo->getIdsNoInsercoes());
 
         if (is_null(EncontraProximoNoParaInsercao::exec($this->arvore))) {
             return new TentativaDerivacao(['sucesso' => false, 'mensagem' => 'não existe mais derivações possiveis']);

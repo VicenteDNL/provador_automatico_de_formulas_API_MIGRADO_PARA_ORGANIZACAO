@@ -23,7 +23,6 @@ class EncontraNoPeloId
             return $arvore;
         } else {
             if (!is_null($ramoEsquerdo) and is_null($no)) {
-                ;
                 $no = self::exec($ramoEsquerdo, $id);
             }
 

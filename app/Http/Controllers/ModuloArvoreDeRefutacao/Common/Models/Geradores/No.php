@@ -112,7 +112,7 @@ class No
     /**
      * @return No|null
      */
-    public function getFilhoCentroNo(): ?No
+    public function &getFilhoCentroNo(): ?No
     {
         return $this->filho_centro;
     }
@@ -144,7 +144,7 @@ class No
     /**
      * @return No|null
      */
-    public function getFilhoDireitaNo(): ?No
+    public function &getFilhoDireitaNo(): ?No
     {
         return $this->filho_direita;
     }
@@ -163,7 +163,7 @@ class No
     /**
      * @return No|null
      */
-    public function getFilhoEsquerdaNo(): ?No
+    public function &getFilhoEsquerdaNo(): ?No
     {
         return $this->filho_esquerda;
     }

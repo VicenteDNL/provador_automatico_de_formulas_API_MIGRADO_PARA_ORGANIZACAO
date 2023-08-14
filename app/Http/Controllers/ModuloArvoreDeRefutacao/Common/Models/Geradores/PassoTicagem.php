@@ -7,7 +7,6 @@ use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Serializa;
 class PassoTicagem extends Serializa
 {
     protected int $idNo;
-    protected bool $idNoContraditorio;
 
     /**
      * @return int

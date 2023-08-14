@@ -24,14 +24,10 @@ class EncontraContradicao
         if ($arvore->getValorNo()->getValorPredicado() == $no->getValorNo()->getValorPredicado()) {
             $negacaoNo = $no->getValorNo()->getNegadoPredicado();
 
-            if ($negacaoNo == 1 and $arvore->getValorNo()->getNegadoPredicado() == 0) {
-                if (IsDecendente::exec($arvore, $no)) {
-                    return $arvore;
-                }
-            } elseif ($negacaoNo == 0 and $arvore->getValorNo()->getNegadoPredicado() == 1) {
-                if (IsDecendente::exec($arvore, $no)) {
-                    return $arvore;
-                }
+            if ($negacaoNo == 1 and $arvore->getValorNo()->getNegadoPredicado() == 0 and IsDecendente::exec($arvore, $no)) {
+                return $arvore;
+            } elseif ($negacaoNo == 0 and $arvore->getValorNo()->getNegadoPredicado() == 1 and IsDecendente::exec($arvore, $no)) {
+                return $arvore;
             } else {
                 if (!is_null($ramoCentro) and is_null($contradicao)) {
                     $contradicao = self::exec($ramoCentro, $no);

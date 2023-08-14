@@ -95,7 +95,7 @@ class Visualizador extends Controller
 
     /**
      * @param  Formula $formula
-     * @return floar
+     * @return float
      */
     protected function larguraMinimaCanvas(Formula $formula): float
     {
@@ -106,7 +106,12 @@ class Visualizador extends Controller
         $profundidadeArvInicializada = empty($nosProfundoInici) ? 0 : $nosProfundoInici[0]->getLinhaNo();
 
         $arvorePior = $gerador->piorArvore();
-        $nosProfundoPiorArvore = EncontraNoMaisProfundo::exec($arvorePior);
+
+        if (!$arvorePior->getSucesso()) {
+            return 0;
+        }
+
+        $nosProfundoPiorArvore = EncontraNoMaisProfundo::exec($arvorePior->getArvore());
         $profundidadePiorArvore = empty($nosProfundoPiorArvore) ? 0 : $nosProfundoPiorArvore[0]->getLinhaNo();
 
         //A profundidade Final considera apenas 1 dos noós inicias, pois eles nunca são bifurcados, e portanto não interferem na largura final da Arv
