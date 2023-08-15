@@ -31,19 +31,12 @@ class GeradorPorPasso extends GeradorArvore
      */
     public function reconstruirInicializacao(Formula $formula, array $passosExecutados, ?PassoInicializacao $novoPasso = null): TentativaInicializacao
     {
-        $ultimoNo = null;
-        $resposta = null;
-
         foreach ($passosExecutados as $passo) {
-            $resposta = $this->inserirNoIncializacao($formula, $passo->getIdNo(), $passo->getNegacao(), $ultimoNo);
+            $tentativa = $this->inserirNoIncializacao($formula, $passo->getIdNo(), $passo->getNegacao());
 
-            if ($resposta['sucesso'] == false) {
-                return new TentativaInicializacao([
-                    'sucesso'  => false,
-                    'mensagem' => $resposta['mensagem'],
-                ]);
+            if (!$tentativa->getSucesso()) {
+                return  $tentativa;
             }
-            $ultimoNo = $resposta['ultimoNo'];
         }
 
         if (is_null($novoPasso)) {
@@ -55,13 +48,10 @@ class GeradorPorPasso extends GeradorArvore
             ]);
         }
 
-        $result = $this->inserirNoIncializacao($formula, $novoPasso->getIdNo(), $novoPasso->getNegacao(), $ultimoNo);
+        $tentativa = $this->inserirNoIncializacao($formula, $novoPasso->getIdNo(), $novoPasso->getNegacao());
 
-        if ($result['sucesso'] == false) {
-            return  new TentativaInicializacao([
-                'sucesso'  => false,
-                'mensagem' => $result['mensagem'],
-            ]);
+        if (!$tentativa->getSucesso()) {
+            return  $tentativa;
         }
 
         array_push($passosExecutados, $novoPasso);

@@ -59,10 +59,10 @@ class TentativaInicializacao extends Serializa
     }
 
     /**
-     * @param  No   $arvore
+     * @param  No|null $arvore
      * @return void
      */
-    public function setArvore(No $arvore): void
+    public function setArvore(?No $arvore): void
     {
         $this->arvore = $arvore;
     }

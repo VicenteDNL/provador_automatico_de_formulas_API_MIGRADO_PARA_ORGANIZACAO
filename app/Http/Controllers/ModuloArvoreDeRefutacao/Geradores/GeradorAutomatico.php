@@ -6,48 +6,52 @@ use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\Formula
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\No;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\PassoDerivacao;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\TentativaDerivacao;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\TentativaInicializacao;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Buscadores\EncontraDuplaNegacao;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Buscadores\EncontraNoBifurca;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Buscadores\EncontraNoSemBifucacao;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Buscadores\EncontraProximoNoParaInsercao;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Buscadores\EncontraNosFolha;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\GeradorArvore;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Validadores\ExisteDerivacaoPossivelDeInsercao;
 
 class GeradorAutomatico extends GeradorArvore
 {
     /**
      * Esta função gera e retorna as primeiras linhas da arvores de refutacao
-     * @param  Formula $formula
-     * @return No|null
+     * @param  Formula                $formula
+     * @return TentativaInicializacao
      */
-    public function inicializar(Formula $formula): ?No
+    public function inicializar(Formula $formula): TentativaInicializacao
     {
-        $ultimoNo = null;
         $premissas = $formula->getPremissas();
         $conclusao = $formula->getConclusao();
 
-        if (!empty($premissas)) {
-            $premissa = array_pop($premissas);
+        foreach ($premissas as $premissa) {
+            $tentativa = $this->inserirNoIncializacao($formula, $premissa->getId(), false);
 
-            $this->arvore = new No($this->genereteIdNo(), $premissa->getValorObjPremissa(), null, null, null, 1, null, null, false, false);
-            $ultimoNo = $this->arvore;
-
-            foreach ($premissas as $premissa) {
-                $ultimoNo->setFilhoCentroNo(new No($this->genereteIdNo(), $premissa->getValorObjPremissa(), null, null, null, $ultimoNo->getLinhaNo() + 1, null, null, false, false));
-                $ultimoNo = $ultimoNo->getFilhoCentroNo();
+            if ($tentativa->getSucesso() == false) {
+                return new TentativaInicializacao([
+                    'sucesso'  => false,
+                    'mensagem' => $tentativa->getMensagem(),
+                ]);
             }
         }
 
-        $conclusao->getValorObjConclusao()->addNegacaoPredicado();
+        $tentativa = $this->inserirNoIncializacao($formula, $conclusao->getId(), true);
 
-        if ($this->arvore == null) {
-            $this->arvore = (new No($this->genereteIdNo(), $conclusao->getValorObjConclusao(), null, null, null, 1, null, null, false, false));
-            $ultimoNo = $this->arvore;
-        } else {
-            $ultimoNo->setFilhoCentroNo(new No($this->genereteIdNo(), $conclusao->getValorObjConclusao(), null, null, null, $ultimoNo->getLinhaNo() + 1, null, null, false, false));
-            $ultimoNo = $ultimoNo->getFilhoCentroNo();
+        if ($tentativa->getSucesso() == false) {
+            return new TentativaInicializacao([
+                'sucesso'  => false,
+                'mensagem' => $tentativa->getMensagem(),
+            ]);
         }
 
-        return $this->arvore;
+        return new TentativaInicializacao([
+            'sucesso'  => true,
+            'mensagem' => 'inicializacao realizada com sucesso',
+            'arvore'   => $this->arvore,
+            'passos'   => [],
+        ]);
     }
 
     /**
@@ -56,42 +60,45 @@ class GeradorAutomatico extends GeradorArvore
      */
     public function arvoreOtimizada(): ?TentativaDerivacao
     {
-        $noInsercao = EncontraProximoNoParaInsercao::exec($this->arvore);
-
-        if ($noInsercao == null) {
-            return  new TentativaDerivacao([
-                'sucesso'  => true,
-                'mensagem' => 'sucesso',
-                'arvore'   => $this->arvore,
-                'passos'   => [],
+        if (is_null($this->arvore)) {
+            return new TentativaDerivacao([
+                'sucesso'  => false,
+                'mensagem' => 'Arvore não foi inicializada',
             ]);
-        } else {
-            $no = EncontraDuplaNegacao::exec($this->arvore, $noInsercao);
-            $noBifur = EncontraNoBifurca::exec($this->arvore, $noInsercao);
-            $noSemBifur = EncontraNoSemBifucacao::exec($this->arvore, $noInsercao);
+        }
+
+        $existe = ExisteDerivacaoPossivelDeInsercao::exec($this->arvore);
+
+        if ($existe) {
+            $no = EncontraDuplaNegacao::exec($this->arvore);
+            $noBifur = EncontraNoBifurca::exec($this->arvore);
+            $noSemBifur = EncontraNoSemBifucacao::exec($this->arvore);
 
             if (!is_null($no)) {
+                $insercoes = array_map(fn (No $n) => $n->getIdNo(), EncontraNosFolha::exec($no));
                 $qntdNegado = $no->getValorNo()->getNegadoPredicado();
                 $regra = $no->getValorNo()->getTipoPredicado()->regra($qntdNegado);
                 $passo = new PassoDerivacao([
                     'idNoDerivacao'  => $no->getIdNo(),
-                    'idsNoInsercoes' => [$noInsercao->getIdNo()],
+                    'idsNoInsercoes' => $insercoes,
                     'regra'          => $regra,
                 ]);
             } elseif (!is_null($noSemBifur)) {
+                $insercoes = array_map(fn (No $n) => $n->getIdNo(), EncontraNosFolha::exec($noSemBifur));
                 $qntdNegado = $noSemBifur->getValorNo()->getNegadoPredicado();
                 $regra = $noSemBifur->getValorNo()->getTipoPredicado()->regra($qntdNegado);
                 $passo = new PassoDerivacao([
                     'idNoDerivacao'  => $noSemBifur->getIdNo(),
-                    'idsNoInsercoes' => [$noInsercao->getIdNo()],
+                    'idsNoInsercoes' => $insercoes,
                     'regra'          => $regra,
                 ]);
             } elseif (!is_null($noBifur)) {
+                $insercoes = array_map(fn (No $n) => $n->getIdNo(), EncontraNosFolha::exec($noBifur));
                 $qntdNegado = $noBifur->getValorNo()->getNegadoPredicado();
                 $regra = $noBifur->getValorNo()->getTipoPredicado()->regra($qntdNegado);
                 $passo = new PassoDerivacao([
                     'idNoDerivacao'  => $noBifur->getIdNo(),
-                    'idsNoInsercoes' => [$noInsercao->getIdNo()],
+                    'idsNoInsercoes' => $insercoes,
                     'regra'          => $regra,
                 ]);
             }
@@ -105,15 +112,13 @@ class GeradorAutomatico extends GeradorArvore
 
                 return $this->arvoreOtimizada();
             }
-
-            return  new TentativaDerivacao([
-                'sucesso'  => true,
-                'mensagem' => 'sucesso',
-                'arvore'   => $this->arvore,
-                'passos'   => [],
-            ]);
-            ;
         }
+        return  new TentativaDerivacao([
+            'sucesso'  => true,
+            'mensagem' => 'sucesso',
+            'arvore'   => $this->arvore,
+            'passos'   => [],
+        ]);
     }
 
     /**
@@ -123,37 +128,38 @@ class GeradorAutomatico extends GeradorArvore
      */
     public function piorArvore(): TentativaDerivacao
     {
-        $noInsercao = EncontraProximoNoParaInsercao::exec($this->arvore);
+        $existe = ExisteDerivacaoPossivelDeInsercao::exec($this->arvore);
 
-        if ($noInsercao == null) {
-            return $this->arvore;
-        } else {
-            $no = EncontraDuplaNegacao::exec($this->arvore, $noInsercao);
-            $noBifur = EncontraNoBifurca::exec($this->arvore, $noInsercao);
-            $noSemBifur = EncontraNoSemBifucacao::exec($this->arvore, $noInsercao);
+        if ($existe) {
+            $no = EncontraDuplaNegacao::exec($this->arvore);
+            $noBifur = EncontraNoBifurca::exec($this->arvore);
+            $noSemBifur = EncontraNoSemBifucacao::exec($this->arvore);
 
             if (!is_null($noBifur)) {
+                $insercoes = array_map(fn (No $n) => $n->getIdNo(), EncontraNosFolha::exec($noBifur));
                 $qntdNegado = $noBifur->getValorNo()->getNegadoPredicado();
                 $regra = $noBifur->getValorNo()->getTipoPredicado()->regra($qntdNegado);
                 $passo = new PassoDerivacao([
                     'idNoDerivacao'  => $noBifur->getIdNo(),
-                    'idsNoInsercoes' => [$noInsercao->getIdNo()],
+                    'idsNoInsercoes' => $insercoes,
                     'regra'          => $regra,
                 ]);
             } elseif (!is_null($noSemBifur)) {
+                $insercoes = array_map(fn (No $n) => $n->getIdNo(), EncontraNosFolha::exec($noSemBifur));
                 $qntdNegado = $noSemBifur->getValorNo()->getNegadoPredicado();
                 $regra = $noSemBifur->getValorNo()->getTipoPredicado()->regra($qntdNegado);
                 $passo = new PassoDerivacao([
                     'idNoDerivacao'  => $noSemBifur->getIdNo(),
-                    'idsNoInsercoes' => [$noInsercao->getIdNo()],
+                    'idsNoInsercoes' => $insercoes,
                     'regra'          => $regra,
                 ]);
             } elseif (!is_null($no)) {
+                $insercoes = array_map(fn (No $n) => $n->getIdNo(), EncontraNosFolha::exec($no));
                 $qntdNegado = $no->getValorNo()->getNegadoPredicado();
                 $regra = $no->getValorNo()->getTipoPredicado()->regra($qntdNegado);
                 $passo = new PassoDerivacao([
                     'idNoDerivacao'  => $no->getIdNo(),
-                    'idsNoInsercoes' => [$noInsercao->getIdNo()],
+                    'idsNoInsercoes' => $insercoes,
                     'regra'          => $regra,
                 ]);
             }
@@ -166,7 +172,12 @@ class GeradorAutomatico extends GeradorArvore
                 }
                 return $this->arvoreOtimizada();
             }
-            return $this->arvore;
         }
+        return new TentativaDerivacao([
+            'sucesso'  => true,
+            'mensagem' => 'sucesso',
+            'arvore'   => $this->arvore,
+            'passos'   => [],
+        ]);
     }
 }

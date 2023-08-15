@@ -6,28 +6,8 @@ use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Serializa;
 
 class OpcaoInicializacao extends Serializa
 {
-    protected int $posicao;
-    protected string $id ;
-    protected string $tipo;
+    protected string $id;
     protected string $texto;
-
-    /**
-     * @return int
-     */
-    public function getPosicao(): int
-    {
-        return $this->posicao;
-    }
-
-    /**
-     * @param  int   $id
-     * @param  mixed $posicao
-     * @return void
-     */
-    public function setPosicao($posicao): void
-    {
-        $this->posicao = $posicao;
-    }
 
     /**
      * @return string
@@ -44,23 +24,6 @@ class OpcaoInicializacao extends Serializa
     public function setId(string $id): void
     {
         $this->id = $id;
-    }
-
-    /**
-     * @return string
-     */
-    public function getTipo(): string
-    {
-        return $this->tipo;
-    }
-
-    /**
-     * @param  string $tipo
-     * @return void
-     */
-    public function setTipo(string $tipo): void
-    {
-        $this->tipo = $tipo;
     }
 
     /**

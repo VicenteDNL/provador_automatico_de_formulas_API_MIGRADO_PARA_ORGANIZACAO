@@ -8,13 +8,14 @@ use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\PassoDe
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\PredicadoTipoEnum;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\RegrasEnum;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\TentativaDerivacao;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\TentativaInicializacao;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Buscadores\EncontraNoPeloId;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Buscadores\EncontraNosFolha;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Buscadores\EncontraProximoNoParaInsercao;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Criadores\CriarNoBifurcado;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Criadores\CriarNoBifurcadoDuplo;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Criadores\CriarNoCentro;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Criadores\CriarNoCentroDuplo;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Validadores\ExisteDerivacaoPossivelDeInsercao;
 
 class GeradorArvore
 {
@@ -129,51 +130,74 @@ class GeradorArvore
     }
 
     /**
-     * @param  Formula                      $formula
-     * @param  string                       $idInsersao
-     * @param  bool                         $negacao
-     * @param  ?No                          $ultimoNo
-     * @return Array<string,bool|No|string>
+     * @param  Formula                $formula
+     * @param  string                 $idInsersao
+     * @param  bool                   $negacao
+     * @param  ?No                    $ultimoNo
+     * @return TentativaInicializacao
      */
-    protected function inserirNoIncializacao(Formula $formula, string $idInsersao, bool $negacao, $ultimoNo = null): array
+    protected function inserirNoIncializacao(Formula $formula, string $idInsersao, bool $negacao): TentativaInicializacao
     {
-        $identificador = str_split($idInsersao, strrpos($idInsersao, '_'));
+        $premissa = array_reduce(
+            $formula->getPremissas(),
+            function ($carry, $item) use ($idInsersao) {
+                if ($item->getId() == $idInsersao) {
+                    return $item->getValorObjPremissa();
+                }
+                return $carry;
+                ;
+            },
+            null
+        );
 
-        if ($identificador[0] == 'premissa' && $negacao == false) {
-            $premissa = $formula->getPremissas();
-            $premissa = $premissa[substr($identificador[1], 1)];
+        $conclusao = $formula->getConclusao()->getId() == $idInsersao
+        ? $formula->getConclusao()->getValorObjConclusao()
+        : null;
 
-            if ($this->arvore == null) {
-                $this->arvore = new No($this->genereteIdNo(), $premissa->getValorObjPremissa(), null, null, null, 1, null, null, false, false);
-                $ultimoNo = $this->arvore;
-            } else {
-                $ultimoNo->setFilhoCentroNo(new No($this->genereteIdNo(), $premissa->getValorObjPremissa(), null, null, null, $ultimoNo->getLinhaNo() + 1, null, null, false, false));
-                $ultimoNo = $ultimoNo->getFilhoCentroNo();
+        if (!is_null($premissa)) {
+            if ($negacao) {
+                return new TentativaInicializacao([
+                    'sucesso'  => false,
+                    'mensagem' => 'Atenção, isso é uma premissa',
+                ]);
             }
-
-            return ['sucesso' => true, 'ultimoNo' => $ultimoNo];
-        } elseif ($identificador[0] == 'conclusao' && $negacao == true) {
-            $conclusao = $formula->getConclusao();
-
-            if ($this->arvore == null) {
-                $this->arvore = (new No($this->genereteIdNo(), $conclusao->getValorObjConclusao(), null, null, null, 1, null, null, false, false));
-                $ultimoNo = $this->arvore;
-            } else {
-                $ultimoNo->setFilhoCentroNo(new No($this->genereteIdNo(), $conclusao->getValorObjConclusao(), null, null, null, $ultimoNo->getLinhaNo() + 1, null, null, false, false));
-                $ultimoNo = $ultimoNo->getFilhoCentroNo();
+        } elseif (!is_null($conclusao)) {
+            if (!$negacao) {
+                return new TentativaInicializacao([
+                    'sucesso'  => false,
+                    'mensagem' => 'Atenção, isso é uma conclusao',
+                ]);
             }
-            return ['sucesso' => true, 'ultimoNo' => $ultimoNo];
         } else {
-            if ($identificador[0] == 'premissa' && $negacao == true) {
-                return ['sucesso' => false, 'mensagem' => 'Atenção!! Esto é uma premissa!', 'ultimoNo' => ''];
-            }
-
-            if ($identificador[0] == 'conclusao' && $negacao == false) {
-                return ['sucesso' => false, 'mensagem' => 'Atenção!! Esto é uma conclusão!', 'ultimoNo' => ''];
-            }
-
-            return ['sucesso' => false, 'mensagem' => 'Atenção!!', 'ultimoNo' => ''];
+            return new TentativaInicializacao([
+                'sucesso'  => false,
+                'mensagem' => 'id não encontrado',
+            ]);
         }
+
+        $predicado = $premissa ?? $conclusao;
+
+        if (is_null($this->arvore)) {
+            $this->arvore = new No($this->genereteIdNo(), $predicado, null, null, null, 1, null, null, false, false);
+        } else {
+            $ultimoNo = EncontraNosFolha::exec($this->arvore);
+
+            if (count($ultimoNo) > 1) {
+                return new TentativaInicializacao([
+                    'sucesso'  => false,
+                    'mensagem' => 'Foi encontrado bifurcações na árvore ',
+                ]);
+            }
+
+            $ultimoNo[0]->setFilhoCentroNo(new No($this->genereteIdNo(), $predicado, null, null, null, $ultimoNo[0]->getLinhaNo() + 1, null, null, false, false));
+        }
+
+        return new TentativaInicializacao([
+            'sucesso'  => true,
+            'mensagem' => 'Adicionado com sucesso',
+            'arvore'   => $this->arvore,
+            'passos'   => [],
+        ]);
     }
 
     /**
@@ -193,7 +217,7 @@ class GeradorArvore
         $qntdNegado = $predicado->getNegadoPredicado();
         $listaNoInsercao = array_map(fn ($id): No => EncontraNoPeloId::exec($this->arvore, $id), $passoNovo->getIdsNoInsercoes());
 
-        if (is_null(EncontraProximoNoParaInsercao::exec($this->arvore))) {
+        if (is_null(ExisteDerivacaoPossivelDeInsercao::exec($this->arvore))) {
             return new TentativaDerivacao(['sucesso' => false, 'mensagem' => 'não existe mais derivações possiveis']);
         }
 

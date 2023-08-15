@@ -8,12 +8,14 @@ class Conclusao
     protected string $simbolo;
     protected string $valor_str;
     protected Predicado $valor_obj;
+    protected string $id;
 
-    public function __construct(string $valor_str, Predicado $valor_obj)
+    public function __construct(string $valor_str, Predicado $valor_obj, string $id)
     {
         $this->valor_str = $valor_str;
         $this->simbolo = '|- ';
         $this->valor_obj = $valor_obj;
+        $this->id = $id;
     }
 
     /**
@@ -56,5 +58,22 @@ class Conclusao
     public function getSimboloConclusao(): string
     {
         return $this->simbolo;
+    }
+
+        /**
+         * @return string
+         */
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    /**
+     * @param  string $id
+     * @return void
+     */
+    public function setId($id): void
+    {
+        $this->id = $id;
     }
 }

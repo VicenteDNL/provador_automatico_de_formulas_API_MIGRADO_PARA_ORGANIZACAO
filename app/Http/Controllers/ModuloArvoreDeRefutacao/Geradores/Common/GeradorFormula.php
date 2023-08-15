@@ -20,13 +20,17 @@ class GeradorFormula
         $premissas = [];
         $conclusao = null;
 
+        $contador = 0;
+
         foreach ($xml as $filhos) {
+            $contador += 1;
+
             if ($filhos->getName() == 'PREMISSA') {
-                array_push($premissas, $this->premissa($filhos));
+                array_push($premissas, $this->premissa($filhos, 'PREMISSA_' . $contador));
             }
 
             if ($filhos->getName() == 'CONCLUSAO') {
-                $conclusao = $this->conclusao($filhos);
+                $conclusao = $this->conclusao($filhos, 'CONCLUSAO_' . $contador);
             }
         }
 
@@ -241,15 +245,16 @@ class GeradorFormula
     /**
      * Função recebe o elemento PREMISSA XML e retorna o Objeto Premissa
      * @param  SimpleXMLElement $premissa
+     * @param  string           $id
      * @return Premissa|null
      */
-    private function premissa(SimpleXMLElement $premissa): ?Premissa
+    private function premissa(SimpleXMLElement $premissa, string $id): ?Premissa
     {
         if ($premissa->getName() == 'PREMISSA') {
             if ($this->childrenIsLpred($premissa)) {
                 $premissa_array = $this->lpred($premissa->children());
                 $predicado = new Predicado($premissa_array['PREDICATIVO'], $premissa_array['NEG'], PredicadoTipoEnum::PREDICATIVO, null, null);
-                return new Premissa($predicado->getValorPredicado(), $predicado);
+                return new Premissa($predicado->getValorPredicado(), $predicado, $id);
             } else {
                 $nome = $premissa->children()->getName();
 
@@ -263,7 +268,7 @@ class GeradorFormula
                     $valor = $this->conjuncao($premissa->children());
                 }
             }
-            return new Premissa($valor->getValorPredicado(), $valor);
+            return new Premissa($valor->getValorPredicado(), $valor, $id);
         }
         return null;
     }
@@ -271,15 +276,16 @@ class GeradorFormula
     /**
      * Função recebe o elemento CONCLUSÃO XML e retorna o Objeto Conclusao
      * @param  SimpleXMLElement $conclusao
+     * @param  string           $id
      * @return Conclusao|null
      */
-    private function conclusao(SimpleXMLElement $conclusao): Conclusao
+    private function conclusao(SimpleXMLElement $conclusao, string $id): Conclusao
     {
         if ($conclusao->getName() == 'CONCLUSAO') {
             if ($this->childrenIsLpred($conclusao)) {
                 $conclusao_array = $this->lpred($conclusao->children());
                 $valor_no = new Predicado($conclusao_array['PREDICATIVO'], $conclusao_array['NEG'], PredicadoTipoEnum::PREDICATIVO, null, null);
-                return new Conclusao($valor_no->getValorPredicado(), $valor_no);
+                return new Conclusao($valor_no->getValorPredicado(), $valor_no, $id);
             } else {
                 $nome = $conclusao->children()->getName();
 
@@ -293,7 +299,7 @@ class GeradorFormula
                     $valor = $this->conjuncao($conclusao->children());
                 }
             }
-            return new Conclusao($valor->getValorPredicado(), $valor);
+            return new Conclusao($valor->getValorPredicado(), $valor, $id);
         }
         return null;
     }

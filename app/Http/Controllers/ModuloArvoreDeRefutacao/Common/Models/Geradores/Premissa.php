@@ -6,11 +6,13 @@ class Premissa
 {
     protected string $valor_str;
     protected Predicado $valor_obj;
+    protected string $id;
 
-    public function __construct(string $valor_str, Predicado $valor_obj)
+    public function __construct(string $valor_str, Predicado $valor_obj, string $id)
     {
         $this->valor_str = $valor_str;
         $this->valor_obj = $valor_obj;
+        $this->id = $id;
     }
 
     /**
@@ -45,5 +47,22 @@ class Premissa
     public function setValorObjPremissa($valor_obj): void
     {
         $this->valor_obj = $valor_obj;
+    }
+
+    /**
+     * @return string
+     */
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    /**
+     * @param  string $id
+     * @return void
+     */
+    public function setId($id): void
+    {
+        $this->id = $id;
     }
 }

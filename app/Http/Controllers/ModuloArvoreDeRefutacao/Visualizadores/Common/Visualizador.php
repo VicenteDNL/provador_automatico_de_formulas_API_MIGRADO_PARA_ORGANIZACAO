@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\Formula;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\No as ProcessadoresNo;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\PassoInicializacao;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Geradores\Premissa;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Vizualizadores\Aresta;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Vizualizadores\Arvore;
+use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Vizualizadores\Linha;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Vizualizadores\No as VizualizadoresNo;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Common\Models\Vizualizadores\OpcaoInicializacao;
 use App\Http\Controllers\ModuloArvoreDeRefutacao\Geradores\Common\Buscadores\EncontraNoMaisProfundo;
@@ -17,6 +19,8 @@ use SimpleXMLElement;
 
 class Visualizador extends Controller
 {
+    public const AREA_LINHA = 100;
+    public const AREA_NO = 100;
     private GeradorFormula $geradorFormula;
 
     public function __construct()
@@ -42,7 +46,8 @@ class Visualizador extends Controller
 
         $listaNo = $this->imprimirNos($arvore, $width, $width / 2, 0, $ticar, $fechar);
         $listaAresta = $this->imprimirArestas($listaNo);
-        return new Arvore(['nos' => $listaNo, 'arestas' => $listaAresta]);
+        $linhas = $this->imprimirLinhas($listaNo);
+        return new Arvore(['nos' => $listaNo, 'arestas' => $listaAresta, 'linhas' => $linhas, 'width' => $width + self::AREA_LINHA, 'height' => 0]);
     }
 
     /**
@@ -58,34 +63,27 @@ class Visualizador extends Controller
         $conclusao = $formula->getConclusao();
 
         foreach ($passosExcutado as $passo) {
-            $identi = str_split($passo->getIdNo(), strrpos($passo->getIdNo(), '_'));
-            $id = substr($identi[1], 1);
+            $executado = array_filter($premissas, fn (Premissa $p) => $p->getId() == $passo->getIdNo());
 
-            if ($identi[0] == 'premissa') {
-                unset($premissas[$id]);
-            } else {
+            if ($executado) {
+                unset($premissas[key($executado)]);
+            } elseif ($conclusao->getId() == $passo->getIdNo()) {
                 unset($conclusao);
             }
         }
 
-        //REAVALIAR
-        foreach ($premissas as $key => $premissa) {
+        foreach ($premissas as $premissa) {
             $str = $this->geradorFormula->stringArg($premissa->getValorObjPremissa()) ;
             array_push($opcoes, new OpcaoInicializacao([
-                'posicao'  => $key,
-                'id'       => 'premissa_' . $key,
-                'tipo'     => 'premissa',
-                'texto'    => $str,
+                'id'       => $premissa->getId(),
+                'texto'    => trim($str),
             ]));
         }
 
-        //REAVALIAR
         if (isset($conclusao)) {
             $str = $this->geradorFormula->stringArg($conclusao->getValorObjConclusao()) ;
             array_push($opcoes, new OpcaoInicializacao([
-                'posicao'  => 1,
-                'tipo'     => 'conclusao',
-                'id'       => 'conclusao_' . 1,
+                'id'       => $conclusao->getId(),
                 'texto'    => $str,
             ]));
         }
@@ -100,32 +98,37 @@ class Visualizador extends Controller
     protected function larguraMinimaCanvas(Formula $formula): float
     {
         $gerador = new GeradorAutomatico();
-        $arvoreIni = $gerador->inicializar($formula);
+
+        $tentativa = $gerador->inicializar($formula);
+
+        if (!$tentativa->getSucesso()) {
+            return 0;
+        }
+        $arvoreIni = $tentativa->getArvore();
 
         $nosProfundoInici = EncontraNoMaisProfundo::exec($arvoreIni);
         $profundidadeArvInicializada = empty($nosProfundoInici) ? 0 : $nosProfundoInici[0]->getLinhaNo();
 
-        $arvorePior = $gerador->piorArvore();
+        $tentativa = $gerador->piorArvore();
 
-        if (!$arvorePior->getSucesso()) {
+        if (!$tentativa->getSucesso()) {
             return 0;
         }
 
-        $nosProfundoPiorArvore = EncontraNoMaisProfundo::exec($arvorePior->getArvore());
+        $arvore = $tentativa->getArvore();
+
+        $nosProfundoPiorArvore = EncontraNoMaisProfundo::exec($arvore);
         $profundidadePiorArvore = empty($nosProfundoPiorArvore) ? 0 : $nosProfundoPiorArvore[0]->getLinhaNo();
 
         //A profundidade Final considera apenas 1 dos noós inicias, pois eles nunca são bifurcados, e portanto não interferem na largura final da Arv
         $profundidadeFinal = ($profundidadePiorArvore - $profundidadeArvInicializada) + 1;
 
-        // O valor destinada ao espaço que deverá ser ocupado por um nó ( alterar esse valor para mudar a largura)
-        $areaDoNo = 100;
-
-        return $areaDoNo * $profundidadeFinal ;
+        return self::AREA_NO * $profundidadeFinal ;
     }
 
     /**
      * @param  VizualizadoresNo[] $nos
-     * @return Aresta
+     * @return Aresta[]
      */
     protected function imprimirArestas(array $nos): array
     {
@@ -183,12 +186,12 @@ class Visualizador extends Controller
             'idNo'               => $arvore->getIdNo(),
             'linha'              => $arvore->getLinhaNo(),
             'noFolha'            => $arvore->isNoFolha(),
-            'posX'               => $posX,
+            'posX'               => $posX + self::AREA_LINHA,
             'posY'               => $posYFilho,
             'tmh'                => $tmh,
-            'posXno'             => $posX - ($tmh / 2),
+            'posXno'             => $posX - ($tmh / 2) + self::AREA_LINHA,
             'linhaDerivacao'     => $arvore->getLinhaDerivacao(),
-            'posXlinhaDerivacao' => $posX + ($tmh / 2),
+            'posXlinhaDerivacao' => $posX + ($tmh / 2) + self::AREA_LINHA,
             'utilizado'          => $utilizado,
             'fechado'            => $fechado,
             'linhaContradicao'   => $arvore->getLinhaContradicao(),
@@ -216,5 +219,31 @@ class Visualizador extends Controller
             $listaNosVisualizadores = $this->imprimirNos($arvore->getFilhoDireitaNo(), $areaFilho, $posXFilho, $posYFilho, $ticar, $fechar, $listaNosVisualizadores);
         }
         return $listaNosVisualizadores;
+    }
+
+    /**
+     * @param  VizualizadoresNo[] $nos
+     * @return Linha[]
+     */
+    protected function imprimirLinhas(array $nos)
+    {
+        $listaLinhas = [];
+
+        foreach ($nos as $no) {
+            $linha = array_filter($listaLinhas, fn (Linha $l) => $l->getNumero() == $no->getLinha()) ;
+
+            if (empty($linha)) {
+                array_push(
+                    $listaLinhas,
+                    new Linha([
+                        'texto'  => 'Linha ' . $no->getLinha(),
+                        'numero' => $no->getLinha(),
+                        'posX'   => 30,
+                        'posY'   => $no->getPosY() + 5,
+                    ])
+                );
+            }
+        }
+        return $listaLinhas;
     }
 }
