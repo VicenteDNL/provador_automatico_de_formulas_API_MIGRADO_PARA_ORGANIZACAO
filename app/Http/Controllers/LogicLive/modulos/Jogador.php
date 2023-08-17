@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\LogicLive\modulos;
+namespace App\Http\Controllers\LogicLive\Modulos;
 
-use App\Http\Controllers\LogicLive\request\RequestGet;
+use App\Http\Controllers\LogicLive\Request\RequestGet;
 
 class Jogador
 {
@@ -10,10 +10,11 @@ class Jogador
 
     public function __construct()
     {
-        $this->get = new RequestGet;
+        $this->get = new RequestGet();
     }
-    
-    public function getJogador($hash){
-        return $this->get->httpget('jogador','',$hash);
+
+    public function getJogador($hash)
+    {
+        return $this->get->httpget('jogador', '', $hash);
     }
 }

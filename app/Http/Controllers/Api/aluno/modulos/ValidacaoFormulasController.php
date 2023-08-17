@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\Api\aluno\modulos;
+namespace App\Http\Controllers\Api\Aluno\Modulos;
+
+;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 
 class ValidacaoFormulasController extends Controller
 {

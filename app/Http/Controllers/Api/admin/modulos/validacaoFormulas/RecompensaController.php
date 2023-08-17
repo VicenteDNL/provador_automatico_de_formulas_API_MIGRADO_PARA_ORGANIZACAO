@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Http\Controllers\Api\admin\modulos;
+namespace App\Http\Controllers\Api\Admin\Modulos;
 
 use App\Http\Controllers\Api\Action;
 use App\Http\Controllers\Api\ResponseController;
 use App\Http\Controllers\Api\Type;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\LogicLive\config\Configuracao;
-use App\Http\Controllers\LogicLive\modulos\Recompensa as ModulosRecompensa;
-use App\Recompensa;
+use App\Http\Controllers\LogicLive\Config\Configuracao;
+use App\Http\Controllers\LogicLive\Modulos\Recompensa as ModulosRecompensa;
+use App\Models\Recompensa;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;

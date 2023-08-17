@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\User;
-
 use App\Http\Controllers\Controller;
+
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -25,7 +25,6 @@ class UserController extends Controller
         // $user->password =  Hash::make('1234');
         // $user->save();
 
-
         // return response()->json($users);
     }
 
@@ -43,7 +42,7 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param  int                       $id
      * @return \Illuminate\Http\Response
      */
     public function show($id)
@@ -55,7 +54,7 @@ class UserController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+     * @param  int                       $id
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
@@ -66,7 +65,7 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param  int                       $id
      * @return \Illuminate\Http\Response
      */
     public function destroy($id)

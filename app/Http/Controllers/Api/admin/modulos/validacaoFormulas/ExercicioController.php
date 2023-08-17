@@ -1,24 +1,24 @@
 <?php
 
-namespace App\Http\Controllers\Api\admin\modulos\validacaoFormulas;
+namespace App\Http\Controllers\Api\Admin\Modulos\ValidacaoFormulas;
 
-use App\ExercicioMVFLP;
-use App\Formula;
 use App\Http\Controllers\Api\Action;
 use App\Http\Controllers\Api\ResponseController;
 use App\Http\Controllers\Api\Type;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\LogicLive\config\Configuracao;
-use App\Http\Controllers\LogicLive\modulos\validacaoFormulas\ExercicioVF;
-use App\NivelMVFLP;
-use App\Recompensa;
-use App\Resposta;
+use App\Http\Controllers\LogicLive\Config\Configuracao;
+use App\Http\Controllers\LogicLive\Modulos\ValidacaoFormulas\ExercicioVF;
+use App\Models\ExercicioMVFLP;
+use App\Models\Formula;
+use App\Models\NivelMVFLP;
+use App\Models\Recompensa;
+use App\Models\Resposta;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 
-class ExercicioVFController extends Controller
+class ExercicioController extends Controller
 {
     private $exercicio ;
     private $config;
@@ -231,6 +231,21 @@ class ExercicioVFController extends Controller
             return ResponseController::json(Type::success, Action::listbyId, $exercicios);
         } catch(Exception $e) {
             return ResponseController::json(Type::error, Action::listbyId);
+        }
+    }
+
+     /**
+      * @param  int      $id
+      * @return Response
+      */
+    public function formula(int $id)
+    {
+        try {
+            $nivelMVFLP = NivelMVFLP::findOrFail($id);
+            $formula = Formula::findOrFail($nivelMVFLP->id_formula);
+            return ResponseController::json(Type::success, Action::show, $formula);
+        } catch(Exception $e) {
+            return ResponseController::json(Type::error, Action::show);
         }
     }
 }

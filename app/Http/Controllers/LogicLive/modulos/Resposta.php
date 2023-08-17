@@ -1,10 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\LogicLive\modulos;
+namespace App\Http\Controllers\LogicLive\Modulos;
 
-use App\Http\Controllers\LogicLive\request\RequestDelete;
-use App\Http\Controllers\LogicLive\request\RequestPost;
-use App\Http\Controllers\LogicLive\request\RequestPut;
+use App\Http\Controllers\LogicLive\Request\RequestPost;
 
 class Resposta
 {
@@ -12,13 +10,11 @@ class Resposta
 
     public function __construct()
     {
-
-        $this->post = new RequestPost;
-        
+        $this->post = new RequestPost();
     }
 
-    public function enviarResposta($dados, $hash){
-       return $this->post->httppost('respostas',$dados,$hash );
+    public function enviarResposta($dados, $hash)
+    {
+        return $this->post->httppost('respostas', $dados, $hash);
     }
-
 }

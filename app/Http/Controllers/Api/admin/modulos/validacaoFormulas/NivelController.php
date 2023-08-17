@@ -1,21 +1,21 @@
 <?php
 
-namespace App\Http\Controllers\Api\admin\modulos\validacaoFormulas;
+namespace App\Http\Controllers\Api\Admin\Modulos\ValidacaoFormulas;
 
 use App\Http\Controllers\Api\Action;
 use App\Http\Controllers\Api\ResponseController;
 use App\Http\Controllers\Api\Type;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\LogicLive\config\Configuracao;
-use App\Http\Controllers\LogicLive\modulos\validacaoFormulas\NivelVF;
-use App\LogicLive;
-use App\NivelMVFLP;
+use App\Http\Controllers\LogicLive\Config\Configuracao;
+use App\Http\Controllers\LogicLive\Modulos\ValidacaoFormulas\NivelVF;
+use App\Models\LogicLive;
+use App\Models\NivelMVFLP;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 
-class NivelVFController extends Controller
+class NivelController extends Controller
 {
     private $niveis;
     private $config;

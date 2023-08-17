@@ -45,20 +45,23 @@ enum Type
 {
     case success;
     case error;
+    case exception;
 
     public function boolValue(): bool
     {
         return match ($this) {
-            Type::success => true,
-            Type::error   => false,
+            Type::success     => true,
+            Type::error       => false,
+            Type::exception   => false,
         };
     }
 
     public function status(): int
     {
         return match ($this) {
-            Type::success => 200,
-            Type::error   => 500,
+            Type::success     => 200,
+            Type::error       => 200,
+            Type::exception   => 500,
         };
     }
 }
