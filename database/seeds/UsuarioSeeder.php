@@ -1,9 +1,8 @@
 <?php
 
-use App\Models\User;
 use Illuminate\Database\Seeder;
 
-class UserSeeder extends Seeder
+class UsuarioSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -12,6 +11,6 @@ class UserSeeder extends Seeder
      */
     public function run()
     {
-        factory(User::class, 1)->create();
+        App\Models\Usuario::factory()->count(1)->create();
     }
 }

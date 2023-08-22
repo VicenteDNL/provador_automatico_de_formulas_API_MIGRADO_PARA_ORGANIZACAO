@@ -3,56 +3,70 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\API\AuthRequest;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Throwable;
 
 class AuthController extends Controller
 {
     /**
-     * Get a JWT via given credentials.
-     *
-     * @return \Illuminate\Http\JsonResponse
+     * @param  AuthRequest  $request
+     * @return JsonResponse
      */
-    public function login(Request $request)
+    public function login(AuthRequest $request)
     {
+        try {
+            $params = $request->only('email', 'password');
 
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
-        ]);
+            if (!Auth::attempt([...$params])) {
+                return  ResponseController::json(Type::notAuthentication, Action::login);
+            }
 
-        if (!Auth::attempt($credentials)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            if (!$request->user()->ativo) {
+                return  ResponseController::json(Type::notAuthentication, Action::login);
+            }
+
+            $token_name = 'authentication_token';
+            $token = $request->user()->createToken($token_name);
+            $data = [
+                'accessToken'  => $token->plainTextToken,
+                'tokenType'    => 'bearer',
+                'email'        => $request->user()->email,
+            ];
+            return  ResponseController::json(Type::success, Action::login, $data);
+        } catch(Throwable $e) {
+            return  ResponseController::json(Type::error, Action::login);
         }
-        $token_name = 'authentication_token';
-        $token = $request->user()->createToken($token_name);
-        return [
-            'success' => true,
-            'access_token' => $token->plainTextToken,
-            'token_type' => 'bearer',
-            'email' => $request->user()->email];
     }
 
     /**
-     * Log the user out (Invalidate the token).
-     *
-     * @return \Illuminate\Http\JsonResponse
+     * @param  Request      $request
+     * @return JsonResponse
      */
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
-        return response()->json(['success' => true, 'msg'=>'Saiu com sucesso', 'data'=>'']);
+        try {
+            if ($request->user()->currentAccessToken()->delete()) {
+                return ResponseController::json(Type::success, Action::logout);
+            }
+            return ResponseController::json(Type::error, Action::logout);
+        } catch(Throwable $e) {
+            return ResponseController::json(Type::error, Action::logout);
+        }
     }
 
-        /**
-     * Get the authenticated User.
-     *
-     * @return \Illuminate\Http\JsonResponse
+    /**
+     * @param  Request      $request
+     * @return JsonResponse
      */
     public function me(Request $request)
     {
-        //Verificar sê o uso do ME ainda é necessário
-        return response()->json(['success' => true, 'msg'=>'', 'data'=>'']);
+        try {
+            return ResponseController::json(Type::success, Action::login);
+        } catch(Throwable $e) {
+            return ResponseController::json(Type::error, Action::login);
+        }
     }
-
 }
