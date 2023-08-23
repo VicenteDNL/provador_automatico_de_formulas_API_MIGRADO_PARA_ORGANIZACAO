@@ -20,6 +20,7 @@ class Visualizador extends Controller
     public const AREA_LINHA = 200;
     public const AREA_NO = 100;
     private GeradorFormula $geradorFormula;
+    private bool $showLines = true;
 
     public function __construct()
     {
@@ -33,9 +34,11 @@ class Visualizador extends Controller
      * @param bool             $ticar
      * @param bool             $fechar
      * @param Formula          $formula
+     * @param bool             $showLines
      */
-    public function gerarImpressaoArvore(ProcessadoresNo $arvore, Formula $formula, float $width, bool $ticar = false, bool $fechar = false)
+    public function gerarImpressaoArvore(ProcessadoresNo $arvore, Formula $formula, float $width, bool $ticar = false, bool $fechar = false, bool $showLines = true)
     {
+        $this->showLines = $showLines;
         $tamanhoMininoCanvas = $this->larguraMinimaCanvas($formula);
 
         if ($width < $tamanhoMininoCanvas) {
@@ -45,7 +48,13 @@ class Visualizador extends Controller
         $listaNo = $this->imprimirNos($arvore, $width, $width / 2, 0, $ticar, $fechar);
         $listaAresta = $this->imprimirArestas($listaNo);
         $linhas = $this->imprimirLinhas($listaNo);
-        return new Arvore(['nos' => $listaNo, 'arestas' => $listaAresta, 'linhas' => $linhas, 'width' => $width + self::AREA_LINHA, 'height' => 0]);
+        return new Arvore([
+            'nos'       => $listaNo,
+            'arestas'   => $listaAresta,
+            'linhas'    => $this->showLines ? $linhas : [],
+            'width'     => $width + ($this->showLines ? self::AREA_LINHA : 0),
+            'height'    => 0,
+        ]);
     }
 
     /**
@@ -184,12 +193,12 @@ class Visualizador extends Controller
             'idNo'               => $arvore->getIdNo(),
             'linha'              => $arvore->getLinhaNo(),
             'noFolha'            => $arvore->isNoFolha(),
-            'posX'               => $posX + self::AREA_LINHA,
+            'posX'               => $posX + ($this->showLines ? self::AREA_LINHA : 0),
             'posY'               => $posYFilho,
             'tmh'                => $tmh,
-            'posXno'             => $posX - ($tmh / 2) + self::AREA_LINHA,
+            'posXno'             => $posX - ($tmh / 2) + ($this->showLines ? self::AREA_LINHA : 0),
             'linhaDerivacao'     => $arvore->getLinhaDerivacao(),
-            'posXlinhaDerivacao' => $posX + ($tmh / 2) + self::AREA_LINHA,
+            'posXlinhaDerivacao' => $posX + ($tmh / 2) + ($this->showLines ? self::AREA_LINHA : 0),
             'utilizado'          => $utilizado,
             'fechado'            => $fechado,
             'linhaContradicao'   => $arvore->getLinhaContradicao(),

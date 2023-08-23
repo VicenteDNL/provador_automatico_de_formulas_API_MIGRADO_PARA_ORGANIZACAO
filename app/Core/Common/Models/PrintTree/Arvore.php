@@ -85,16 +85,15 @@ class Arvore extends Serializa
         $this->width = $width;
     }
 
-        /**
-         * @return float
-         */
+    /**
+     * @return float
+     */
     public function getHeight(): float
     {
         return $this->height;
     }
 
     /**
-     * @param  float $width
      * @param  float $height
      * @return void
      */

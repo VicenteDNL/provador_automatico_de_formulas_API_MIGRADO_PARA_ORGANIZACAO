@@ -134,15 +134,6 @@ class Base
 
             $this->arvore = $this->geradorAutomatico->getArvore();
 
-            $impressao = $this->visualizador->gerarImpressaoArvore(
-                $this->arvore,
-                $this->formula,
-                $this->canvas_width,
-                true,
-                true
-            );
-            $this->arvoreVisualizacao = $impressao;
-
             return true;
         } catch(Exception $e) {
             $this->erro = 'Erro ao criar arvore otimizada';
@@ -169,16 +160,6 @@ class Base
                 $this->erro = $tentativa->getMensagem();
                 return false;
             }
-
-            $this->arvore = $tentativa->getArvore();
-            $impressao = $this->visualizador->gerarImpressaoArvore(
-                $this->arvore,
-                $this->formula,
-                $this->canvas_width,
-                true,
-                true
-            );
-            $this->arvoreVisualizacao = $impressao ;
 
             return true;
         } catch(Exception $e) {
@@ -240,15 +221,6 @@ class Base
         $this->inicializacao->setOpcoesDisponiveis($this->visualizador->gerarOpcoesInicializacao($this->formula, $tentativa->getPassos()));
         $this->inicializacao->setCompleto(empty($this->inicializacao->getOpcoesDisponiveis()));
 
-        $impressao = $this->visualizador->gerarImpressaoArvore(
-            $this->arvore,
-            $this->formula,
-            $this->canvas_width,
-            $this->ticados->isAutomatico(),
-            $this->fechados->isAutomatico()
-        );
-
-        $this->arvoreVisualizacao = $impressao;
         return true;
     }
 
@@ -300,15 +272,6 @@ class Base
         $this->arvore = $tentativa->getArvore();
         $this->derivacao->addPasso($novoPasso);
 
-        $impressao = $this->visualizador->gerarImpressaoArvore(
-            $this->arvore,
-            $this->formula,
-            $this->canvas_width,
-            $this->ticados->isAutomatico(),
-            $this->fechados->isAutomatico()
-        );
-        $this->arvoreVisualizacao = $impressao;
-
         return true;
     }
 
@@ -351,15 +314,6 @@ class Base
         }
         $this->arvore = $tentativa->getArvore();
         $this->fechados->setPassosExecutados($tentativa->getPassos());
-
-        $impressao = $this->visualizador->gerarImpressaoArvore(
-            $this->arvore,
-            $this->formula,
-            $this->canvas_width,
-            $this->ticados->isAutomatico(),
-            $this->fechados->isAutomatico()
-        );
-        $this->arvoreVisualizacao = $impressao ;
 
         return true;
     }
@@ -405,16 +359,6 @@ class Base
         $this->arvore = $tentativa->getArvore();
         $this->ticados->setPassosExecutados($tentativa->getPassos());
 
-        $impressao = $this->visualizador->gerarImpressaoArvore(
-            $this->arvore,
-            $this->formula,
-            $this->canvas_width,
-            $this->ticados->isAutomatico(),
-            $this->fechados->isAutomatico()
-        );
-
-        $this->arvoreVisualizacao = $impressao ;
-
         return true;
     }
 
@@ -433,11 +377,15 @@ class Base
         $this->ticados->setAutomatico($request['arvore']['ticar']['isAutomatico'] ?? false);
     }
 
-    public function imprimir()
+    /**
+     * @param  bool  $exibirLinhas
+     * @return array
+     */
+    public function imprimir(bool $exibirLinhas = true)
     {
         $retorno = [
 
-            'visualizar'   => $this->arvoreVisualizacao,
+            'visualizar'   => $this->gerarImpressaoArvore($exibirLinhas),
             'derivar'      => (object)[
                 'passosExecutados' => $this->derivacao->getPassosExecutados(),
                 'regras'           => is_null($this->arvore) ? [] : $this->aplicadorRegras->listaPosibilidades($this->arvore, $this->quantidaRegra),
@@ -457,12 +405,13 @@ class Base
     }
 
     /**
-     * @return array{ arestas: Aresta[], nos:No[] ,strformula:string }
+     * @param  bool  $exibirLinhas
+     * @return array
      */
-    public function imprimirArvore()
+    public function imprimirArvore(bool $exibirLinhas = true)
     {
         return [
-            'visualizar'   => $this->arvoreVisualizacao,
+            'visualizar'   => $this->gerarImpressaoArvore($exibirLinhas),
             'formula'      => [
                 'xml'        => $this->xmlTexto,
                 'texto'      => $this->formulaTexto,
@@ -517,5 +466,19 @@ class Base
         }
 
         return true;
+    }
+
+    private function gerarImpressaoArvore(bool $exibirLinhas = true)
+    {
+        $impressao = $this->visualizador->gerarImpressaoArvore(
+            $this->arvore,
+            $this->formula,
+            $this->canvas_width,
+            true,
+            true,
+            $exibirLinhas
+        );
+        $this->arvoreVisualizacao = $impressao;
+        return $this->arvoreVisualizacao;
     }
 }
