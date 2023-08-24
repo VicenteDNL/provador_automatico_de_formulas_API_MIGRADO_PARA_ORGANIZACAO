@@ -1,8 +1,9 @@
 <?php
 
 use App\Http\Controllers\Api\Admin\ArvoreRefutacaoController as AdminArvoreRefutacaoController;
-use App\Http\Controllers\Api\Admin\Modulos\RecompensaController;
 use App\Http\Controllers\Api\Admin\Modulos\ValidacaoFormulas\RespostaController;
+use App\Http\Controllers\Api\Admin\NivelController;
+use App\Http\Controllers\Api\Admin\RecompensaController;
 use App\Http\Controllers\Api\aluno\ArvoreRefutacaoController;
 use App\Http\Controllers\Api\aluno\autenticacao\AuthHash;
 use App\Http\Controllers\Api\aluno\ExercicioVFController as AlunoExercicioVFController;
@@ -18,33 +19,32 @@ Route::post('auth/login', [AuthController::class, 'login']);
 
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('auth/me', [AuthController::class, 'me']);
-    Route::get('auth/me', [AuthController::class, 'me']);
     Route::post('auth/logout', [AuthController::class, 'logout']);
 
     Route::get('usuarios', [UsuarioController::class, 'index']);
-    Route::post('usuarios', [UsuarioController::class, 'store']);
-    Route::delete('usuarios/{id}', [UsuarioController::class, 'destroy']);
     Route::get('usuarios/{id}', [UsuarioController::class, 'show']);
     Route::put('usuarios/{id}', [UsuarioController::class, 'update']);
+    Route::post('usuarios', [UsuarioController::class, 'store']);
+    Route::delete('usuarios/{id}', [UsuarioController::class, 'destroy']);
 
     Route::get('recompensas', [RecompensaController::class, 'index']);
-    Route::post('recompensas', [RecompensaController::class, 'store']);
     Route::put('recompensas/{id}', [RecompensaController::class, 'update']);
+    Route::post('recompensas', [RecompensaController::class, 'store']);
     Route::delete('recompensas/{id}', [RecompensaController::class, 'destroy']);
 
-    Route::get('niveis', [NivelVFController::class, 'index']);
-    Route::get('niveis/listarTodos', [NivelVFController::class, 'all']);
-    Route::get('niveis/{id}', [NivelVFController::class, 'show']);
-    Route::post('niveis', [NivelVFController::class, 'store']);
-    Route::put('niveis/{id}', [NivelVFController::class, 'update']);
-    Route::delete('niveis/{id}', [NivelVFController::class, 'destroy']);
+    Route::get('niveis', [NivelController::class, 'index']);
+    Route::get('niveis/listarTodos', [NivelController::class, 'all']);
+    Route::get('niveis/{id}', [NivelController::class, 'show']);
+    Route::put('niveis/{id}', [NivelController::class, 'update']);
+    Route::post('niveis', [NivelController::class, 'store']);
+    Route::delete('niveis/{id}', [NivelController::class, 'destroy']);
 
     Route::get('mvflp/exercicio/nivel/{id}', [ExercicioVFController::class, 'listByIdNivel']);
-    Route::post('mvflp/exercicio', [ExercicioVFController::class, 'store']);
     Route::get('mvflp/exercicio/{id}', [ExercicioVFController::class, 'show']);
     Route::put('mvflp/exercicio/{id}', [ExercicioVFController::class, 'update']);
-    Route::delete('mvflp/exercicio/{id}', [ExercicioVFController::class, 'destroy']);
     Route::get('mvflp/exercicio/{id}/formula', [ExercicioVFController::class, 'formula']);
+    Route::post('mvflp/exercicio', [ExercicioVFController::class, 'store']);
+    Route::delete('mvflp/exercicio/{id}', [ExercicioVFController::class, 'destroy']);
 
     Route::get('mvflp/resposta', [RespostaController::class, 'index']);
 
