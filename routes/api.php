@@ -32,12 +32,12 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::put('recompensas/{id}', [RecompensaController::class, 'update']);
     Route::delete('recompensas/{id}', [RecompensaController::class, 'destroy']);
 
-    Route::get('mvflp/niveis', [NivelVFController::class, 'index']);
-    Route::get('mvflp/niveis/listarTodos', [NivelVFController::class, 'all']);
-    Route::get('mvflp/niveis/{id}', [NivelVFController::class, 'show']);
-    Route::post('mvflp/niveis', [NivelVFController::class, 'store']);
-    Route::put('mvflp/niveis/{id}', [NivelVFController::class, 'update']);
-    Route::delete('mvflp/niveis/{id}', [NivelVFController::class, 'destroy']);
+    Route::get('niveis', [NivelVFController::class, 'index']);
+    Route::get('niveis/listarTodos', [NivelVFController::class, 'all']);
+    Route::get('niveis/{id}', [NivelVFController::class, 'show']);
+    Route::post('niveis', [NivelVFController::class, 'store']);
+    Route::put('niveis/{id}', [NivelVFController::class, 'update']);
+    Route::delete('niveis/{id}', [NivelVFController::class, 'destroy']);
 
     Route::get('mvflp/exercicio/nivel/{id}', [ExercicioVFController::class, 'listByIdNivel']);
     Route::post('mvflp/exercicio', [ExercicioVFController::class, 'store']);
@@ -48,7 +48,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
     Route::get('mvflp/resposta', [RespostaController::class, 'index']);
 
-    Route::post('arvore/otimizada', [AdminArvoreRefutacaoController::class, 'criarArvoreOtimizada']);
+    Route::post('arvore/otimizada', [AdminArvoreRefutacaoController::class, 'arvoreOtimizada']);
     Route::post('arvore/inicializacao/premisas-conclucao', [AdminArvoreRefutacaoController::class, 'premissasConclusao']);
     Route::post('arvore/inicializacao/adiciona-no', [AdminArvoreRefutacaoController::class, 'adicionaNoIncializacao']);
     Route::post('arvore/derivacao/adiciona-no', [AdminArvoreRefutacaoController::class, 'derivar']);
