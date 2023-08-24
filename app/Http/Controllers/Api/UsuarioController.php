@@ -3,9 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\API\UserStoreRequest;
-use App\Http\Requests\API\UsuarioStoreRequest;
-use App\Http\Requests\API\UsuarioUpdateRequest;
+use App\Http\Requests\API\Admin\Usuario\UsuarioStoreRequest;
+use App\Http\Requests\API\Admin\Usuario\UsuarioUpdateRequest;
 use App\Models\Usuario;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
