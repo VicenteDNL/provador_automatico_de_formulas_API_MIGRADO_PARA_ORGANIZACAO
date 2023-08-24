@@ -8,6 +8,8 @@ use App\Http\Controllers\Api\Type;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\LogicLive\Config\Configuracao;
 use App\Http\Controllers\LogicLive\Modulos\Recompensa as ModulosRecompensa;
+use App\Http\Requests\API\Admin\Recompensa\RecompensaStoreRequest;
+use App\Http\Requests\API\Admin\Recompensa\RecompensaUpdateRequest;
 use App\Models\Recompensa;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -43,7 +45,7 @@ class RecompensaController extends Controller
      * @param  Recompensa $recompensa
      * @return Response
      */
-    public function store(Request $request, Recompensa $recompensa)
+    public function store(RecompensaStoreRequest $request, Recompensa $recompensa)
     {
         try {
             DB::beginTransaction();
@@ -85,7 +87,7 @@ class RecompensaController extends Controller
      * @param  int      $id
      * @return Response
      */
-    public function update(Request $request, int $id)
+    public function update(RecompensaUpdateRequest $request, int $id)
     {
         try {
             DB::beginTransaction();
