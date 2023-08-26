@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\Admin\Modulos\ValidacaoFormulas;
+namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Api\Action;
 use App\Http\Controllers\Api\ResponseController;
@@ -8,10 +8,11 @@ use App\Http\Controllers\Api\Type;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\LogicLive\Config\Configuracao;
 use App\Http\Controllers\LogicLive\Modulos\ValidacaoFormulas\NivelVF;
+use App\Http\Requests\API\Admin\Nivel\NivelStoreRequest;
+use App\Http\Requests\API\Admin\Nivel\NivelUpdateRequest;
 use App\Models\LogicLive;
 use App\Models\NivelMVFLP;
 use Exception;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 
@@ -43,11 +44,11 @@ class NivelController extends Controller
 
     /**
      *
-     * @param  Request    $request
-     * @param  NivelMVFLP $nivelMVFLP
+     * @param  NivelStoreRequest $request
+     * @param  NivelMVFLP        $nivelMVFLP
      * @return Response
      */
-    public function store(Request $request, NivelMVFLP $nivelMVFLP)
+    public function store(NivelStoreRequest $request, NivelMVFLP $nivelMVFLP)
     {
         try {
             DB::beginTransaction();
@@ -91,11 +92,11 @@ class NivelController extends Controller
 
     /**
      *
-     * @param  Request  $request
-     * @param  int      $id
+     * @param  NivelUpdateRequest $request
+     * @param  int                $id
      * @return Response
      */
-    public function update(Request $request, int $id)
+    public function update(NivelUpdateRequest $request, int $id)
     {
         try {
             DB::beginTransaction();
