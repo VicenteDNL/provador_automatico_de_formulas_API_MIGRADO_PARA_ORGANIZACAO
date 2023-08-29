@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateExerciciosMvflpTable extends Migration
+class CreateExerciciosTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,11 @@ class CreateExerciciosMvflpTable extends Migration
      */
     public function up()
     {
-        Schema::create('exercicios_mvflp', function (Blueprint $table) {
+        Schema::create('exercicios', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('id_recompensa');
-            $table->unsignedBigInteger('id_nivel');
-            $table->unsignedBigInteger('id_formula');
+            $table->unsignedBigInteger('recompensa_id');
+            $table->unsignedBigInteger('nivel_id');
+            $table->unsignedBigInteger('formula_id');
             $table->string('nome');
             $table->text('enunciado');
             $table->string('hash');
@@ -27,10 +27,10 @@ class CreateExerciciosMvflpTable extends Migration
             $table->text('descricao');
             $table->boolean('ativo');
             $table->timestamps();
-            $table->foreign('id_recompensa')->references('id')->on('recompensas');
-            $table->foreign('id_nivel')->references('id')->on('niveis_mvflp');
-            $table->foreign('id_formula')->references('id')->on('formulas')->onDelete('cascade');
-            $table->integer('id_logic_live')->nullable();
+            $table->foreign('recompensa_id')->references('id')->on('recompensas');
+            $table->foreign('nivel_id')->references('id')->on('niveis');
+            $table->foreign('formula_id')->references('id')->on('formulas')->onDelete('cascade');
+            $table->integer('logic_live_id')->nullable();
         });
     }
 
@@ -41,6 +41,6 @@ class CreateExerciciosMvflpTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('exercicios_mvflp');
+        Schema::dropIfExists('exercicios');
     }
 }

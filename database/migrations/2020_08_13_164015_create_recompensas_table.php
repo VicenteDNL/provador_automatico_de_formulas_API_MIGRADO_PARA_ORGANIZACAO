@@ -18,7 +18,7 @@ class CreateRecompensasTable extends Migration
             $table->string('nome');
             $table->text('imagem');
             $table->integer('pontuacao');
-            $table->integer('id_logic_live')->nullable();
+            $table->integer('logic_live_id')->nullable();
             $table->timestamps();
         });
     }

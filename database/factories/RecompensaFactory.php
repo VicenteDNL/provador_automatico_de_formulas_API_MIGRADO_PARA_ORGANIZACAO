@@ -1,14 +1,22 @@
 <?php
 
-/** @var \Illuminate\Database\Eloquent\Factory $factory */
+namespace Database\Factories;
 
-use App\Models\Recompensa;
-use Faker\Generator as Faker;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
-$factory->define(Recompensa::class, function (Faker $faker) {
-    return [
-        'nome'      => $faker->name,
-        'imagem'    => $faker->text,
-        'pontuacao' => $faker->randomNumber(3),
-    ];
-});
+class RecompensaFactory extends Factory
+{
+    /**
+     * Define the model's default state.
+     *
+     * @return array
+     */
+    public function definition()
+    {
+        return [
+            'nome'      => $this->faker->name,
+            'imagem'    => $this->faker->text,
+            'pontuacao' => $this->faker->randomNumber(3),
+        ];
+    }
+}

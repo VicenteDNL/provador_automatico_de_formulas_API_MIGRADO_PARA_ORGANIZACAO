@@ -2,7 +2,7 @@
 
 use Illuminate\Database\Seeder;
 
-class RecompensaSeeder extends Seeder
+class ExercicioSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -11,6 +11,6 @@ class RecompensaSeeder extends Seeder
      */
     public function run()
     {
-        App\Models\Recompensa::factory()->count(10)->create();
+        App\Models\Exercicio::factory()->count(4)->create();
     }
 }

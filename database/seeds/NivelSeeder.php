@@ -1,9 +1,8 @@
 <?php
 
-use App\Models\ExercicioMVFLP;
 use Illuminate\Database\Seeder;
 
-class ExercicioMvflpSeeder extends Seeder
+class NivelSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -12,6 +11,6 @@ class ExercicioMvflpSeeder extends Seeder
      */
     public function run()
     {
-        factory(ExercicioMVFLP::class, 4)->create();
+        App\Models\Nivel::factory()->count(10)->create();
     }
 }

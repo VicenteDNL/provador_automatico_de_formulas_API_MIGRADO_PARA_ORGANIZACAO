@@ -22,9 +22,9 @@ class CreateJogadoresTable extends Migration
             $table->text('token')->nullable();
             $table->boolean('token_valido')->nullable();
             $table->boolean('ativo');
-            $table->integer('id_logic_live')->nullable();
+            $table->integer('logic_live_id')->nullable();
             $table->string('provedor');
-            
+
             $table->timestamps();
         });
     }

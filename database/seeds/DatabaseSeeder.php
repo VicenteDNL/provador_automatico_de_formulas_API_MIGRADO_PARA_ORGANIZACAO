@@ -12,8 +12,9 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         $this->call(UsuarioSeeder::class);
-        // $this->call(NiveisMvflpSeeder::class);
-        // $this->call(RecompensaSeeder::class);
-        // $this->call(ExercicioMvflpSeeder::class);
+        $this->call(RecompensaSeeder::class);
+        $this->call(NivelSeeder::class);
+        $this->call(FormulaSeeder::class);
+        $this->call(ExercicioSeeder::class);
     }
 }
