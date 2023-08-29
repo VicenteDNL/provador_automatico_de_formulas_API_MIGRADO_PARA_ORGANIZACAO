@@ -20,8 +20,8 @@ class EncontraNoMaisProfundo
         $ramoDireito = $arvore->getFilhoDireitaNo();
 
         if (is_null($ramoDireito) and is_null($ramoEsquerdo) and is_null($ramoCentro)) {
-            $listaDeNo[] = empty($listaDeNo)
-            ? $arvore
+            $listaDeNo = empty($listaDeNo)
+            ? [$arvore]
             : array_reduce(
                 $listaDeNo,
                 function (array $carry, No $newNo) {
