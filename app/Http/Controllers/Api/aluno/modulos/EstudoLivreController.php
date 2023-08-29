@@ -12,12 +12,12 @@ use App\Http\Controllers\Api\Action;
 use App\Http\Controllers\Api\ResponseController;
 use App\Http\Controllers\Api\Type;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\API\Aluno\Modulos\EstudoLivre\EstudoLivreAdicionaRequest;
-use App\Http\Requests\API\Aluno\Modulos\EstudoLivre\EstudoLivreArvoreRequest;
-use App\Http\Requests\API\Aluno\Modulos\EstudoLivre\EstudoLivreDerivaRequest;
-use App\Http\Requests\API\Aluno\Modulos\EstudoLivre\EstudoLivreFechaRequest;
-use App\Http\Requests\API\Aluno\Modulos\EstudoLivre\EstudoLivreIniciarRequest;
-use App\Http\Requests\API\Aluno\Modulos\EstudoLivre\EstudoLivreTicaRequest;
+use App\Http\Requests\API\Aluno\EstudoLivre\EstudoLivreAdicionaRequest;
+use App\Http\Requests\API\Aluno\EstudoLivre\EstudoLivreArvoreRequest;
+use App\Http\Requests\API\Aluno\EstudoLivre\EstudoLivreDerivaRequest;
+use App\Http\Requests\API\Aluno\EstudoLivre\EstudoLivreFechaRequest;
+use App\Http\Requests\API\Aluno\EstudoLivre\EstudoLivreIniciarRequest;
+use App\Http\Requests\API\Aluno\EstudoLivre\EstudoLivreTicaRequest;
 use Exception;
 
 class EstudoLivreController extends Controller
