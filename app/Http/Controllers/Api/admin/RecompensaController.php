@@ -52,7 +52,7 @@ class RecompensaController extends Controller
             $recompensa->nome = $request->nome;
             $recompensa->imagem = 'nada sendo passado';
             $recompensa->pontuacao = $request->pontuacao;
-            $recompensa->logic_live_id = 0;
+            $recompensa->logic_live_id = null;
             $recompensa->save();
 
             if ($this->config->ativo()) {

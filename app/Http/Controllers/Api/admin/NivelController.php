@@ -53,8 +53,7 @@ class NivelController extends Controller
     {
         try {
             DB::beginTransaction();
-            $nivel->meu_logic_live_id = 0;
-            $nivel->modulo_id = isset($baseDados) ? $baseDados->meu_id : 0;
+            $nivel->logic_live_id = null;
             $nivel->nome = $request->nome;
             $nivel->descricao = $request->descricao;
             $nivel->ativo = $request->ativo;
@@ -70,7 +69,7 @@ class NivelController extends Controller
                     DB::rollBack();
                     return ResponseController::json(Type::error, Action::store, null, $criadoLogicLive['msg']);
                 }
-                $nivel->meu_logic_live_id = $criadoLogicLive['data']['niv_codigo'];
+                $nivel->logic_live_id = $criadoLogicLive['data']['niv_codigo'];
                 $nivel->save();
             }
             DB::commit();
@@ -106,7 +105,7 @@ class NivelController extends Controller
             $nivel->save();
 
             if ($this->config->ativo()) {
-                $criadoLogicLive = $this->logicLive_nivel->atualizarNivel($nivel->meu_logic_live_id, ['niv_nome' => $request->nome, 'niv_descricao' => $request->descricao, 'niv_ativo' => $request->ativo, 'mod_codigo' => $nivel->modulo_id]);
+                $criadoLogicLive = $this->logicLive_nivel->atualizarNivel($nivel->logic_live_id, ['niv_nome' => $request->nome, 'niv_descricao' => $request->descricao, 'niv_ativo' => $request->ativo, 'mod_codigo' => $nivel->modulo_id]);
 
                 if ($criadoLogicLive['success'] == false) {
                     DB::rollBack();
@@ -146,7 +145,7 @@ class NivelController extends Controller
             $nivel->delete();
 
             if ($this->config->ativo()) {
-                $criadoLogicLive = $this->logicLive_nivel->deletarNivel($nivel->meu_logic_live_id);
+                $criadoLogicLive = $this->logicLive_nivel->deletarNivel($nivel->logic_live_id);
 
                 if ($criadoLogicLive['success'] == false) {
                     DB::rollBack();
