@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Requests\API\Aluno\Modulos\EstudoLivre;
+namespace App\Http\Requests\API\Aluno\EstudoLivre;
 
+use App\Rules\ArvoreAutomaticaRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class EstudoLivreIniciarRequest extends FormRequest
+class EstudoLivreArvoreRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,17 +25,14 @@ class EstudoLivreIniciarRequest extends FormRequest
     public function rules()
     {
         return [
-            'xml'          => 'required|string',
-            'canvas.width' => 'nullable|numeric',
+            ...ArvoreAutomaticaRule::rules(),
         ];
     }
 
     public function messages()
     {
         return [
-            'xml.required'          => 'O campo xml é obrigatório',
-            'xml.string'            => 'O campo xml deve ser uma string',
-            'canvas.width.numeric'  => 'O campo deve ser numérico',
+            ...ArvoreAutomaticaRule::messages(),
         ];
     }
 }

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\API\Aluno\Modulos\EstudoLivre;
+namespace App\Http\Requests\API\Aluno\EstudoLivre;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class EstudoLivreArvoreRequest extends FormRequest
+class EstudoLivreIniciarRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -35,7 +35,6 @@ class EstudoLivreArvoreRequest extends FormRequest
             'xml.required'          => 'O campo xml é obrigatório',
             'xml.string'            => 'O campo xml deve ser uma string',
             'canvas.width.numeric'  => 'O campo deve ser numérico',
-
         ];
     }
 }

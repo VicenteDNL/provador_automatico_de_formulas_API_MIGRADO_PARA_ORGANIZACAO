@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\API\Aluno\Modulos\EstudoLivre;
+namespace App\Http\Requests\API\Aluno\EstudoLivre;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class EstudoLivreTicaRequest extends FormRequest
+class EstudoLivreFechaRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -39,9 +39,9 @@ class EstudoLivreTicaRequest extends FormRequest
             'arvore.formula.xml'                 => 'required|string',
             'arvore.formula.strformula'          => 'nullable|string',
 
-            'passo.idNo'    => 'required|int',
-
-            'canvas.width' => 'nullable|numeric',
+            'passo.idNoFolha'         => 'required|numeric',
+            'passo.idNoContraditorio' => 'required|numeric',
+            'canvas.width'            => 'nullable|numeric',
 
         ];
     }
@@ -49,9 +49,12 @@ class EstudoLivreTicaRequest extends FormRequest
     public function messages()
     {
         return [
-            'passo.idNo.required'  => 'O campo idNo é obrigatório',
-            'passo.idNo.numeric'   => 'O campo idNo deve ser numérico',
-            'canvas.width.numeric' => 'O campo deve ser numérico',
+            'passo.idNoFolha.required'          => 'O campo idNoFolha é obrigatório',
+            'passo.idNoContraditorio.required'  => 'O campo idNoContraditorio é obrigatório',
+            'passo.idNoFolha.numeric'           => 'O campo idNoFolha deve ser numérico',
+            'passo.idNoContraditorio.numeric'   => 'O campo idNoContraditorio deve ser numérico',
+            'passo.idNo.numeric'                => 'O campo idNo deve ser numérico',
+            'canvas.width.numeric'              => 'O campo deve ser numérico',
         ];
     }
 }

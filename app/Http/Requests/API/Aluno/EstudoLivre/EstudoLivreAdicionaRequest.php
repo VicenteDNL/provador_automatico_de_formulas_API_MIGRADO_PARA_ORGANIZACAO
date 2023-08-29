@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\API\Aluno\Modulos\EstudoLivre;
+namespace App\Http\Requests\API\Aluno\EstudoLivre;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class EstudoLivreDerivaRequest extends FormRequest
+class EstudoLivreAdicionaRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -39,21 +39,19 @@ class EstudoLivreDerivaRequest extends FormRequest
             'arvore.formula.xml'                 => 'required|string',
             'arvore.formula.strformula'          => 'nullable|string',
 
-            'passo.idNoDerivacao'       => 'required|int',
-            'passo.idsNoInsercoes'      => 'required|array',
-            'passo.idsNoInsercoes.*'    => 'int',
-            'passo.regra'               => 'required|string',
+            'passo.idNo'    => 'required|string',
+            'passo.negacao' => 'required|boolean',
 
             'canvas.width' => 'nullable|numeric',
+
         ];
     }
 
     public function messages()
     {
         return [
-            'passo.idNo.required'  => 'O campo idNo é obrigatório',
-            'passo.idNo.numeric'   => 'O campo idNo deve ser numérico',
-            'canvas.width.numeric' => 'O campo deve ser numérico',
+
+            'canvas.width.numeric'  => 'O campo deve ser numérico',
         ];
     }
 }
