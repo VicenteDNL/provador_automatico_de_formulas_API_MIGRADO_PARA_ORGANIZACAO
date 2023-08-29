@@ -9,5 +9,5 @@ class Recompensa extends Model
 {
     use HasFactory;
     protected $table = 'recompensas';
-    protected $fillable = ['nome', 'imagem', 'pontuacao', 'id_logic_live'];
+    protected $fillable = ['nome', 'imagem', 'pontuacao', 'logic_live_id'];
 }

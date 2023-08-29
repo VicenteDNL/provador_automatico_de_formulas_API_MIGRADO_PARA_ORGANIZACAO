@@ -9,11 +9,11 @@ class Nivel extends Model
 {
     use HasFactory;
     protected $table = 'niveis';
-    protected $fillable = ['nome', 'ativo', 'descricao', 'id_recompensa'];
+    protected $fillable = ['nome', 'ativo', 'descricao', 'recompensa_id'];
 
-    public function id_recompensa()
+    public function recompensa()
     {
-        return $this->belongsTo(Recompensa::class, 'id_recompensa');
+        return $this->belongsTo(Recompensa::class);
     }
 
     public function exercicios()
