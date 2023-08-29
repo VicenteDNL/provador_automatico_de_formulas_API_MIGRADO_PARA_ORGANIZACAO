@@ -52,7 +52,7 @@ class RecompensaController extends Controller
             $recompensa->nome = $request->nome;
             $recompensa->imagem = 'nada sendo passado';
             $recompensa->pontuacao = $request->pontuacao;
-            $recompensa->id_logic_live = 0;
+            $recompensa->logic_live_id = 0;
             $recompensa->save();
 
             if ($this->config->ativo()) {
@@ -62,7 +62,7 @@ class RecompensaController extends Controller
                     DB::rollBack();
                     return ResponseController::json(Type::error, Action::store, null, $criadoLogicLive['msg']);
                 }
-                $recompensa->id_logic_live = $criadoLogicLive['data']['rec_codigo'] ;
+                $recompensa->logic_live_id = $criadoLogicLive['data']['rec_codigo'] ;
                 $recompensa->save();
             }
             DB::commit();
@@ -96,7 +96,7 @@ class RecompensaController extends Controller
             $recompensa->save();
 
             if ($this->config->ativo()) {
-                $criadoLogicLive = $this->logicLive_recompensa->atualizarRecompensa($recompensa->id_logic_live, ['rec_nome' => $request->nome, 'rec_imagem' => 'nada sendo passado', 'rec_pontuacao' => $request->pontuacao]);
+                $criadoLogicLive = $this->logicLive_recompensa->atualizarRecompensa($recompensa->logic_live_id, ['rec_nome' => $request->nome, 'rec_imagem' => 'nada sendo passado', 'rec_pontuacao' => $request->pontuacao]);
 
                 if ($criadoLogicLive['success'] == false) {
                     DB::rollBack();
@@ -123,7 +123,7 @@ class RecompensaController extends Controller
             $recompensa->delete();
 
             if ($this->config->ativo()) {
-                $criadoLogicLive = $this->logicLive_recompensa->deletarRecompensa($recompensa->id_logic_live);
+                $criadoLogicLive = $this->logicLive_recompensa->deletarRecompensa($recompensa->logic_live_id);
 
                 if ($criadoLogicLive['success'] == false) {
                     DB::rollBack();
