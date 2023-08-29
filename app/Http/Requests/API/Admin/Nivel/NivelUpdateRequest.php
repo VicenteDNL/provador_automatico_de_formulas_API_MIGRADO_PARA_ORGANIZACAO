@@ -26,7 +26,7 @@ class NivelUpdateRequest extends FormRequest
         return [
             'ativo'         => 'required|boolean',
             'descricao'     => 'required|string',
-            'id_recompensa' => 'nullable|integer',
+            'recompensa_id' => 'nullable|integer',
             'nome'          => 'required|string',
         ];
     }
@@ -38,7 +38,7 @@ class NivelUpdateRequest extends FormRequest
             'ativo.boolean'          => 'O campo ativo deve ser booleano',
             'descricao.required'     => 'O campo descricao é obrigátorio',
             'descricao.string'       => 'O campo descricao dever ser um texto',
-            'id_recompensa.integer'  => 'O campo pontuacao dever ser um inteiro positivo',
+            'recompensa_id.integer'  => 'O campo pontuacao dever ser um inteiro positivo',
             'nome.required'          => 'O campo pontuacao é obrigátorio',
             'nome.string'            => 'O campo nome dever ser um texto',
         ];
