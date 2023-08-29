@@ -21,7 +21,7 @@ class CreateNiveisTable extends Migration
             $table->boolean('ativo');
             $table->timestamps();
             $table->foreign('recompensa_id')->references('id')->on('recompensas');
-            $table->integer('meu_logic_live_id')->nullable();
+            $table->integer('logic_live_id')->nullable();
         });
     }
 
