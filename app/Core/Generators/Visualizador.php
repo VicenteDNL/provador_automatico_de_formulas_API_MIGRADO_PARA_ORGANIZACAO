@@ -28,21 +28,31 @@ class Visualizador extends Controller
     }
 
     /**
-     * @param ProcessadoresNo  $arvore
-     * @param SimpleXMLElement $xml
-     * @param float            $width
-     * @param bool             $ticar
-     * @param bool             $fechar
-     * @param Formula          $formula
-     * @param bool             $showLines
+     * @param ProcessadoresNo|null $arvore
+     * @param SimpleXMLElement     $xml
+     * @param float                $width
+     * @param bool                 $ticar
+     * @param bool                 $fechar
+     * @param Formula              $formula
+     * @param bool                 $showLines
      */
-    public function gerarImpressaoArvore(ProcessadoresNo $arvore, Formula $formula, float $width, bool $ticar = false, bool $fechar = false, bool $showLines = true)
+    public function gerarImpressaoArvore(?ProcessadoresNo $arvore, Formula $formula, float $width, bool $ticar = false, bool $fechar = false, bool $showLines = true)
     {
         $this->showLines = $showLines;
         $tamanhoMininoCanvas = $this->larguraMinimaCanvas($formula);
 
         if ($width < $tamanhoMininoCanvas) {
             $width = $tamanhoMininoCanvas;
+        }
+
+        if (is_null($arvore)) {
+            return new Arvore([
+                'nos'       => [],
+                'arestas'   => [],
+                'linhas'    => [],
+                'width'     => $width + ($this->showLines ? self::AREA_LINHA : 0),
+                'height'    => 0,
+            ]);
         }
 
         $listaNo = $this->imprimirNos($arvore, $width, $width / 2, 0, $ticar, $fechar);
