@@ -3,18 +3,26 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Core\Base;
+use App\Core\Common\Exceptions\ArvoreDeRefutacaoExecption;
+use App\Core\Common\Models\Steps\PassoDerivacao;
+use App\Core\Common\Models\Steps\PassoFechamento;
+use App\Core\Common\Models\Steps\PassoInicializacao;
+use App\Core\Common\Models\Steps\PassoTicagem;
 use App\Http\Controllers\Api\Action;
 use App\Http\Controllers\Api\ResponseController;
 use App\Http\Controllers\Api\Type;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\API\Admin\ArvoreRefutacao\ArvoreRefutacaoAdicionaRequest;
+use App\Http\Requests\API\Admin\ArvoreRefutacao\ArvoreRefutacaoDerivaRequest;
+use App\Http\Requests\API\Admin\ArvoreRefutacao\ArvoreRefutacaoFechaRequest;
+use App\Http\Requests\API\Admin\ArvoreRefutacao\ArvoreRefutacaoIniciaRequest;
 use App\Http\Requests\API\Admin\ArvoreRefutacao\ArvoreRefutacaoOtimizadaRequest;
-use Exception;
-use Illuminate\Http\Request;
+use App\Http\Requests\API\Admin\ArvoreRefutacao\ArvoreRefutacaoTicaRequest;
 use Throwable;
 
 class ArvoreRefutacaoController extends Controller
 {
-    public function arvoreOtimizada(ArvoreRefutacaoOtimizadaRequest $request)
+    public function arvore(ArvoreRefutacaoOtimizadaRequest $request)
     {
         try {
             $arvore = new Base($request->xml);
@@ -29,155 +37,80 @@ class ArvoreRefutacaoController extends Controller
         }
     }
 
-    public function criarPiorArvore(Request $request)
+    public function inicia(ArvoreRefutacaoIniciaRequest $request)
     {
-        // try {
-        //     $xml = simplexml_load_string($request->xml);
-        // } catch(Exception $e) {
-        //     return response()->json(['success' => false, 'msg' => 'XML INVALIDO!', 'data' => ''], 500);
-        // }
-
-        // #Cria a arvore passando o XML
-        // $listaArgumentos = $this->arg->criarFormula($xml);
-        // $arvore = $this->gerador->inicializarDerivacao($listaArgumentos['premissas'], $listaArgumentos['conclusao']);
-        // $arv = $this->gerador->piorArvore($arvore);
-
-        // #Gera lista das possicoes de cada no da tabela
-        // $impressaoAvr = $this->constr->geraListaArvore($arv, $xml, 0, true, true);
-
-        // #Gera uma string da Formula XML
-        // $formulaGerada = $this->arg->stringFormula($xml);
-        // #--------
-
-        // return response()->json(['success' => true, 'msg' => '', 'data' => ['impressao' => $impressaoAvr, 'str' => $formulaGerada]]);
+        try {
+            $arvore = new Base($request->xml);
+            return ResponseController::json(Type::success, Action::index, $arvore->imprimir());
+        } catch(ArvoreDeRefutacaoExecption $e) {
+            return ResponseController::json(Type::error, Action::index, null, $e->getMessage());
+        } catch(Throwable $e) {
+            return ResponseController::json(Type::exception, Action::index);
+        }
     }
 
-    public function premissasConclusao(Request $request)
+    public function adiciona(ArvoreRefutacaoAdicionaRequest $request)
     {
-        // $arvore = new Base($request->xml);
-        // $arvore->setListaPassos([]);
-        // $arvore->setListaTicagem([]);
-        // $arvore->setListaFechamento([]);
-        // $arvore->derivacao->setListaDerivacoes([]);
-        // $arvore->fecharAutomatido(false);
-        // $arvore->ticarAutomatico(false);
+        try {
+            $arvore = new Base($request->arvore['formula']['xml']);
+            $arvore->carregarCamposEssenciais($request->all());
+            $passo = new PassoInicializacao($request->passo);
 
-        // if (!$arvore->montarArvore()) {
-        //     return  response()->json(['success' => false, 'msg' => 'Error ar criar arvore', 'data' => ''], 500);
-        // }
-
-        // return  response()->json([
-        //     'success' => true,
-        //     'msg'     => '',
-        //     'data'    => $arvore->retorno(null, $request->usu_hash, $request->exe_hash, true),
-        // ]);
+            if (!$arvore->tentativaInicializacao($passo)) {
+                return ResponseController::json(Type::error, Action::store, null, $arvore->getErro());
+            }
+            return ResponseController::json(Type::success, Action::store, $arvore->imprimir());
+        } catch(Throwable $e) {
+            return ResponseController::json(Type::exception, Action::store);
+        }
     }
 
-    public function adicionaNoIncializacao(Request $request)
+    public function deriva(ArvoreRefutacaoDerivaRequest $request)
     {
-        // // try{
+        try {
+            $arvore = new Base($request->arvore['formula']['xml']);
+            $arvore->carregarCamposEssenciais($request->all());
+            $passo = new PassoDerivacao($request->passo);
 
-        // $arvore = new Base($request->xml);
-        // $arvore->setListaPassos($request->inicio['lista']);
-
-        // if (!$arvore->montarArvore($request->inicio['no']['id'], $request->inicio['negacao'])) {
-        //     return  response()->json([
-        //         'success' => false,
-        //         'msg'     => $arvore->getError(),
-        //     ]);
-        // }
-
-        // return  response()->json([
-        //     'success' => true,
-        //     'msg'     => '',
-        //     'data'    => $arvore->retorno(null, $request->usu_hash, $request->exe_hash, true),
-        // ]);
-
-        // }catch(\Exception $e){
-        //     return response()->json(['success' => false, 'msg'=>'erro interno', 'data'=>''],500);
-        // }
+            if (!$arvore->tentativaDerivacao($passo)) {
+                return ResponseController::json(Type::error, Action::store, null, $arvore->getErro());
+            }
+            return ResponseController::json(Type::success, Action::store, $arvore->imprimir());
+        } catch(Throwable $e) {
+            return ResponseController::json(Type::exception, Action::store);
+        }
     }
 
-    public function derivar(Request $request)
+    public function tica(ArvoreRefutacaoTicaRequest $request)
     {
-        // $arvore = new Base($request->xml);
-        // $arvore->setListaPassos($request->inicio['lista']);
-        // $arvore->setListaTicagem($request->ticar['lista']);
-        // $arvore->setListaFechamento($request->fechar['lista']);
-        // $arvore->derivacao->setListaDerivacoes($request->derivacao['lista']);
-        // $arvore->fecharAutomatido(false);
-        // $arvore->ticarAutomatico(false);
-        // $arvore->inicializacao->setFinalizado(true);
+        try {
+            $arvore = new Base($request->arvore['formula']['xml']);
+            $arvore->carregarCamposEssenciais($request->all());
 
-        // if (!$arvore->derivar($request->derivacao['no']['idNo'], $request->derivacao['folhas'], $request->derivacao['regra'])) {
-        //     return  response()->json([
-        //         'success' => false,
-        //         'msg'     => $arvore->getError(),
-        //     ]);
-        // }
+            $passo = new PassoTicagem($request->passo);
 
-        // return  response()->json([
-        //     'success' => true,
-        //     'msg'     => '',
-        //     'data'    => $arvore->retorno(null, $request->usu_hash, $request->exe_hash, true),
-        // ]);
+            if (!$arvore->tentativaTicagem($passo)) {
+                return ResponseController::json(Type::error, Action::update, null, $arvore->getErro());
+            }
+            return ResponseController::json(Type::success, Action::update, $arvore->imprimir());
+        } catch(Throwable $e) {
+            return ResponseController::json(Type::exception, Action::update);
+        }
     }
 
-    public function ticarNo(Request $request)
+    public function fecha(ArvoreRefutacaoFechaRequest $request)
     {
-        // $arvore = new Base($request->xml);
-        // $arvore->setListaPassos($request->inicio['lista']);
-        // $arvore->setListaTicagem($request->ticar['lista']);
-        // $arvore->setListaFechamento($request->fechar['lista']);
-        // $arvore->derivacao->setListaDerivacoes($request->derivacao['lista']);
-        // $arvore->fecharAutomatido(false);
-        // $arvore->ticarAutomatico(false);
-        // $arvore->inicializacao->setFinalizado(true);
+        try {
+            $arvore = new Base($request->arvore['formula']['xml']);
+            $arvore->carregarCamposEssenciais($request->all());
+            $passo = new PassoFechamento($request->passo);
 
-        // if (!$arvore->montarArvore()) {
-        //     return  response()->json(['success' => false, 'msg' => $arvore->getError()]);
-        // }
-
-        // if (!$arvore->ticarNo($request->ticar['no'])) {
-        //     return  response()->json([
-        //         'success' => false,
-        //         'msg'     => $arvore->getError(),
-        //     ]);
-        // }
-
-        // return  response()->json([
-        //     'success' => true,
-        //     'msg'     => '',
-        //     'data'    => $arvore->retorno(null, $request->usu_hash, $request->exe_hash, true),
-        // ]);
-    }
-
-    public function fecharNo(Request $request)
-    {
-        // $arvore = new Base($request->xml);
-        // $arvore->setListaPassos($request->inicio['lista']);
-        // $arvore->setListaTicagem($request->ticar['lista']);
-        // $arvore->setListaFechamento($request->fechar['lista']);
-        // $arvore->derivacao->setListaDerivacoes($request->derivacao['lista']);
-        // $arvore->fecharAutomatido(false);
-        // $arvore->ticarAutomatico(false);
-        // $arvore->inicializacao->setFinalizado(true);
-
-        // if (!$arvore->montarArvore()) {
-        //     return  response()->json(['success' => false, 'msg' => $arvore->getError()]);
-        // }
-
-        // if (!$arvore->fecharNo($request->fechar['folha'], $request->fechar['no'])) {
-        //     return  response()->json([
-        //         'success' => false,
-        //         'msg'     => $arvore->getError(),
-        //     ]);
-        // }
-
-        // return  response()->json([
-        //     'success' => true,
-        //     'msg'     => '',
-        //     'data'    => $arvore->retorno(null, $request->usu_hash, $request->exe_hash, true),
-        // ]);
+            if (!$arvore->tentativaFechamento($passo)) {
+                return ResponseController::json(Type::error, Action::update, null, $arvore->getErro());
+            }
+            return ResponseController::json(Type::success, Action::update, $arvore->imprimir());
+        } catch(Throwable $e) {
+            return ResponseController::json(Type::exception, Action::update);
+        }
     }
 }
