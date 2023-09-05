@@ -17,6 +17,7 @@ use App\Http\Requests\API\Admin\ArvoreRefutacao\ArvoreRefutacaoDerivaRequest;
 use App\Http\Requests\API\Admin\ArvoreRefutacao\ArvoreRefutacaoFechaRequest;
 use App\Http\Requests\API\Admin\ArvoreRefutacao\ArvoreRefutacaoIniciaRequest;
 use App\Http\Requests\API\Admin\ArvoreRefutacao\ArvoreRefutacaoOtimizadaRequest;
+use App\Http\Requests\API\Admin\ArvoreRefutacao\ArvoreRefutacaoRecriarRequest;
 use App\Http\Requests\API\Admin\ArvoreRefutacao\ArvoreRefutacaoTicaRequest;
 use Throwable;
 
@@ -32,6 +33,21 @@ class ArvoreRefutacaoController extends Controller
             }
 
             return ResponseController::json(Type::success, Action::store, $arvore->imprimirArvore($request['exibirLinhas'] ?? true));
+        } catch(Throwable $e) {
+            return ResponseController::json(Type::exception, Action::store);
+        }
+    }
+
+    public function recriar(ArvoreRefutacaoRecriarRequest $request)
+    {
+        try {
+            $arvore = new Base($request->arvore['formula']['xml']);
+            $arvore->carregarCamposEssenciais($request->all());
+
+            if (!$arvore->reconstruirPassos()) {
+                return ResponseController::json(Type::error, Action::store, null, $arvore->getErro());
+            }
+            return ResponseController::json(Type::success, Action::store, $arvore->imprimir());
         } catch(Throwable $e) {
             return ResponseController::json(Type::exception, Action::store);
         }
