@@ -177,7 +177,7 @@ class ExercicioController extends Controller
                         return ResponseController::json(Type::error, Action::store, null, 'exercicio não está vinculado ao Logic Live');
                     }
 
-                    $criadoLogicLive = $this->logicLive_exercicio->atualizarExercicio($exercicio->logic_live_id, [,
+                    $criadoLogicLive = $this->logicLive_exercicio->atualizarExercicio($exercicio->logic_live_id, [
                         'exe_ativo'         => $exercicio->ativo,
                     ]);
 
