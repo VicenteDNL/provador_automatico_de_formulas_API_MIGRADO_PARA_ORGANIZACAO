@@ -64,7 +64,7 @@ class TentativaDerivacao extends Serializa
      * @param  No   $arvore
      * @return void
      */
-    public function setArvore(No $arvore): void
+    public function setArvore(?No $arvore): void
     {
         $this->arvore = $arvore;
     }
