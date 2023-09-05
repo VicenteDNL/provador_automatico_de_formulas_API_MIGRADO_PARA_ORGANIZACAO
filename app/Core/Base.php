@@ -363,6 +363,49 @@ class Base
     }
 
     /**
+     * @return bool
+     */
+    public function reconstruirPassos(): bool
+    {
+        $tentativa = $this->geradorPorPasso->reconstruirInicializacao($this->formula, $this->inicializacao->getPassosExecutados());
+
+        if (!$tentativa->getSucesso()) {
+            $this->erro = $tentativa->getMensagem();
+            return  false;
+        }
+
+        $this->inicializacao->setPassosExecutados($tentativa->getPassos());
+        $this->inicializacao->setOpcoesDisponiveis($this->visualizador->gerarOpcoesInicializacao($this->formula, $tentativa->getPassos()));
+        $this->inicializacao->setCompleto(count($this->inicializacao->getOpcoesDisponiveis()) == 0);
+
+        $tentativa = $this->geradorPorPasso->reconstruirArvore($this->derivacao->getPassosExecutados());
+
+        if (!$tentativa->getSucesso()) {
+            $this->erro = $tentativa->getMensagem();
+            return  false;
+        }
+
+        $tentativa = $this->geradorPorPasso->reconstruirFechamento($this->fechados->getPassosExecutados());
+
+        if (!$tentativa->getSucesso()) {
+            $this->erro = $tentativa->getMensagem();
+            return  false;
+        }
+
+        $tentativa = $this->geradorPorPasso->reconstruirTicagem($this->ticados->getPassosExecutados());
+
+        if (!$tentativa->getSucesso()) {
+            $this->erro = $tentativa->getMensagem();
+            return  false;
+        }
+
+        $this->arvore = $tentativa->getArvore();
+        $this->ticados->setPassosExecutados($tentativa->getPassos());
+
+        return true;
+    }
+
+    /**
      * recebe como paramentro o request e adiciona o
      * valores essenciais para o processo de derivação
      * @param mixed $request
@@ -474,8 +517,8 @@ class Base
             $this->arvore,
             $this->formula,
             $this->canvas_width,
-            true,
-            true,
+            $this->ticados->isAutomatico(),
+            $this->fechados->isAutomatico(),
             $exibirLinhas
         );
         $this->arvoreVisualizacao = $impressao;
