@@ -111,6 +111,15 @@ class GeradorPorPasso extends GeradorArvore
      */
     public function reconstruirTicagem(array $passosExecutados, ?PassoTicagem $novoPasso = null): TentativaTicagem
     {
+        if (is_null($this->arvore)) {
+            return new TentativaTicagem([
+                'sucesso'  => true,
+                'mensagem' => 'sucesso',
+                'arvore'   => $this->arvore,
+                'passos'   => $passosExecutados,
+            ]);
+        }
+
         $tentativa = TicarTodosNos::exec($this->arvore, $passosExecutados);
 
         if (!$tentativa->getSucesso() || is_null($novoPasso)) {
@@ -139,6 +148,15 @@ class GeradorPorPasso extends GeradorArvore
          */
     public function reconstruirFechamento(array $passosExecutados, ?PassoFechamento $novoPasso = null): TentativaFechamento
     {
+        if (is_null($this->arvore)) {
+            return new TentativaFechamento([
+                'sucesso'  => true,
+                'mensagem' => 'sucesso',
+                'arvore'   => $this->arvore,
+                'passos'   => $passosExecutados,
+            ]);
+        }
+
         $tentativa = FecharTodosNos::exec($this->arvore, $passosExecutados);
 
         if (!$tentativa->getSucesso() || is_null($novoPasso)) {
