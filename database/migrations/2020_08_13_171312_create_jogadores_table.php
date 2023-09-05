@@ -24,7 +24,6 @@ class CreateJogadoresTable extends Migration
             $table->boolean('ativo');
             $table->integer('logic_live_id')->nullable();
             $table->string('provedor');
-
             $table->timestamps();
         });
     }
