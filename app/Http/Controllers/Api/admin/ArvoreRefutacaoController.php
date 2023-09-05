@@ -38,7 +38,7 @@ class ArvoreRefutacaoController extends Controller
         }
     }
 
-    public function recriar(ArvoreRefutacaoRecriarRequest $request)
+    public function recria(ArvoreRefutacaoRecriarRequest $request)
     {
         try {
             $arvore = new Base($request->arvore['formula']['xml']);
