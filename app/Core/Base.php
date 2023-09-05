@@ -241,7 +241,7 @@ class Base
         $this->inicializacao->setOpcoesDisponiveis($this->visualizador->gerarOpcoesInicializacao($this->formula, $tentativa->getPassos()));
         $this->inicializacao->setCompleto(empty($this->inicializacao->getOpcoesDisponiveis()));
 
-        $tentativa = $this->geradorPorPasso->reconstruirArvore($this->derivacao->getPassosExecutados());
+        $tentativa = $this->geradorPorPasso->reconstruirDerivacao($this->derivacao->getPassosExecutados());
 
         if (!$tentativa->getSucesso()) {
             $this->erro = $tentativa->getMensagem();
@@ -292,7 +292,7 @@ class Base
         $this->inicializacao->setOpcoesDisponiveis($this->visualizador->gerarOpcoesInicializacao($this->formula, $tentativa->getPassos()));
         $this->inicializacao->setCompleto(count($this->inicializacao->getOpcoesDisponiveis()) == 0);
 
-        $tentativa = $this->geradorPorPasso->reconstruirArvore($this->derivacao->getPassosExecutados());
+        $tentativa = $this->geradorPorPasso->reconstruirDerivacao($this->derivacao->getPassosExecutados());
 
         if (!$tentativa->getSucesso()) {
             $this->erro = $tentativa->getMensagem();
@@ -335,7 +335,7 @@ class Base
         $this->inicializacao->setOpcoesDisponiveis($this->visualizador->gerarOpcoesInicializacao($this->formula, $tentativa->getPassos()));
         $this->inicializacao->setCompleto(count($this->inicializacao->getOpcoesDisponiveis()) == 0);
 
-        $tentativa = $this->geradorPorPasso->reconstruirArvore($this->derivacao->getPassosExecutados());
+        $tentativa = $this->geradorPorPasso->reconstruirDerivacao($this->derivacao->getPassosExecutados());
 
         if (!$tentativa->getSucesso()) {
             $this->erro = $tentativa->getMensagem();
@@ -378,7 +378,7 @@ class Base
         $this->inicializacao->setOpcoesDisponiveis($this->visualizador->gerarOpcoesInicializacao($this->formula, $tentativa->getPassos()));
         $this->inicializacao->setCompleto(count($this->inicializacao->getOpcoesDisponiveis()) == 0);
 
-        $tentativa = $this->geradorPorPasso->reconstruirArvore($this->derivacao->getPassosExecutados());
+        $tentativa = $this->geradorPorPasso->reconstruirDerivacao($this->derivacao->getPassosExecutados());
 
         if (!$tentativa->getSucesso()) {
             $this->erro = $tentativa->getMensagem();

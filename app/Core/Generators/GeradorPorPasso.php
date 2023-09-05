@@ -70,7 +70,7 @@ class GeradorPorPasso extends GeradorArvore
      * @param  ?PassoDerivacao    $passoNovo
      * @return TentativaDerivacao
      */
-    public function reconstruirArvore(array $passosExecutados, ?PassoDerivacao $passoNovo = null): TentativaDerivacao
+    public function reconstruirDerivacao(array $passosExecutados, ?PassoDerivacao $passoNovo = null): TentativaDerivacao
     {
         foreach ($passosExecutados as $exec) {
             $tentativa = $this->derivar($exec);
