@@ -9,4 +9,9 @@ class Formula extends Model
 {
     use HasFactory;
     protected $table = 'formulas';
+
+    public function exercicio()
+    {
+        return $this->hasOny(Exercicio::class);
+    }
 }

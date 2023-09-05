@@ -20,4 +20,9 @@ class Exercicio extends Model
     {
         return $this->belongsTo(Nivel::class);
     }
+
+    public function formula()
+    {
+        return $this->belongsTo(Formula::class);
+    }
 }

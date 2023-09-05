@@ -18,9 +18,7 @@ class FormulaFactory extends Factory
             'xml'                    => $this->faker->text(),
             'quantidade_regras'      => $this->faker->numberBetween(1, 11),
             'ticar_automaticamente'  => $this->faker->boolean(),
-            'inicializacao_completa' => $this->faker->boolean(),
             'fechar_automaticamente' => $this->faker->boolean(),
-            'iniciar_zerada'         => $this->faker->boolean(),
             'inicio_personalizado'   => $this->faker->boolean(),
         ];
     }
