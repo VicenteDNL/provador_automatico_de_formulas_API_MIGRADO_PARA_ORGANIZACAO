@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\LogicLive\Modulos\ValidacaoFormulas;
+namespace App\LogicLive\Modulos\ValidacaoFormulas;
 
-use App\Http\Controllers\LogicLive\Request\RequestDelete;
-use App\Http\Controllers\LogicLive\Request\RequestPost;
-use App\Http\Controllers\LogicLive\Request\RequestPut;
+use App\LogicLive\Request\RequestDelete;
+use App\LogicLive\Request\RequestPost;
+use App\LogicLive\Request\RequestPut;
 
 class ExercicioVF
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\LogicLive\Config;
+namespace App\LogicLive\Config;
 
 class Configuracao
 {

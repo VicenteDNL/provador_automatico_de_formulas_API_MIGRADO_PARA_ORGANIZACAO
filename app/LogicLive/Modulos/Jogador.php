@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\LogicLive\Modulos;
+namespace App\LogicLive\Modulos;
 
-use App\Http\Controllers\LogicLive\Request\RequestGet;
+use App\LogicLive\Request\RequestGet;
 
 class Jogador
 {

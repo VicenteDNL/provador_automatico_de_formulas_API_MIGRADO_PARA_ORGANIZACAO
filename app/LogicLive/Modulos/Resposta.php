@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\LogicLive\Modulos;
+namespace App\LogicLive\Modulos;
 
-use App\Http\Controllers\LogicLive\Request\RequestPost;
+use App\LogicLive\Request\RequestPost;
 
 class Resposta
 {

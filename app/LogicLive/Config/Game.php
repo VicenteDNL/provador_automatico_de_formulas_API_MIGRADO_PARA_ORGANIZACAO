@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\LogicLive\Config;
+namespace App\LogicLive\Config;
 
-use App\Http\Controllers\LogicLive\Request\RequestGet;
-use App\Http\Controllers\LogicLive\Request\RequestPost;
+use App\LogicLive\Request\RequestGet;
+use App\LogicLive\Request\RequestPost;
 
 class Game
 {

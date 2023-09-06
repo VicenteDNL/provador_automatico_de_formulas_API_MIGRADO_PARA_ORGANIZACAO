@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\LogicLive\Request;
+namespace App\LogicLive\Request;
 
-use App\Http\Controllers\LogicLive\Config\Configuracao;
+use App\LogicLive\Config\Configuracao;
 
 class RequestPut
 {
