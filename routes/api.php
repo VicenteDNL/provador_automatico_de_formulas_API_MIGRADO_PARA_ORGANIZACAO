@@ -1,9 +1,10 @@
 <?php
 
 use App\Http\Controllers\Api\Admin\ArvoreRefutacaoController as AdminArvoreRefutacaoController;
-use App\Http\Controllers\Api\Admin\Modulos\ValidacaoFormulas\RespostaController;
+use App\Http\Controllers\Api\Admin\ExercicioController;
 use App\Http\Controllers\Api\Admin\NivelController;
 use App\Http\Controllers\Api\Admin\RecompensaController;
+use App\Http\Controllers\Api\Admin\RespostaController;
 use App\Http\Controllers\Api\aluno\ArvoreRefutacaoController;
 use App\Http\Controllers\Api\aluno\autenticacao\AuthHash;
 use App\Http\Controllers\Api\aluno\ExercicioVFController as AlunoExercicioVFController;
@@ -33,31 +34,31 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::delete('recompensas/{id}', [RecompensaController::class, 'destroy']);
 
     Route::get('niveis', [NivelController::class, 'index']);
-    Route::get('niveis/listarTodos', [NivelController::class, 'all']);
+    Route::get('niveis/all', [NivelController::class, 'all']);
     Route::get('niveis/{id}', [NivelController::class, 'show']);
     Route::put('niveis/{id}', [NivelController::class, 'update']);
     Route::post('niveis', [NivelController::class, 'store']);
     Route::delete('niveis/{id}', [NivelController::class, 'destroy']);
 
-    Route::get('mvflp/exercicio/nivel/{id}', [ExercicioVFController::class, 'listByIdNivel']);
-    Route::get('mvflp/exercicio/{id}', [ExercicioVFController::class, 'show']);
-    Route::put('mvflp/exercicio/{id}', [ExercicioVFController::class, 'update']);
-    Route::get('mvflp/exercicio/{id}/formula', [ExercicioVFController::class, 'formula']);
-    Route::post('mvflp/exercicio', [ExercicioVFController::class, 'store']);
-    Route::delete('mvflp/exercicio/{id}', [ExercicioVFController::class, 'destroy']);
+    Route::get('exercicios', [ExercicioController::class, 'index']);
+    Route::get('exercicios/{id}', [ExercicioController::class, 'show']);
+    Route::put('exercicios/{id}', [ExercicioController::class, 'update']);
+    Route::post('exercicios', [ExercicioController::class, 'store']);
+    Route::delete('exercicios/{id}', [ExercicioController::class, 'destroy']);
 
-    Route::get('mvflp/resposta', [RespostaController::class, 'index']);
+    Route::get('respostas', [RespostaController::class, 'index']);
 
-    Route::post('arvore/otimizada', [AdminArvoreRefutacaoController::class, 'arvoreOtimizada']);
-    Route::post('arvore/inicializacao/premisas-conclucao', [AdminArvoreRefutacaoController::class, 'premissasConclusao']);
-    Route::post('arvore/inicializacao/adiciona-no', [AdminArvoreRefutacaoController::class, 'adicionaNoIncializacao']);
-    Route::post('arvore/derivacao/adiciona-no', [AdminArvoreRefutacaoController::class, 'derivar']);
-    Route::post('arvore/derivacao/fechar-no', [AdminArvoreRefutacaoController::class, 'fecharNo']);
-    Route::post('arvore/derivacao/ticar-no', [AdminArvoreRefutacaoController::class, 'ticarNo']);
+    Route::post('arvore/otimizada', [AdminArvoreRefutacaoController::class, 'arvore']);
+    Route::post('arvore/inicia', [AdminArvoreRefutacaoController::class, 'inicia']);
+    Route::post('arvore/adiciona', [AdminArvoreRefutacaoController::class, 'adiciona']);
+    Route::post('arvore/deriva', [AdminArvoreRefutacaoController::class, 'deriva']);
+    Route::post('arvore/tica', [AdminArvoreRefutacaoController::class, 'tica']);
+    Route::post('arvore/fecha', [AdminArvoreRefutacaoController::class, 'fecha']);
+    Route::post('arvore/recria', [AdminArvoreRefutacaoController::class, 'recria']);
 
     //Requisições para configurar os modulos e o game
-    Route::get('config/logiclive/', [LogicLiveController::class, 'infoModulosEndGame']);
-    Route::post('config/logiclive/criar', [LogicLiveController::class, 'criarModulosEndGame']);
+    // Route::get('config/logiclive/', [LogicLiveController::class, 'infoModulosEndGame']);
+    // Route::post('config/logiclive/criar', [LogicLiveController::class, 'criarModulosEndGame']);
 });
 
 Route::post('aluno/hash', [AuthHash::class, 'hash']);   //Valida o HASH do aluno
