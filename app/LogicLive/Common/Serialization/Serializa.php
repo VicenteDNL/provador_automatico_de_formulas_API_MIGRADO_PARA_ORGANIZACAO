@@ -7,6 +7,7 @@ use ReflectionClass;
 use ReflectionEnum;
 use ReflectionEnumBackedCase;
 use ReflectionProperty;
+use Throwable;
 
 class Serializa implements JsonSerializable
 {
@@ -69,17 +70,16 @@ class Serializa implements JsonSerializable
             $method = 'get' . implode(array_map(fn ($v) => ucfirst($v), explode('_', $property->getName())));
             $property = $property->getName();
 
-            if (!isset($this->$property)) {
-                continue;
-            }
-
             $findMethod = array_filter($methods, fn ($v) => $v->getName() == $method);
 
-            if (!empty($findMethod)) {
-                $values[$property] = $this->$method();
-                continue;
+            try {
+                if (!empty($findMethod)) {
+                    $values[$property] = $this->$method();
+                    continue;
+                }
+                $values[$property] = $this->$property;
+            } catch(Throwable $e) {
             }
-            $values[$property] = $this->$property;
         }
         return $values;
     }
