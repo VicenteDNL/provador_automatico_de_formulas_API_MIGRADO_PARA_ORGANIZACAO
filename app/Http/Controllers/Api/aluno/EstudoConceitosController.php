@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\API\Aluno\EstudoConceitos\EstudoConceitosConcluirRequest;
 use App\LogicLive\Common\Enums\Types;
 use App\LogicLive\Common\Models\RespostaModel;
+use App\LogicLive\Managers\EstudoConceitos\EstudoConceitosExercicio;
 use App\LogicLive\Resources\RespostaResource;
 use App\Models\LogicLive;
 use Throwable;
@@ -23,8 +24,9 @@ class EstudoConceitosController extends Controller
     {
         try {
             $exercicio = LogicLive::where([
-                'tipo' => Types::EXERCICIO->descricao(),
-                'hash' => $request->exeHash,
+                'tipo'   => Types::EXERCICIO->descricao(),
+                'hash'   => $request->exeHash,
+                'modelo' => EstudoConceitosExercicio::class,
             ])->first();
 
             if (is_null($exercicio)) {
