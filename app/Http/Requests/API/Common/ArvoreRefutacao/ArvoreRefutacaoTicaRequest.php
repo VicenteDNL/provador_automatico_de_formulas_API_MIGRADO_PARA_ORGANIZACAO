@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Requests\API\Admin\ArvoreRefutacao;
+namespace App\Http\Requests\API\Common\ArvoreRefutacao;
 
 use App\Rules\ArvoreRule;
-use App\Rules\PassoDerivarRule;
+use App\Rules\PassoTicarRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class ArvoreRefutacaoDerivaRequest extends FormRequest
+class ArvoreRefutacaoTicaRequest extends FormRequest
 {
     /**
      * @return bool
@@ -23,7 +23,7 @@ class ArvoreRefutacaoDerivaRequest extends FormRequest
     {
         return [
             ...ArvoreRule::rules(),
-            ...PassoDerivarRule::rules(),
+            ...PassoTicarRule::rules(),
         ];
     }
 
@@ -31,7 +31,7 @@ class ArvoreRefutacaoDerivaRequest extends FormRequest
     {
         return [
             ...ArvoreRule::messages(),
-            ...PassoDerivarRule::messages(),
+            ...PassoTicarRule::messages(),
         ];
     }
 }

@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Requests\API\Admin\ArvoreRefutacao;
+namespace App\Http\Requests\API\Common\ArvoreRefutacao;
 
 use App\Rules\ArvoreRule;
-use App\Rules\PassoAdicionarRule;
+use App\Rules\PassoFecharRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class ArvoreRefutacaoAdicionaRequest extends FormRequest
+class ArvoreRefutacaoFechaRequest extends FormRequest
 {
     /**
      * @return bool
@@ -23,7 +23,7 @@ class ArvoreRefutacaoAdicionaRequest extends FormRequest
     {
         return [
             ...ArvoreRule::rules(),
-            ...PassoAdicionarRule::rules(),
+            ...PassoFecharRule::rules(),
         ];
     }
 
@@ -31,7 +31,7 @@ class ArvoreRefutacaoAdicionaRequest extends FormRequest
     {
         return [
             ...ArvoreRule::messages(),
-            ...PassoAdicionarRule::messages(),
+            ...PassoFecharRule::messages(),
         ];
     }
 }

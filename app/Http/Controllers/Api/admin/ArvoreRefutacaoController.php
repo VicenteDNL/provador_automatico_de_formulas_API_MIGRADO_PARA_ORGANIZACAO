@@ -12,13 +12,13 @@ use App\Http\Controllers\Api\Action;
 use App\Http\Controllers\Api\ResponseController;
 use App\Http\Controllers\Api\Type;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\API\Admin\ArvoreRefutacao\ArvoreRefutacaoAdicionaRequest;
-use App\Http\Requests\API\Admin\ArvoreRefutacao\ArvoreRefutacaoDerivaRequest;
-use App\Http\Requests\API\Admin\ArvoreRefutacao\ArvoreRefutacaoFechaRequest;
-use App\Http\Requests\API\Admin\ArvoreRefutacao\ArvoreRefutacaoIniciaRequest;
-use App\Http\Requests\API\Admin\ArvoreRefutacao\ArvoreRefutacaoOtimizadaRequest;
-use App\Http\Requests\API\Admin\ArvoreRefutacao\ArvoreRefutacaoRecriarRequest;
-use App\Http\Requests\API\Admin\ArvoreRefutacao\ArvoreRefutacaoTicaRequest;
+use App\Http\Requests\API\Common\ArvoreRefutacao\ArvoreRefutacaoAdicionaRequest;
+use App\Http\Requests\API\Common\ArvoreRefutacao\ArvoreRefutacaoDerivaRequest;
+use App\Http\Requests\API\Common\ArvoreRefutacao\ArvoreRefutacaoFechaRequest;
+use App\Http\Requests\API\Common\ArvoreRefutacao\ArvoreRefutacaoIniciaRequest;
+use App\Http\Requests\API\Common\ArvoreRefutacao\ArvoreRefutacaoOtimizadaRequest;
+use App\Http\Requests\API\Common\ArvoreRefutacao\ArvoreRefutacaoRecriarRequest;
+use App\Http\Requests\API\Common\ArvoreRefutacao\ArvoreRefutacaoTicaRequest;
 use Throwable;
 
 class ArvoreRefutacaoController extends Controller

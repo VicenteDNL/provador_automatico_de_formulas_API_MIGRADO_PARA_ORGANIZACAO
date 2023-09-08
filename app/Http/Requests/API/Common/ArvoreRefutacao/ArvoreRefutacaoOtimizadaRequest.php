@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\API\Admin\ArvoreRefutacao;
+namespace App\Http\Requests\API\Common\ArvoreRefutacao;
 
 use App\Rules\ArvoreAutomaticaRule;
 use Illuminate\Foundation\Http\FormRequest;

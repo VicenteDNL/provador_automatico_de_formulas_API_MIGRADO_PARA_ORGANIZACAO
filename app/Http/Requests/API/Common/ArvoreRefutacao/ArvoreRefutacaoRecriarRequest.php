@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Requests\API\Admin\ArvoreRefutacao;
+namespace App\Http\Requests\API\Common\ArvoreRefutacao;
 
-use App\Rules\ArvoreIniciarRule;
+use App\Rules\ArvoreRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class ArvoreRefutacaoIniciaRequest extends FormRequest
+class ArvoreRefutacaoRecriarRequest extends FormRequest
 {
     /**
      * @return bool
@@ -21,14 +21,14 @@ class ArvoreRefutacaoIniciaRequest extends FormRequest
     public function rules()
     {
         return [
-            ...ArvoreIniciarRule::rules(),
+            ...ArvoreRule::rules(),
         ];
     }
 
     public function messages()
     {
         return [
-            ...ArvoreIniciarRule::messages(),
+            ...ArvoreRule::messages(),
         ];
     }
 }
