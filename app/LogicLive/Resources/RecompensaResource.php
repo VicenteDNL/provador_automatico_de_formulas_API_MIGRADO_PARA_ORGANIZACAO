@@ -87,7 +87,7 @@ class RecompensaResource
     public function update($id, RecompensaModel $nivel): ?RecompensaModel
     {
         try {
-            $result = $this->client->put($this->url . '/' . $id, $nivel->toArray());
+            $result = $this->client->patch($this->url . '/' . $id, $nivel->toArray());
 
             if ($result['status']) {
                 return new RecompensaModel($result['data']);
