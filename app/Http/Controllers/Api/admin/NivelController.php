@@ -8,8 +8,11 @@ use App\Http\Controllers\Api\Type;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\API\Admin\Nivel\NivelStoreRequest;
 use App\Http\Requests\API\Admin\Nivel\NivelUpdateRequest;
-use App\LogicLive\Config\Configuracao;
-use App\LogicLive\Modulos\ValidacaoFormulas\NivelVF;
+use App\LogicLive\Common\Enums\Types;
+use App\LogicLive\Common\Models\NivelModel;
+use App\LogicLive\Config;
+use App\LogicLive\Managers\ValidacaoFormulas\ValidacaoFormulasModulo;
+use App\LogicLive\Resources\NivelResource;
 use App\Models\LogicLive;
 use App\Models\Nivel;
 use Exception;
@@ -20,13 +23,13 @@ class NivelController extends Controller
 {
     private $niveis;
     private $config;
-    private $logicLive_nivel;
+    private $nivelResource;
 
     public function __construct(Nivel $niveis)
     {
         $this->niveis = $niveis;
-        $this->config = new Configuracao();
-        $this->logicLive_nivel = new NivelVF();
+        $this->config = new Config();
+        $this->nivelResource = new NivelResource();
     }
 
     /**
@@ -35,7 +38,9 @@ class NivelController extends Controller
     public function index()
     {
         try {
-            $data = $this->niveis->orderBy('created_at', 'desc')->paginate(10);
+            $data = $this->niveis
+            ->with('recompensa')
+            ->orderBy('created_at', 'desc')->paginate(10);
             return ResponseController::json(Type::success, Action::index, $data);
         } catch(Exception $e) {
             return ResponseController::json(Type::error, Action::index);
@@ -61,17 +66,38 @@ class NivelController extends Controller
             $nivel->save();
 
             if ($this->config->ativo()) {
-                $baseDados = LogicLive::where('tipo', '=', 'modulo1')->get();
-                $baseDados = $baseDados[0];
-                $criadoLogicLive = $this->logicLive_nivel->criarNivel(['mod_codigo' => $baseDados->meu_id, 'niv_nome' => $request->nome, 'niv_descricao' => $request->descricao, 'niv_ativo' => $request->ativo]);
+                $baseDados = LogicLive::where(['tipo' => Types::MODULO->descricao(), 'modelo' => ValidacaoFormulasModulo::class])->first();
+                $recompensa = $nivel->recompensa()->first();
 
-                if ($criadoLogicLive['success'] == false) {
-                    DB::rollBack();
-                    return ResponseController::json(Type::error, Action::store, null, $criadoLogicLive['msg']);
+                if (is_null($baseDados)) {
+                    return ResponseController::json(Type::error, Action::store, null, 'Crie o módulo para para conseguir cadastrar os níveis');
                 }
-                $nivel->logic_live_id = $criadoLogicLive['data']['niv_codigo'];
+
+                if (!is_null($recompensa)) {
+                    if (is_null($recompensa->logic_live_id)) {
+                        return ResponseController::json(Type::error, Action::store, null, 'A recompensa selecionada não está vinculada ao Logic live');
+                    }
+                    $recompensa = $recompensa->logic_live_id;
+                }
+
+                $nivelModels = new NivelModel([
+                    'mod_codigo'    => $baseDados->meu_id,
+                    'niv_nome'      => $request->nome,
+                    'niv_descricao' => $request->descricao,
+                    'niv_ativo'     => $request->ativo,
+                    'rec_codigo'    => $recompensa,
+                ]);
+                $nivelLogicLive = $this->nivelResource->create($nivelModels);
+
+                if (is_null($nivelLogicLive)) {
+                    DB::rollBack();
+                    return ResponseController::json(Type::error, Action::store, null, 'Erro ao criar nível no Logic live');
+                }
+
+                $nivel->logic_live_id = $nivelLogicLive->getNivCodigo();
                 $nivel->save();
             }
+
             DB::commit();
             return  ResponseController::json(Type::success, Action::store);
         } catch(Exception $e) {
@@ -104,12 +130,27 @@ class NivelController extends Controller
             $nivel->update($request->all());
             $nivel->save();
 
-            if ($this->config->ativo()) {
-                $criadoLogicLive = $this->logicLive_nivel->atualizarNivel($nivel->logic_live_id, ['niv_nome' => $request->nome, 'niv_descricao' => $request->descricao, 'niv_ativo' => $request->ativo, 'mod_codigo' => $nivel->modulo_id]);
+            if ($this->config->ativo() && !is_null($nivel->logic_live_id)) {
+                $recompensa = $nivel->recompensa()->first();
 
-                if ($criadoLogicLive['success'] == false) {
+                if (!is_null($recompensa)) {
+                    if (is_null($recompensa->logic_live_id)) {
+                        return ResponseController::json(Type::error, Action::store, null, 'A recompensa selecionada não está vinculada ao Logic live');
+                    }
+                    $recompensa = $recompensa->logic_live_id;
+                }
+
+                $nivelModels = new NivelModel([
+                    'niv_nome'       => $request->nome,
+                    'niv_descricao'  => $request->descricao,
+                    'niv_ativo'      => $request->ativo,
+                    'rec_codigo'     => $recompensa,
+                ]);
+                $nivelLogicLive = $this->nivelResource->update($nivel->logic_live_id, $nivelModels);
+
+                if (is_null($nivelLogicLive)) {
                     DB::rollBack();
-                    return ResponseController::json(Type::error, Action::update, null, $criadoLogicLive['msg']);
+                    return ResponseController::json(Type::error, Action::store, null, 'Erro ao editar nível no Logic live');
                 }
             }
             DB::commit();
@@ -144,12 +185,12 @@ class NivelController extends Controller
             $nivel = Nivel::findOrFail($id);
             $nivel->delete();
 
-            if ($this->config->ativo()) {
-                $criadoLogicLive = $this->logicLive_nivel->deletarNivel($nivel->logic_live_id);
+            if ($this->config->ativo() && !is_null($nivel->logic_live_id)) {
+                $nivelLogicLive = $this->nivelResource->delete($nivel->logic_live_id);
 
-                if ($criadoLogicLive['success'] == false) {
+                if (is_null($nivelLogicLive)) {
                     DB::rollBack();
-                    return ResponseController::json(Type::error, Action::destroy, null, $criadoLogicLive['msg']);
+                    return ResponseController::json(Type::error, Action::store, null, 'Erro ao deletar nível no Logic live');
                 }
             }
             DB::commit();

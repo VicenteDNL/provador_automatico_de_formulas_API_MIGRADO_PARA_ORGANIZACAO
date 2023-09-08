@@ -8,8 +8,9 @@ use App\Http\Controllers\Api\Type;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\API\Admin\Recompensa\RecompensaStoreRequest;
 use App\Http\Requests\API\Admin\Recompensa\RecompensaUpdateRequest;
-use App\LogicLive\Config\Configuracao;
-use App\LogicLive\Modulos\Recompensa as ModulosRecompensa;
+use App\LogicLive\Common\Models\RecompensaModel;
+use App\LogicLive\Config;
+use App\LogicLive\Resources\RecompensaResource;
 use App\Models\Recompensa;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -18,13 +19,15 @@ use Throwable;
 
 class RecompensaController extends Controller
 {
-    private $logicLive_recompensa;
+    private $recompensaResource;
+    private $recompensa;
     private $config;
 
     public function __construct(Recompensa $recompensa)
     {
-        $this->logicLive_recompensa = new ModulosRecompensa();
-        $this->config = new Configuracao();
+        $this->recompensa = $recompensa;
+        $this->recompensaResource = new RecompensaResource();
+        $this->config = new Config();
     }
 
     /**
@@ -56,13 +59,18 @@ class RecompensaController extends Controller
             $recompensa->save();
 
             if ($this->config->ativo()) {
-                $criadoLogicLive = $this->logicLive_recompensa->criarRecompensa(['rec_nome' => $request->nome, 'rec_imagem' => 'nada sendo passado', 'rec_pontuacao' => $request->pontuacao]);
+                $recompensaModel = new RecompensaModel([
+                    'rec_nome'      => $request->nome,
+                    'rec_imagem'    => 'vazio',
+                    'rec_pontuacao' => $request->pontuacao,
+                ]);
+                $recompensaLogicLive = $this->recompensaResource->create($recompensaModel);
 
-                if ($criadoLogicLive['success'] == false) {
+                if (is_null($recompensaLogicLive)) {
                     DB::rollBack();
-                    return ResponseController::json(Type::error, Action::store, null, $criadoLogicLive['msg']);
+                    return ResponseController::json(Type::error, Action::store, null, 'Erro ao criar recompensa no Logic live');
                 }
-                $recompensa->logic_live_id = $criadoLogicLive['data']['rec_codigo'] ;
+                $recompensa->logic_live_id = $recompensaLogicLive->getRecCodigo() ;
                 $recompensa->save();
             }
             DB::commit();
@@ -95,12 +103,17 @@ class RecompensaController extends Controller
             $recompensa->update($request->all());
             $recompensa->save();
 
-            if ($this->config->ativo()) {
-                $criadoLogicLive = $this->logicLive_recompensa->atualizarRecompensa($recompensa->logic_live_id, ['rec_nome' => $request->nome, 'rec_imagem' => 'nada sendo passado', 'rec_pontuacao' => $request->pontuacao]);
+            if ($this->config->ativo() && !is_null($recompensa->logic_live_id)) {
+                $recompensaModel = new RecompensaModel([
+                    'rec_nome'      => $request->nome,
+                    'rec_imagem'    => 'vazio',
+                    'rec_pontuacao' => $request->pontuacao,
+                ]);
+                $recompensaLogicLive = $this->recompensaResource->update($recompensa->logic_live_id, $recompensaModel);
 
-                if ($criadoLogicLive['success'] == false) {
+                if (is_null($recompensaLogicLive)) {
                     DB::rollBack();
-                    return ResponseController::json(Type::error, Action::update, null, $criadoLogicLive['msg']);
+                    return ResponseController::json(Type::error, Action::store, null, 'Erro ao editar recompensa no Logic live');
                 }
             }
             DB::commit();
@@ -122,12 +135,12 @@ class RecompensaController extends Controller
             $recompensa = Recompensa::findOrFail($id);
             $recompensa->delete();
 
-            if ($this->config->ativo()) {
-                $criadoLogicLive = $this->logicLive_recompensa->deletarRecompensa($recompensa->logic_live_id);
+            if ($this->config->ativo() && !is_null($recompensa->logic_live_id)) {
+                $recompensaLogicLive = $this->recompensaResource->delete($recompensa->logic_live_id);
 
-                if ($criadoLogicLive['success'] == false) {
+                if (is_null($recompensaLogicLive)) {
                     DB::rollBack();
-                    return ResponseController::json(Type::error, Action::destroy, null, $criadoLogicLive['msg']);
+                    return ResponseController::json(Type::error, Action::store, null, 'Erro ao deletar recompensa no Logic live');
                 }
             }
             DB::commit();
