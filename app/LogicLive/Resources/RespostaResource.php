@@ -14,31 +14,31 @@ class RespostaResource
     private Config $config;
     private string $url;
 
-    public function __construct()
+    public function __construct(string $hash)
     {
         $this->config = new Config();
-        $this->url = $this->config->urlAPI('resposta');
+        $this->url = $this->config->urlAPI('respostas');
 
-        $auth = new Auth(['token' => $this->config->token()]);
+        $auth = new Auth(['token' => $hash]);
         $this->client = new Client($auth);
     }
 
     /**
-     * @param  RespostaModel  $nivel
+     * @param  RespostaModel  $resposta
      * @return ?RespostaModel
      */
-    public function create(RespostaModel $nivel): ?RespostaModel
+    public function create(RespostaModel $resposta): bool
     {
         try {
-            $result = $this->client->post($this->url, $nivel->toArray());
+            $result = $this->client->post($this->url, $resposta->toArray());
 
             if ($result['status']) {
-                return new RespostaModel($result['data']);
+                return true;
             }
 
-            return null;
+            return false;
         } catch(HttpClientException $e) {
-            return null;
+            return false;
         }
     }
 }

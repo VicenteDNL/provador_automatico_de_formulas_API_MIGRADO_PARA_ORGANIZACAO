@@ -14,16 +14,17 @@ class JogadorResource
     private Config $config;
     private string $url;
 
-    public function __construct()
+    public function __construct(string $hash)
     {
         $this->config = new Config();
         $this->url = $this->config->urlAPI('jogador');
 
-        $auth = new Auth(['token' => $this->config->token()]);
+        $auth = new Auth(['token' => $hash]);
         $this->client = new Client($auth);
     }
 
     /**
+     * @param  string        $hash
      * @return ?JogadorModel
      */
     public function get(): ?JogadorModel

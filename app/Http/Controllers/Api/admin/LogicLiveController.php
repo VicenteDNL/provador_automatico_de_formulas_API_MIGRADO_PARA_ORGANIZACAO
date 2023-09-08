@@ -511,6 +511,7 @@ class LogicLiveController extends Controller
                 $myExercicio->nome = $exercicioResource->getExeNome();
                 $myExercicio->descricao = $exercicioResource->getExeDescricao();
                 $myExercicio->ativo = $exercicioResource->getExeAtivo();
+                $myExercicio->hash = $exercicioResource->getExeHash();
                 $myExercicio->modelo = $modelo;
                 $myExercicio->save();
 
