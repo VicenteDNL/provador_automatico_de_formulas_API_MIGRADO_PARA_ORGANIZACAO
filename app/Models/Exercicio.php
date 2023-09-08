@@ -25,4 +25,9 @@ class Exercicio extends Model
     {
         return $this->belongsTo(Formula::class);
     }
+
+    public function recompensa()
+    {
+        return $this->belongsTo(Recompensa::class);
+    }
 }

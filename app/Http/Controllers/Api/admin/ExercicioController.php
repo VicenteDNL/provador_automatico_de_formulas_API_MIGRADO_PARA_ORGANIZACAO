@@ -8,8 +8,9 @@ use App\Http\Controllers\Api\Type;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\API\Admin\Exercicio\ExercicioStoreRequest;
 use App\Http\Requests\API\Admin\Exercicio\ExercicioUpdateRequest;
-use App\LogicLive\Config\Configuracao;
-use App\LogicLive\Modulos\ValidacaoFormulas\ExercicioVF;
+use App\LogicLive\Common\Models\ExercicioModel;
+use App\LogicLive\Config;
+use App\LogicLive\Resources\ExercicioResource;
 use App\Models\Exercicio;
 use App\Models\Formula;
 use App\Models\Nivel;
@@ -23,13 +24,13 @@ class ExercicioController extends Controller
 {
     private $exercicio;
     private $config;
-    private $logicLive_exercicio;
+    private $exercicioResource;
 
     public function __construct(Exercicio $exercicio)
     {
         $this->exercicio = $exercicio;
-        $this->config = new Configuracao();
-        $this->logicLive_exercicio = new ExercicioVF();
+        $this->config = new Config();
+        $this->exercicioResource = new ExercicioResource();
     }
 
     /**
@@ -41,6 +42,7 @@ class ExercicioController extends Controller
             $data = $this->exercicio
             ->with('nivel')
             ->with('formula')
+            ->with('recompensa')
             ->orderBy('exercicios.created_at', 'desc')->paginate(10);
             return ResponseController::json(Type::success, Action::index, $data);
         } catch(Throwable $e) {
@@ -89,7 +91,7 @@ class ExercicioController extends Controller
             $exercicio->url = '';
             $exercicio->formula_id = $formula->id;
             $exercicio->saveOrFail();
-            $exercicio->url = $this->config->urlExercicioValidacao() . $exercicio->id;
+            $exercicio->url = $this->config->urlGame('exercicio/validacao/' . $exercicio->id);
 
             if ($this->config->ativo()) {
                 $recompensa = Recompensa::findOrFail($exercicio->recompensa_id);
@@ -105,23 +107,25 @@ class ExercicioController extends Controller
                     return ResponseController::json(Type::error, Action::store, null, 'nivel não está vinculado ao Logic Live');
                 }
 
-                $criadoLogicLive = $this->logicLive_exercicio->criarExercicio([
-                    'rec_codigo'        => $recompensa->logic_live_id,
-                    'niv_codigo'        => $nivel->meu_logic_live_id,
-                    'exe_tempoexecucao' => $exercicio->tempo,
-                    'exe_link'          => $exercicio->url,
-                    'exe_nome'          => $exercicio->nome,
-                    'exe_descricao'     => $exercicio->descricao,
-                    'exe_ativo'         => $exercicio->ativo,
-                ]);
+                $exercicioLogicLive = $this->exercicioResource->create(
+                    new ExercicioModel([
+                        'rec_codigo'        => $recompensa->logic_live_id,
+                        'niv_codigo'        => $nivel->logic_live_id,
+                        'exe_tempoexecucao' => $exercicio->tempo,
+                        'exe_link'          => $exercicio->url,
+                        'exe_nome'          => $exercicio->nome,
+                        'exe_descricao'     => $exercicio->descricao,
+                        'exe_ativo'         => $exercicio->ativo,
+                    ])
+                );
 
-                if (!$criadoLogicLive['success']) {
+                if (is_null($exercicioLogicLive)) {
                     DB::rollBack();
-                    return ResponseController::json(Type::error, Action::store, null, $criadoLogicLive['msg']);
+                    return ResponseController::json(Type::error, Action::store, null, 'Erro ao criar exercicio no Logic live');
                 }
 
-                $exercicio->hash = $criadoLogicLive['data']['exe_hash'];
-                $exercicio->logic_live_id = $criadoLogicLive['data']['exe_codigo'];
+                $exercicio->hash = $exercicioLogicLive->getExeHash();
+                $exercicio->logic_live_id = $exercicioLogicLive->getExeCodigo();
             }
 
             $exercicio->saveOrFail();
@@ -171,19 +175,17 @@ class ExercicioController extends Controller
                 $exercicio->ativo = $request->ativo;
                 $exercicio->saveOrFail();
 
-                if ($this->config->ativo()) {
-                    if (empty($exercicio->logic_live_id)) {
-                        DB::rollBack();
-                        return ResponseController::json(Type::error, Action::store, null, 'exercicio não está vinculado ao Logic Live');
-                    }
+                if ($this->config->ativo() && !is_null($exercicio->logic_live_id)) {
+                    $exercicioLogicLive = $this->exercicioResource->update(
+                        $exercicio->logic_live_id,
+                        new ExercicioModel([
+                            'exe_ativo' => $exercicio->ativo,
+                        ])
+                    );
 
-                    $criadoLogicLive = $this->logicLive_exercicio->atualizarExercicio($exercicio->logic_live_id, [
-                        'exe_ativo'         => $exercicio->ativo,
-                    ]);
-
-                    if ($criadoLogicLive['success'] == false) {
+                    if (is_null($exercicioLogicLive)) {
                         DB::rollBack();
-                        return ResponseController::json(Type::error, Action::update, null, $criadoLogicLive['msg']);
+                        return ResponseController::json(Type::error, Action::store, null, 'Erro ao editar exercicio no Logic live');
                     }
                 }
 
@@ -232,12 +234,7 @@ class ExercicioController extends Controller
             $exercicio->qndt_erros = $request->qndt_erros;
             $exercicio->saveOrFail();
 
-            if ($this->config->ativo()) {
-                if (empty($exercicio->logic_live_id)) {
-                    DB::rollBack();
-                    return ResponseController::json(Type::error, Action::store, null, 'exercicio não está vinculado ao Logic Live');
-                }
-
+            if ($this->config->ativo() && !is_null($exercicio->logic_live_id)) {
                 $recompensa = Recompensa::findOrFail($exercicio->recompensa_id);
                 $nivel = Nivel::findOrFail($exercicio->nivel_id);
 
@@ -251,19 +248,22 @@ class ExercicioController extends Controller
                     return ResponseController::json(Type::error, Action::store, null, 'nivel não está vinculado ao Logic Live');
                 }
 
-                $criadoLogicLive = $this->logicLive_exercicio->atualizarExercicio($exercicio->logic_live_id, [
-                    'rec_codigo'        => $recompensa->logic_live_id,
-                    'niv_codigo'        => $nivel->meu_logic_live_id,
-                    'exe_tempoexecucao' => $exercicio->tempo,
-                    'exe_link'          => $exercicio->url,
-                    'exe_nome'          => $exercicio->nome,
-                    'exe_descricao'     => $exercicio->descricao,
-                    'exe_ativo'         => $exercicio->ativo,
-                ]);
+                $exercicioLogicLive = $this->exercicioResource->update(
+                    $exercicio->logic_live_id,
+                    new ExercicioModel([
+                        'rec_codigo'        => $recompensa->logic_live_id,
+                        'niv_codigo'        => $nivel->meu_logic_live_id,
+                        'exe_tempoexecucao' => $exercicio->tempo,
+                        'exe_link'          => $exercicio->url,
+                        'exe_nome'          => $exercicio->nome,
+                        'exe_descricao'     => $exercicio->descricao,
+                        'exe_ativo'         => $exercicio->ativo,
+                    ])
+                );
 
-                if ($criadoLogicLive['success'] == false) {
+                if (is_null($exercicioLogicLive)) {
                     DB::rollBack();
-                    return ResponseController::json(Type::error, Action::update, null, $criadoLogicLive['msg']);
+                    return ResponseController::json(Type::error, Action::store, null, 'Erro ao editar exercicio no Logic live');
                 }
             }
 
@@ -294,12 +294,12 @@ class ExercicioController extends Controller
             $formula->delete();
             $exercicio->delete();
 
-            if ($this->config->ativo()) {
-                $criadoLogicLive = $this->logicLive_exercicio->deletarExercicio($exercicio->logic_live_id);
+            if ($this->config->ativo() && !is_null($exercicio->logic_live_id)) {
+                $exercicioLogicLive = $this->exercicioResource->delete($exercicio->logic_live_id);
 
-                if (!$criadoLogicLive['success']) {
+                if (is_null($exercicioLogicLive)) {
                     DB::rollBack();
-                    return ResponseController::json(Type::error, Action::destroy, null, $criadoLogicLive['msg']);
+                    return ResponseController::json(Type::error, Action::store, null, 'Erro ao deletar exercicio no Logic live');
                 }
             }
 

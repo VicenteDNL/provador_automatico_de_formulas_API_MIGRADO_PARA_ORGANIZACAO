@@ -8,7 +8,6 @@ class Config
     private $token;
     private $urlAPI;
     private $urlGame;
-    private $urlExercicioValidacao = 'exercicio/validacao/';
 
     public function __construct()
     {
