@@ -22,12 +22,12 @@ class EstudoConceitosExercicio
         $config = new Config();
         $this->exe_nome_01 = 'Árvore de Refutação';
         $this->exe_descricao_01 = 'Exercicio para estudo dos conceitos';
-        $this->exe_link_01 = $config->urlGame('exercicio/conceitos/1');
+        $this->exe_link_01 = $config->urlGame('exercicio/conceitos/arvore');
         $this->exe_ativo_01 = 1;
 
         $this->exe_nome_02 = 'Regras da Árvore de Refutação';
         $this->exe_descricao_02 = 'Exercicio para estudo dos conceitos';
-        $this->exe_link_02 = $config->urlGame('exercicio/conceitos/2');
+        $this->exe_link_02 = $config->urlGame('exercicio/conceitos/regras');
         $this->exe_ativo_02 = 1;
     }
 
