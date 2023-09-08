@@ -561,4 +561,43 @@ class LogicLiveController extends Controller
             return ResponseController::json(Type::error, Action::update);
         }
     }
+
+    public function reset()
+    {
+        try {
+            if (!$this->config->isDev()) {
+                return ResponseController::json(Type::success, Action::destroy, null, 'recurso habilitado apenas para desenvolvimento');
+            }
+
+            $games = $this->gameResource->all();
+            $modulos = $this->moduloResource->all();
+            $recompensas = $this->recompensaResource->all();
+            $niveis = $this->nivelResource->all();
+            $exercicios = $this->exercicioResource->all();
+
+            foreach ($exercicios as $exercicio) {
+                $this->exercicioResource->delete($exercicio->getExeCodigo());
+            }
+
+            foreach ($niveis as $nivel) {
+                $this->nivelResource->delete($nivel->getNivCodigo());
+            }
+
+            foreach ($recompensas as $recompensa) {
+                $this->recompensaResource->delete($recompensa->getRecCodigo());
+            }
+
+            foreach ($modulos as $modulo) {
+                $this->moduloResource->delete($modulo->getModCodigo());
+            }
+
+            foreach ($games as $game) {
+                $this->gameResource->delete($game->getGamCodigo());
+            }
+
+            return ResponseController::json(Type::success, Action::destroy);
+        } catch(Throwable $e) {
+            return ResponseController::json(Type::error, Action::destroy);
+        }
+    }
 }

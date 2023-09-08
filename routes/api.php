@@ -66,6 +66,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('logiclive/game/{idGame}/modulos', [LogicLiveController::class, 'createModulos']);
     Route::post('logiclive/modulos/{idModulos}/niveis', [LogicLiveController::class, 'createNiveis']);
     Route::post('logiclive/niveis/{idNivel}/exercicios', [LogicLiveController::class, 'createExercicios']);
+    Route::post('logiclive/reset', [LogicLiveController::class, 'reset']);
 });
 
 Route::post('aluno/hash', [AuthHash::class, 'hash']);   //Valida o HASH do aluno
