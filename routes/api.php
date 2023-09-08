@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Admin\ArvoreRefutacaoController as AdminArvoreRefutacaoController;
 use App\Http\Controllers\Api\Admin\ExercicioController;
+use App\Http\Controllers\Api\Admin\LogicLiveController;
 use App\Http\Controllers\Api\Admin\NivelController;
 use App\Http\Controllers\Api\Admin\RecompensaController;
 use App\Http\Controllers\Api\Admin\RespostaController;
@@ -12,7 +13,6 @@ use App\Http\Controllers\Api\aluno\modulos\EstudoConceitosController;
 use App\Http\Controllers\Api\aluno\modulos\EstudoLivreController;
 use App\Http\Controllers\Api\aluno\RespostaController as AlunoRespostaController;
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\LogicLive\LogicLiveController;
 use App\Http\Controllers\Api\UsuarioController;
 use Illuminate\Support\Facades\Route;
 
@@ -56,9 +56,16 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('arvore/fecha', [AdminArvoreRefutacaoController::class, 'fecha']);
     Route::post('arvore/recria', [AdminArvoreRefutacaoController::class, 'recria']);
 
-    //Requisições para configurar os modulos e o game
-    // Route::get('config/logiclive/', [LogicLiveController::class, 'infoModulosEndGame']);
-    // Route::post('config/logiclive/criar', [LogicLiveController::class, 'criarModulosEndGame']);
+    Route::get('logiclive/ativo', [LogicLiveController::class, 'ativo']);
+    Route::get('logiclive/info', [LogicLiveController::class, 'info']);
+    Route::post('logiclive/game/{id}/ativo', [LogicLiveController::class, 'ativoGame']);
+    Route::post('logiclive/modulo/{id}/ativo', [LogicLiveController::class, 'ativoModulo']);
+    Route::post('logiclive/nivel/{id}/ativo', [LogicLiveController::class, 'ativoNivel']);
+    Route::post('logiclive/exercicio/{id}/ativo', [LogicLiveController::class, 'ativoExercicio']);
+    Route::post('logiclive/game', [LogicLiveController::class, 'createGame']);
+    Route::post('logiclive/game/{idGame}/modulos', [LogicLiveController::class, 'createModulos']);
+    Route::post('logiclive/modulos/{idModulos}/niveis', [LogicLiveController::class, 'createNiveis']);
+    Route::post('logiclive/niveis/{idNivel}/exercicios', [LogicLiveController::class, 'createExercicios']);
 });
 
 Route::post('aluno/hash', [AuthHash::class, 'hash']);   //Valida o HASH do aluno

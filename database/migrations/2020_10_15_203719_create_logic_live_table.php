@@ -16,10 +16,11 @@ class CreateLogicLiveTable extends Migration
         Schema::create('logic_live', function (Blueprint $table) {
             $table->id();
             $table->string('tipo'); //recompensa , exercicio, resposta, modulo, game, etc..
+            $table->text('modelo');
             $table->integer('meu_id');
-            $table->text('hash')->nullable();
-            $table->text('link')->nullable();
-            $table->integer('recompensa_id')->nullable();
+            $table->text('hash')->nullable(); //ver se ainda é necessario
+            $table->text('link')->nullable(); //ver se ainda é necessario
+            $table->integer('exercicio_id')->nullable();
             $table->integer('game_id')->nullable();
             $table->integer('modulo_id')->nullable();
             $table->integer('nivel_id')->nullable();
