@@ -234,7 +234,7 @@ class GeradorArvore
                     return $noInsercao->isFechado() == true
                     ? new TentativaDerivacao([
                         'sucesso'  => false,
-                        'mensagem' => "O nó '" . $noInsercao->getStringNo() . "' da linha'" . $noInsercao->getLinhaNo() . "' já foi fechado",
+                        'mensagem' => sprintf("O nó '" . $noInsercao->getStringNo() . "' da linha'" . $noInsercao->getLinhaNo() . "' %s", $noInsercao->isFechamento() ? 'já foi fechado' : 'possível de fechamento'),
                     ])
                     : new TentativaDerivacao([
                         'sucesso'  => false,
