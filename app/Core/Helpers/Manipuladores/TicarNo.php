@@ -21,20 +21,20 @@ class TicarNo
         if (($noTicado->getValorNo()->getTipoPredicado() == PredicadoTipoEnum::PREDICATIVO) and $noTicado->getValorNo()->getNegadoPredicado() < 2) {
             return new TentativaTicagem([
                 'sucesso'  => false,
-                'messagem' => 'Este argumento não pode ser ticado, pois não existe derivação',
+                'mensagem' => 'Este argumento não pode ser ticado, pois não existe derivação',
             ]);
         } else {
             if ($noTicado->isUtilizado() == true) {
                 if ($noTicado->isTicado() == true) {
                     return new TentativaTicagem([
                         'sucesso'  => false,
-                        'messagem' => 'Este nó já foi ticado',
+                        'mensagem' => 'Este nó já foi ticado',
                     ]);
                 } else {
                     $noTicado->ticarNo();
                     return new TentativaTicagem([
                         'sucesso'   => true,
-                        'messagem'  => 'Ticado com sucesso',
+                        'mensagem'  => 'Ticado com sucesso',
                         'passos'    => [$passo],
                         'arvore'    => $arvore,
                     ]);
@@ -42,7 +42,7 @@ class TicarNo
             } else {
                 return new TentativaTicagem([
                     'sucesso'  => false,
-                    'messagem' => 'Este nó ainda não foi deriavado',
+                    'mensagem' => 'Este nó ainda não foi deriavado',
                 ]);
             }
         }

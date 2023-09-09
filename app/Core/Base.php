@@ -486,7 +486,7 @@ class Base
      * Verifica se todas as etapas foram concluidas
      * @return bool
      */
-    private function isFinalizada(): bool
+    public function isFinalizada(): bool
     {
         if (!$this->inicializacao->isCompleto()) {
             return false;
