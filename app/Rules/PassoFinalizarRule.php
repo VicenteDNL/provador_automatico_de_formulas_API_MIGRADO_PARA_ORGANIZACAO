@@ -2,8 +2,6 @@
 
 namespace App\Rules;
 
-use Illuminate\Validation\Validator;
-
 class PassoFinalizarRule
 {
     /**
@@ -25,15 +23,6 @@ class PassoFinalizarRule
 
             'passo.resposta.required'     => 'O campo passo.resposta é obrigatório',
             'passo.resposta.string'       => 'O campo passo.resposta dever ser um texto',
-        ];
-    }
-
-    public function after(): array
-    {
-        return [
-            function (Validator $validator) {
-                $teste = '';
-            },
         ];
     }
 }
