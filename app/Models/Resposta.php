@@ -9,4 +9,9 @@ class Resposta extends Model
 {
     use HasFactory;
     protected $table = 'respostas';
+
+    public function exercicio()
+    {
+        return $this->belongsTo(Exercicio::class);
+    }
 }

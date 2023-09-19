@@ -3,10 +3,12 @@
 namespace App\Core;
 
 use App\Core\Common\Exceptions\ArvoreDeRefutacaoExecption;
+use App\Core\Common\Models\Enums\RespostaEnum;
 use App\Core\Common\Models\Formula\Formula;
 use App\Core\Common\Models\PrintTree\Arvore;
 use App\Core\Common\Models\Steps\PassoDerivacao;
 use App\Core\Common\Models\Steps\PassoFechamento;
+use App\Core\Common\Models\Steps\PassoFinalizacao;
 use App\Core\Common\Models\Steps\PassoInicializacao;
 use App\Core\Common\Models\Steps\PassoTicagem;
 use App\Core\Common\Models\Tree\Derivacao;
@@ -23,6 +25,7 @@ use App\Core\Helpers\Buscadores\EncontraNoPossivelFechamento;
 use App\Core\Helpers\Buscadores\EncontraNoPossivelTicagem;
 use App\Core\Helpers\Buscadores\EncontraNosFolha;
 use App\Core\Helpers\Validadores\ExisteDerivacaoPossivelDeInsercao;
+use App\Models\Resposta;
 use Exception;
 use SimpleXMLElement;
 
@@ -363,6 +366,65 @@ class Base
     }
 
     /**
+     * @param  PassoFinalizacao $passo
+     * @return bool
+     */
+    public function tentativaFinalizacao(PassoFinalizacao $passo): bool
+    {
+        $tentativa = $this->geradorPorPasso->reconstruirInicializacao($this->formula, $this->inicializacao->getPassosExecutados());
+
+        if (!$tentativa->getSucesso()) {
+            $this->erro = $tentativa->getMensagem();
+            return  false;
+        }
+
+        $this->inicializacao->setPassosExecutados($tentativa->getPassos());
+        $this->inicializacao->setOpcoesDisponiveis($this->visualizador->gerarOpcoesInicializacao($this->formula, $tentativa->getPassos()));
+        $this->inicializacao->setCompleto(count($this->inicializacao->getOpcoesDisponiveis()) == 0);
+
+        $tentativa = $this->geradorPorPasso->reconstruirDerivacao($this->derivacao->getPassosExecutados());
+
+        if (!$tentativa->getSucesso()) {
+            $this->erro = $tentativa->getMensagem();
+            return  false;
+        }
+
+        $tentativa = $this->geradorPorPasso->reconstruirTicagem($this->ticados->getPassosExecutados());
+
+        if (!$tentativa->getSucesso()) {
+            $this->erro = $tentativa->getMensagem();
+            return  false;
+        }
+
+        $tentativa = $this->geradorPorPasso->reconstruirFechamento($this->fechados->getPassosExecutados());
+
+        if (!$tentativa->getSucesso()) {
+            $this->erro = $tentativa->getMensagem();
+            return  false;
+        }
+
+        $this->arvore = $tentativa->getArvore();
+
+        if (!$this->isFinalizada()) {
+            $this->erro = 'ainda existe ações que podem ser aplicadas';
+            return  false;
+        }
+        $folhasAbertos = EncontraNosFolha::exec($this->arvore);
+
+        if (count($folhasAbertos) == 0 && $passo->getResposta() != RespostaEnum::TAUTOLOGIA) {
+            $this->erro = 'resposta inválida';
+            return  false;
+        }
+
+        if (count($folhasAbertos) > 0 && $passo->getResposta() != RespostaEnum::CONTRADICAO) {
+            $this->erro = 'resposta inválida';
+            return  false;
+        }
+
+        return true;
+    }
+
+    /**
      * @return bool
      */
     public function reconstruirPassos(): bool
@@ -469,18 +531,6 @@ class Base
     {
         return $this->erro;
     }
-
-//     private function buscarRegras($exercicio, $admin)
-//     {
-
-//         if (!$this->inicializacao->isFinalizado() || $admin) {
-//             return [];
-//         }
-//         $exercicio = ExercicioMVFLP::findOrFail($exercicio);
-//         $formula = Formula::findOrFail($exercicio->id_formula);
-//         return $this->gerador->arrayPerguntas($this->arvore, $formula->quantidade_regras);
-//         $this->aplicadorRegras
-//     };
 
     /**
      * Verifica se todas as etapas foram concluidas

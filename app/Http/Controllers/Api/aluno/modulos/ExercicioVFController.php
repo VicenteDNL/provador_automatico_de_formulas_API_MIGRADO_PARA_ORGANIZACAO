@@ -9,8 +9,7 @@ use App\Http\Controllers\Api\Action;
 use App\Http\Controllers\Api\ResponseController;
 use App\Http\Controllers\Api\Type;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\LogicLive\Config\Configuracao;
-use App\Http\Controllers\LogicLive\Modulos\Jogador as ModulosJogador;
+use App\LogicLive\Modulos\Jogador as ModulosJogador;
 use App\Models\ExercicioMVFLP;
 use App\Models\Formula;
 use App\Models\Jogador;
@@ -54,7 +53,7 @@ class ExercicioVFController extends Controller
                 return ResponseController::json(Type::error, Action::index, null, $criadoLogicLive['msg']);
             }
 
-            $jogador_cadastrado = Jogador::where('id_logic_live', $criadoLogicLive['data']['jog_codigo'])->get();
+            $jogador_cadastrado = Jogador::where('logic_live_id', $criadoLogicLive['data']['jog_codigo'])->get();
 
             if (count($jogador_cadastrado) == 0) {
                 $jogador_cadastrado = new Jogador();
@@ -65,7 +64,7 @@ class ExercicioVFController extends Controller
                 $jogador_cadastrado->token = $request->usu_hash;
                 $jogador_cadastrado->ativo = $criadoLogicLive['data']['jog_ativo'];
                 $jogador_cadastrado->provedor = $criadoLogicLive['data']['jog_provedor'];
-                $jogador_cadastrado->id_logic_live = $criadoLogicLive['data']['jog_codigo'];
+                $jogador_cadastrado->logic_live_id = $criadoLogicLive['data']['jog_codigo'];
                 $jogador_cadastrado->save();
             } else {
                 $jogador_cadastrado = $jogador_cadastrado[0];
@@ -76,7 +75,7 @@ class ExercicioVFController extends Controller
                 $jogador_cadastrado->token = $request->usu_hash;
                 $jogador_cadastrado->ativo = $criadoLogicLive['data']['jog_ativo'];
                 $jogador_cadastrado->provedor = $criadoLogicLive['data']['jog_provedor'];
-                $jogador_cadastrado->id_logic_live = $criadoLogicLive['data']['jog_codigo'];
+                $jogador_cadastrado->logic_live_id = $criadoLogicLive['data']['jog_codigo'];
                 $jogador_cadastrado->save();
             }
         } else {
@@ -90,7 +89,7 @@ class ExercicioVFController extends Controller
             $jogador_cadastrado->token = $mdr;
             $jogador_cadastrado->ativo = true;
             $jogador_cadastrado->provedor = '';
-            $jogador_cadastrado->id_logic_live = null;
+            $jogador_cadastrado->logic_live_id = null;
             $jogador_cadastrado->save();
         }
 
@@ -102,7 +101,7 @@ class ExercicioVFController extends Controller
 
         $validacoes = $this->resposta->validaResposta($resposta['data'], $exercicio, 'buscar', true);
 
-        $formula = Formula::findOrFail($exercicio->id_formula);
+        $formula = Formula::findOrFail($exercicio->formula_id);
 
         $arvore = new Base($formula->xml);
         $arvore->setListaPassos($formula->lista_passos == [] ? [] : json_decode($formula->lista_passos, true));

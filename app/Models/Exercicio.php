@@ -30,4 +30,9 @@ class Exercicio extends Model
     {
         return $this->belongsTo(Recompensa::class);
     }
+
+    public function respostas()
+    {
+        return $this->hasMany(Resposta::class);
+    }
 }

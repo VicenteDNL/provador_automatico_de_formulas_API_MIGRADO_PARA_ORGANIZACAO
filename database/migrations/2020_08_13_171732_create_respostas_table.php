@@ -17,8 +17,9 @@ class CreateRespostasTable extends Migration
             $table->id();
             $table->unsignedBigInteger('exercicio_id');
             $table->unsignedBigInteger('jogador_id');
-            $table->integer('tempo');
+            $table->dateTime('ultima_interacao');
             $table->boolean('ativa');
+            $table->integer('tempo');
             $table->integer('tentativas_invalidas');
             $table->integer('pontuacao');
             $table->integer('repeticao');

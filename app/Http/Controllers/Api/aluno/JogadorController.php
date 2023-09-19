@@ -44,7 +44,7 @@ class JogadorController extends Controller
             $myJogador->usunome = $jogadorLogicLive->getJogUsunome();
             $myJogador->email = $jogadorLogicLive->getJogEmail();
             $myJogador->avatar = $jogadorLogicLive->getJogAvatar();
-            $myJogador->token = $request->usu_hash;
+            $myJogador->token = $request->hash;
             $myJogador->ativo = $jogadorLogicLive->getJogAtivo();
             $myJogador->provedor = $jogadorLogicLive->getJogProvedor();
             $myJogador->logic_live_id = $jogadorLogicLive->getJogCodigo();

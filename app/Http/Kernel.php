@@ -67,5 +67,7 @@ class Kernel extends HttpKernel
         'apiJwt'           => \App\Http\Middleware\apiProtectedRoute::class,
         'abilities'        => \Laravel\Sanctum\Http\Middleware\CheckAbilities::class,
         'ability'          => \Laravel\Sanctum\Http\Middleware\CheckForAnyAbility::class,
+        'jogadorHash'      => \App\Http\Middleware\JogadorHash::class,
+        'exercicioHash'    => \App\Http\Middleware\ExercicioHash::class,
     ];
 }

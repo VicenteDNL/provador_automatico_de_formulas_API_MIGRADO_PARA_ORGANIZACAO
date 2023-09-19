@@ -252,7 +252,7 @@ class ExercicioController extends Controller
                     $exercicio->logic_live_id,
                     new ExercicioModel([
                         'rec_codigo'        => $recompensa->logic_live_id,
-                        'niv_codigo'        => $nivel->meu_logic_live_id,
+                        'niv_codigo'        => $nivel->logic_live_id,
                         'exe_tempoexecucao' => $exercicio->tempo,
                         'exe_link'          => $exercicio->url,
                         'exe_nome'          => $exercicio->nome,
