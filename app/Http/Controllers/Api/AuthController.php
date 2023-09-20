@@ -3,68 +3,69 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\API\Auth\AuthRequest;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Throwable;
 
 class AuthController extends Controller
 {
     /**
-     * Get a JWT via given credentials.
-     *
-     * @return \Illuminate\Http\JsonResponse
+     * @param  AuthRequest  $request
+     * @return JsonResponse
      */
-    public function login(Request $request)
+    public function login(AuthRequest $request)
     {
-        $credentials = $request->only(['email', 'password']);
+        try {
+            $params = $request->only('email', 'password');
 
-        if (!$token = auth('api')->attempt($credentials)) {
-            
-            return response()->json(['error' => 'Unauthorized'], 401);
+            if (!Auth::attempt([...$params])) {
+                return  ResponseController::json(Type::notAuthentication, Action::login);
+            }
+
+            if (!$request->user()->ativo) {
+                return  ResponseController::json(Type::notAuthentication, Action::login);
+            }
+
+            $token_name = 'authentication_token';
+            $token = $request->user()->createToken($token_name);
+            $data = [
+                'accessToken'  => $token->plainTextToken,
+                'tokenType'    => 'bearer',
+                'email'        => $request->user()->email,
+            ];
+            return  ResponseController::json(Type::success, Action::login, $data);
+        } catch(Throwable $e) {
+            return  ResponseController::json(Type::error, Action::login);
         }
-        return $this->respondWithToken($token);
     }
 
     /**
-     * Log the user out (Invalidate the token).
-     *
-     * @return \Illuminate\Http\JsonResponse
+     * @param  Request      $request
+     * @return JsonResponse
      */
-    public function logout()
+    public function logout(Request $request)
     {
-        auth('api')->logout();
-        return response()->json(['success' => true, 'msg'=>'Successfully logged out', 'data'=>'']);
+        try {
+            if ($request->user()->currentAccessToken()->delete()) {
+                return ResponseController::json(Type::success, Action::logout);
+            }
+            return ResponseController::json(Type::error, Action::logout);
+        } catch(Throwable $e) {
+            return ResponseController::json(Type::error, Action::logout);
+        }
     }
 
     /**
-     * Get the token array structure.
-     *
-     * @param  string $token
-     *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
-    protected function respondWithToken($token)
+    public function me()
     {
-        return response()->json(
-            [
-                'access_token' => $token,
-                'token_type' => 'bearer',
-                'expires_in' => auth('api')->factory()->getTTL() * 60,
-                'email' => auth('api')->user()->email
-            ]
-        );
-    }
-
-
-        /**
-     * Get the authenticated User.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function me(Request $request)
-    {
-        if(auth('api')->user()==null){
-            return response()->json(['success' => false,'msg' => 'Unauthorized', 'data'=>'']);
+        try {
+            return ResponseController::json(Type::success, Action::login);
+        } catch(Throwable $e) {
+            return ResponseController::json(Type::error, Action::login);
         }
-        return response()->json(['success' => true, 'msg'=>'', 'data'=>auth('api')->user()]);
     }
-
 }

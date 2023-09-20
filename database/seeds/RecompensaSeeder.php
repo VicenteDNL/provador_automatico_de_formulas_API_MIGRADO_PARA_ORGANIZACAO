@@ -1,6 +1,5 @@
 <?php
 
-use App\Recompensa;
 use Illuminate\Database\Seeder;
 
 class RecompensaSeeder extends Seeder
@@ -12,6 +11,6 @@ class RecompensaSeeder extends Seeder
      */
     public function run()
     {
-        factory(Recompensa::class,10)->create();
+        App\Models\Recompensa::factory()->count(10)->create();
     }
 }

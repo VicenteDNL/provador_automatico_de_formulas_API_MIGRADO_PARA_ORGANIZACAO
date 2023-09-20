@@ -1,92 +1,94 @@
 <?php
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\Api\Admin\ArvoreRefutacaoController as AdminArvoreRefutacaoController;
+use App\Http\Controllers\Api\Admin\ExercicioController;
+use App\Http\Controllers\Api\Admin\JogadorController as AdminJogadorController;
+use App\Http\Controllers\Api\Admin\LogicLiveController;
+use App\Http\Controllers\Api\Admin\NivelController;
+use App\Http\Controllers\Api\Admin\RecompensaController;
+use App\Http\Controllers\Api\Admin\RespostaController;
+use App\Http\Controllers\Api\Aluno\ArvoreRefutacaoController;
+use App\Http\Controllers\Api\Aluno\EstudoConceitosController;
+use App\Http\Controllers\Api\Aluno\EstudoLivreController;
+use App\Http\Controllers\Api\Aluno\JogadorController;
+use App\Http\Controllers\Api\Aluno\ValidacaoFormulasController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\UsuarioController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| is assigned the "api" middleware group. Enjoy building your API!
-|
-*/
+Route::post('auth/login', [AuthController::class, 'login']);
 
-// Route::middleware('auth:api')->get('/user', function (Request $request) {
-//     return $request->user();
-// });
+Route::group(['middleware' => ['auth:sanctum']], function () {
+    Route::get('auth/me', [AuthController::class, 'me']);
+    Route::post('auth/logout', [AuthController::class, 'logout']);
 
-Route::post('auth/login', 'Api\AuthController@login');
-Route::get('auth/me', 'Api\AuthController@me');
-Route::group(['middleware'=>['apiJwt']],function(){
-    Route::post('auth/logout', 'Api\AuthController@logout');
-    Route::get('users', 'Api\UserController@index');
+    Route::get('usuarios', [UsuarioController::class, 'index']);
+    Route::get('usuarios/{id}', [UsuarioController::class, 'show']);
+    Route::put('usuarios/{id}', [UsuarioController::class, 'update']);
+    Route::post('usuarios', [UsuarioController::class, 'store']);
+    Route::delete('usuarios/{id}', [UsuarioController::class, 'destroy']);
 
-    Route::get('recompensas', 'Api\admin\modulos\RecompensaController@index');
-    Route::post('recompensas', 'Api\admin\modulos\RecompensaController@store');
-    Route::put('recompensas/{id}', 'Api\admin\modulos\RecompensaController@update');
-    Route::delete('recompensas/{id}', 'Api\admin\modulos\RecompensaController@destroy');
+    Route::get('recompensas', [RecompensaController::class, 'index']);
+    Route::put('recompensas/{id}', [RecompensaController::class, 'update']);
+    Route::post('recompensas', [RecompensaController::class, 'store']);
+    Route::delete('recompensas/{id}', [RecompensaController::class, 'destroy']);
 
-    Route::get('mvflp/niveis', 'Api\admin\modulos\validacaoFormulas\NivelVFController@index');
-    Route::get('mvflp/niveis/listarTodos', 'Api\admin\modulos\validacaoFormulas\NivelVFController@all');
-    Route::get('mvflp/niveis/{id}', 'Api\admin\modulos\validacaoFormulas\NivelVFController@show');
-    Route::post('mvflp/niveis', 'Api\admin\modulos\validacaoFormulas\NivelVFController@store');
-    Route::put('mvflp/niveis/{id}', 'Api\admin\modulos\validacaoFormulas\NivelVFController@update');
-    Route::delete('mvflp/niveis/{id}', 'Api\admin\modulos\validacaoFormulas\NivelVFController@destroy');
-    
-    
-    Route::get('mvflp/exercicio/nivel/{id}', 'Api\admin\modulos\validacaoFormulas\ExercicioVFController@byIdNivel');
-    Route::post('mvflp/exercicio', 'Api\admin\modulos\validacaoFormulas\ExercicioVFController@store');
-    Route::get('mvflp/exercicio/{id}', 'Api\admin\modulos\validacaoFormulas\ExercicioVFController@show');
-    Route::put('mvflp/exercicio/{id}', 'Api\admin\modulos\validacaoFormulas\ExercicioVFController@update');
-    Route::delete('mvflp/exercicio/{id}', 'Api\admin\modulos\validacaoFormulas\ExercicioVFController@destroy');
+    Route::get('niveis', [NivelController::class, 'index']);
+    Route::get('niveis/all', [NivelController::class, 'all']);
+    Route::get('niveis/{id}', [NivelController::class, 'show']);
+    Route::put('niveis/{id}', [NivelController::class, 'update']);
+    Route::post('niveis', [NivelController::class, 'store']);
+    Route::delete('niveis/{id}', [NivelController::class, 'destroy']);
 
+    Route::get('exercicios', [ExercicioController::class, 'index']);
+    Route::get('exercicios/all', [ExercicioController::class, 'all']);
+    Route::get('exercicios/{id}', [ExercicioController::class, 'show']);
+    Route::put('exercicios/{id}', [ExercicioController::class, 'update']);
+    Route::post('exercicios', [ExercicioController::class, 'store']);
+    Route::delete('exercicios/{id}', [ExercicioController::class, 'destroy']);
 
-    Route::get('mvflp/resposta', 'Api\admin\modulos\validacaoFormulas\RespostaController@index');
+    Route::post('respostas', [RespostaController::class, 'index']);
 
+    Route::get('jogadores/all', [AdminJogadorController::class, 'all']);
 
+    Route::post('arvore/otimizada', [AdminArvoreRefutacaoController::class, 'arvore']);
+    Route::post('arvore/inicia', [AdminArvoreRefutacaoController::class, 'inicia']);
+    Route::post('arvore/adiciona', [AdminArvoreRefutacaoController::class, 'adiciona']);
+    Route::post('arvore/deriva', [AdminArvoreRefutacaoController::class, 'deriva']);
+    Route::post('arvore/tica', [AdminArvoreRefutacaoController::class, 'tica']);
+    Route::post('arvore/fecha', [AdminArvoreRefutacaoController::class, 'fecha']);
+    Route::post('arvore/recria', [AdminArvoreRefutacaoController::class, 'recria']);
 
-    Route::post('arvore/otimizada', 'Api\admin\ArvoreRefutacaoController@criarArvoreOtimizada');
-    Route::post('arvore/inicializacao/premisas-conclucao', 'Api\admin\ArvoreRefutacaoController@premissasConclusao');
-    Route::post('arvore/inicializacao/adiciona-no', 'Api\admin\ArvoreRefutacaoController@adicionaNoIncializacao');
-    Route::post('arvore/derivacao/adiciona-no', 'Api\admin\ArvoreRefutacaoController@derivar');
-    Route::post('arvore/derivacao/fechar-no', 'Api\admin\ArvoreRefutacaoController@fecharNo');
-    Route::post('arvore/derivacao/ticar-no', 'Api\admin\ArvoreRefutacaoController@ticarNo');
-
-
-    // Requisições da configurar os modulos e o game
-    Route::get('config/logiclive/', 'Api\logicLive\LogicLiveController@infoModulosEndGame');
-    Route::post('config/logiclive/criar', 'Api\logicLive\LogicLiveController@criarModulosEndGame');
+    Route::get('logiclive/ativo', [LogicLiveController::class, 'ativo']);
+    Route::get('logiclive/info', [LogicLiveController::class, 'info']);
+    Route::post('logiclive/game/{id}/ativo', [LogicLiveController::class, 'ativoGame']);
+    Route::post('logiclive/modulo/{id}/ativo', [LogicLiveController::class, 'ativoModulo']);
+    Route::post('logiclive/nivel/{id}/ativo', [LogicLiveController::class, 'ativoNivel']);
+    Route::post('logiclive/exercicio/{id}/ativo', [LogicLiveController::class, 'ativoExercicio']);
+    Route::post('logiclive/game', [LogicLiveController::class, 'createGame']);
+    Route::post('logiclive/game/{idGame}/modulos', [LogicLiveController::class, 'createModulos']);
+    Route::post('logiclive/modulos/{idModulos}/niveis', [LogicLiveController::class, 'createNiveis']);
+    Route::post('logiclive/niveis/{idNivel}/exercicios', [LogicLiveController::class, 'createExercicios']);
+    Route::post('logiclive/reset', [LogicLiveController::class, 'reset']);
 });
 
-Route::post('aluno/hash', 'Api\aluno\autenticacao\AuthHash@hash');   //Valida o HASH do aluno
-Route::post('aluno/livre/iniciar', 'Api\aluno\modulos\EstudoLivreController@iniciar'); 
-Route::post('aluno/livre/arvore', 'Api\aluno\modulos\EstudoLivreController@arvore'); 
-Route::post('aluno/livre/adiciona', 'Api\aluno\modulos\EstudoLivreController@adiciona'); 
-Route::post('aluno/livre/deriva', 'Api\aluno\modulos\EstudoLivreController@deriva'); 
-Route::post('aluno/livre/tica', 'Api\aluno\modulos\EstudoLivreController@tica'); 
-Route::post('aluno/livre/fecha', 'Api\aluno\modulos\EstudoLivreController@fecha'); 
+Route::middleware(['jogadorHash', 'exercicioHash'])->group(function () {
+    Route::get('aluno/validacao-formula/inicia', [ValidacaoFormulasController::class, 'inicia']);
+    Route::post('aluno/validacao-formula/adiciona', [ValidacaoFormulasController::class, 'adiciona']);
+    Route::post('aluno/validacao-formula/deriva', [ValidacaoFormulasController::class, 'deriva']);
+    Route::post('aluno/validacao-formula/tica', [ValidacaoFormulasController::class, 'tica']);
+    Route::post('aluno/validacao-formula/fecha', [ValidacaoFormulasController::class, 'fecha']);
+    Route::post('aluno/validacao-formula/concluir', [ValidacaoFormulasController::class, 'concluir']);
+    Route::get('aluno/validacao-formula/tentar-novamente', [ValidacaoFormulasController::class, 'reiniciar']);
 
+    Route::post('aluno/estudo-conceitos/concluir', [EstudoConceitosController::class, 'concluir']);
+    Route::post('aluno/estudo-livre/concluir', [EstudoLivreController::class, 'concluir']);
+});
 
-Route::post('aluno/conceitos/concluir/{id}', 'Api\aluno\modulos\EstudoConceitosController@concluir');
-
-
-
-// Requisições do lado do aluno
-Route::post('exercicio/validacao/resposta', 'Api\aluno\ArvoreRefutacaoController@validar');
-Route::post('exercicio/validacao/{id}', 'Api\aluno\ExercicioVFController@buscarExercicio');
-Route::get('exercicio/arvore/criar', 'Api\aluno\ExercicioVFController@criarArvoreExercicio');
-Route::post('exercicio/tentarnovamente/{id}', 'Api\aluno\RespostaController@deletarResposta');
-
-
-Route::post('aluno/hash', 'Api\aluno\autenticacao\AuthHash@hash');
-
-
-Route::post('aluno/arvore/otimizada', 'Api\aluno\ArvoreRefutacaoController@criarArvoreOtimizada');
-Route::post('aluno/arvore/inicializacao/premisas-conclucao', 'Api\aluno\ArvoreRefutacaoController@premissasConclusao');
-Route::post('aluno/arvore/inicializacao/adiciona-no', 'Api\aluno\ArvoreRefutacaoController@adicionaNo');
-Route::post('aluno/arvore/derivacao/adiciona-no', 'Api\aluno\ArvoreRefutacaoController@derivar');
-Route::post('aluno/arvore/derivacao/fechar-no', 'Api\aluno\ArvoreRefutacaoController@fecharNo');
-Route::post('aluno/arvore/derivacao/ticar-no', 'Api\aluno\ArvoreRefutacaoController@ticarNo');
+Route::post('aluno/hash', [JogadorController::class, 'hash']);
+Route::post('aluno/arvore/inicia', [ArvoreRefutacaoController::class, 'inicia']);
+Route::post('aluno/arvore/arvore', [ArvoreRefutacaoController::class, 'arvore']);
+Route::post('aluno/arvore/adiciona', [ArvoreRefutacaoController::class, 'adiciona']);
+Route::post('aluno/arvore/deriva', [ArvoreRefutacaoController::class, 'deriva']);
+Route::post('aluno/arvore/tica', [ArvoreRefutacaoController::class, 'tica']);
+Route::post('aluno/arvore/fecha', [ArvoreRefutacaoController::class, 'fecha']);

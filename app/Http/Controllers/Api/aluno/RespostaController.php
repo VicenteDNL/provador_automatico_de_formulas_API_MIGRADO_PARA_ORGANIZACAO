@@ -1,330 +1,127 @@
 <?php
 
-namespace App\Http\Controllers\Api\aluno;
+namespace App\Http\Controllers\Api\Aluno;
 
-use App\ExercicioMVFLP;
-use App\Formula;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\LogicLive\modulos\Jogador as ModulosJogador;
-use App\Http\Controllers\ModuloArvoreDeRefutacao\Base;
-use App\Jogador;
-use App\Recompensa;
-use App\Resposta;
-use Illuminate\Http\Request;
+use App\Models\Exercicio;
+use App\Models\Jogador;
+use App\Models\Resposta;
+use DateTime;
 
 class RespostaController extends Controller
 {
-    public function __construct()
+    public function saudeResposta(Jogador $jogador, Exercicio $exercicio, bool $isCriacao = false)
     {
-
-        $this->logicLive_jogador =  new ModulosJogador;
- 
- 
-    }
-    
-
-    public function criarResposta($jogador, $exercicio){
-
-        $recompensa = Recompensa::where('id', '=',$exercicio->id_recompensa)->first();
-
-        $resposta = Resposta::where('id_jogador', '=',$jogador->id)->where('id_exercicio','=',$exercicio->id)->get();
-        
-        if(count($resposta)==1  ){
-            
-            if( $resposta[0]->concluida==true){
-                return ['success'=>false ,'msg'=>"Exercicio já respondido", 'data'=>$resposta[0]];
-            }
-            return ['success'=>true ,'msg'=>"", 'data'=>$resposta[0], 'novo'=>false];
-
-        }
-        $resposta = new Resposta;
-        $resposta->id_jogador= $jogador->id;
-        $resposta->id_exercicio= $exercicio->id;
-        $resposta->ativa =true;
-        $resposta->tentativas_invalidas =0;
-        $resposta->tempo=date("Y-m-d H:i:s");
-        $resposta->concluida=false;
-        $resposta->pontuacao=$recompensa->pontuacao;
-        $resposta->repeticao=0;
-        $resposta->save();
-        return ['success'=>true ,'msg'=>"", 'data'=>$resposta, 'novo'=>true];
-    }
-
-
-
-    public function deletarResposta($id,Request $request){
-
-        if(!isset($request->usu_hash)){
-            return response()->json(['success' => false, 'msg'=>'hash jogador não informado!', 'data'=>''],500);
-        }
-
-        $criadoLogicLive = $this->logicLive_jogador->getJogador($request->usu_hash);
-        $jogador_cadastrado = Jogador::where('id_logic_live',$criadoLogicLive['data']['jog_codigo'])->get();
-        $exercicio = ExercicioMVFLP::findOrFail($id); 
-
-       
-        $resposta = Resposta::where('id_jogador', '=',$jogador_cadastrado[0]->id) ->where('id_exercicio','=',$exercicio->id)->get();
-        
-        if(count($resposta)!=1 ){
-            return response()->json(['success'=>false ,'msg'=>"Resposta não encontrada", 'data'=>''],500);
-        }
-        
-        if ($resposta[0]->concluida==true){
-            return response()->json(['success'=>false ,'msg'=>"Exercicio concluido", 'data'=>'']);
-        }
-
-        $resposta[0]->tentativas_invalidas=0;
-        $resposta[0]->tempo=date("Y-m-d H:i:s");
-        $resposta[0]->repeticao=$resposta[0]->repeticao+1;
-        $resposta[0]->save();
-
-
-        $formula =  Formula::findOrFail($exercicio->id_formula);
-
-        $arvore = new Base($formula->xml);
-        // $arvore->setListaPassos( json_decode ($formula->lista_passos,true));
-        $arvore->setListaPassos( $formula->lista_passos==[] ? [] :json_decode ($formula->lista_passos,true));
-        $arvore->setListaTicagem($formula->lista_ticagem==[] ? [] : json_decode ($formula->lista_ticagem,true));
-        $arvore->setListaFechamento( $formula->lista_fechamento==[]?[] : json_decode ($formula->lista_fechamento,true));
-        $arvore->derivacao->setListaDerivacoes($formula->lista_derivacoes==[] ? [] : json_decode ($formula->lista_derivacoes,true));
-        $arvore->fecharAutomatido($formula->fechar_automaticamente);
-        $arvore->ticarAutomatico($formula->ticar_automaticamente);
-        $arvore->inicializacao->setFinalizado($formula->inicializacao_completa);
-
-        if(!$arvore->montarArvore()){
-            return  response()->json(['success' => false, 'msg'=>'Error ar criar arvore', 'data'=>''],500);
-        }
-
-        return response()->json([
-            'success'=>true ,
-            'msg'=>"Resposta deletada", 
-            'data'=>[
-                'arvore'=>$arvore->retorno($exercicio->id,$request->usu_hash, $request->exe_hash),
-                'tentativas'=>$this->validaResposta($resposta[0],$exercicio, 'busca',true)
-                ]
-            ]);
-       
-       
-       
-    }
-
-    public function validaResposta(Resposta $resposta, ExercicioMVFLP $exercicio,$tipo='buscar', $busca=false){
-        $recompensa ='';
-        return [
-            'tempo'=>$this->tempo($resposta,$exercicio), 
-            'erros'=> $busca==true? $this->buscaErros($resposta,$exercicio) :$this->erros($resposta,$exercicio, $recompensa),
-            'pontuacao'=> $this->pontuacao($resposta,$exercicio,$tipo)
-            // $busca==true?$this->buscaPontuacao($resposta,$exercicio,$tipo):
+        $resposta = Resposta::where(['jogador_id' => $jogador->id, 'exercicio_id' => $exercicio->id])->firstOrFail();
+        $recompensa = $exercicio->recompensa()->firstOrFail();
+        return
+        [
+            'tempo'      => $exercicio->tempo == null
+                ? null
+                : [
+                    'atual'   => $isCriacao ? $exercicio->tempo : $this->tempoRestante($resposta, $exercicio),
+                    'inicial' => $exercicio->tempo,
+                ],
+            'tentativas' => $exercicio->qndt_erros == null
+                ? null
+                : [
+                    'atual'   => $exercicio->qndt_erros - $resposta->tentativas_invalidas,
+                    'inicial' => $exercicio->qndt_erros,
+                ],
+            'pontuacao'  => [
+                'atual'   => $resposta->pontuacao,
+                'inicial' => $recompensa->pontuacao,
+            ],
         ];
-       
-
     }
 
+    public function isGameOver(Jogador $jogador, Exercicio $exercicio)
+    {
+        $saude = $this->saudeResposta($jogador, $exercicio);
 
-    private function pontuacao($resposta,$exercicio,$tipo){
-     
-    
-        /**
-         * Estipula uma porcentagem para a quantidade maxima
-         * que o valor possa ser subtraido para cada uma das 3
-         * tentativas mapeadas
-         */
-        $porcentagem_sub_maxima_1 = 0.30;
-        $porcentagem_sub_maxima_2 = 0.40;
-        $porcentagem_sub_maxima_3 = 0.50;
-
-
-        $recompensa = Recompensa ::where('id',$exercicio->id_recompensa)->first();
-
-        if($exercicio->qndt_erros==null ){
-            if($tipo=='responder'){
-
-                $pont=floor($resposta->pontuacao/2);
-
-                if($pont<=0){
-                    $resposta->pontuacao=0;
-                }
-                else{
-                    $resposta->pontuacao= $pont;
-                }
-        
-                $resposta->save();
-                return ['ponto'=>$resposta->pontuacao, 'maximo'=>$recompensa->pontuacao];
-
-            }
-            return ['ponto'=>$resposta->pontuacao, 'tentativa'=>$resposta->repeticao];
-        }
-        
-        if($resposta->repeticao==0){
-            $recompensa_maxima = $recompensa->pontuacao;
-            $porcentagem_sub_ativa = $porcentagem_sub_maxima_1;
-
-        }
-        elseif($resposta->repeticao==1){
-            $recompensa_minina_1 = $recompensa->pontuacao - ($recompensa->pontuacao*$porcentagem_sub_maxima_1);
-            $recompensa_maxima = $recompensa_minina_1; 
-            $porcentagem_sub_ativa = $porcentagem_sub_maxima_2;
-        } 
-        else{
-            $recompensa_minina_1 = $recompensa->pontuacao - ($recompensa->pontuacao*$porcentagem_sub_maxima_1);
-            $recompensa_minina_2 =$recompensa_minina_1- ($recompensa_minina_1*$porcentagem_sub_maxima_2);
-            $recompensa_maxima = $recompensa_minina_2;
-            $porcentagem_sub_ativa = $porcentagem_sub_maxima_3;
-            
-
-        }
-        
-        switch ($tipo){
-            case 'adicionar':
-                // Estipula a porcentagem maxima que uma tentativa invalida pode subtrair da pontuacao a cada vez
-                 $porcentagem_adicionar = ($porcentagem_sub_ativa /$exercicio->qndt_erros)/2; 
-                 $erros = $recompensa_maxima - $resposta->pontuacao; 
-                 $nova_recompensa =$recompensa_maxima -floor ((( $recompensa_maxima*$porcentagem_adicionar))+$erros); 
-                break;
-            case 'fechar':
-                // Estipula a porcentagem maxima que uma tentativa invalida pode subtrair da pontuacao a cada vez
-                $porcentagem_fechar= $porcentagem_sub_ativa /$exercicio->qndt_erros;
-                $erros = $recompensa_maxima - $resposta->pontuacao; 
-                $nova_recompensa = $recompensa_maxima -floor ((($recompensa_maxima*$porcentagem_fechar))+$erros); 
-                break;
-            case 'ticar':
-                // Estipula a porcentagem maxima que uma tentativa invalida pode subtrair da pontuacao a cada vez
-                $porcentagem_ticar = ($porcentagem_sub_ativa /$exercicio->qndt_erros)/2;
-                $erros = $recompensa_maxima - $resposta->pontuacao; 
-                $nova_recompensa = $recompensa_maxima -floor ((($recompensa_maxima*$porcentagem_ticar))+$erros); 
-
-                break;
-            case 'derivar':
-                // Estipula a porcentagem maxima que uma tentativa invalida pode subtrair da pontuacao a cada vez
-                $porcentagem_derivar = $porcentagem_sub_ativa /$exercicio->qndt_erros; 
-                $erros = $recompensa_maxima - $resposta->pontuacao; 
-                $nova_recompensa = $recompensa_maxima -floor ((($recompensa_maxima*$porcentagem_derivar))+$erros); 
-                break;
-
-            case 'buscar':
-                if($recompensa_maxima>=$resposta->pontuacao){
-                    $nova_recompensa = $resposta->pontuacao; 
-                }
-                else{
-                    $nova_recompensa = $recompensa_maxima;
-                }
-                break;
-            default:
-                if($recompensa_maxima>=$resposta->pontuacao){
-                    $nova_recompensa = $resposta->pontuacao; 
-                }
-                else{
-                    $nova_recompensa = $recompensa_maxima;
-                }
+        if (!is_null($saude['tempo']) && $saude['tempo']['atual'] == 0) {
+            return true;
         }
 
-        if($nova_recompensa<=0){
-            $resposta->pontuacao=0;
-        }
-        else{
-            $resposta->pontuacao= $nova_recompensa;
+        if (!is_null($saude['tentativas']) && $saude['tentativas']['atual'] == 0) {
+            return true;
         }
 
+        return false;
+    }
+
+    public function aplicarPenalidade(Jogador $jogador, Exercicio $exercicio): Resposta
+    {
+        $resposta = Resposta::where(['jogador_id' => $jogador->id, 'exercicio_id' => $exercicio->id])->firstOrFail();
+
+        if (is_null($exercicio->qndt_erros)) {
+            return $resposta;
+        }
+
+        if ($resposta->tentativas_invalidas >= $exercicio->qndt_erros) {
+            return $resposta;
+        }
+
+        $resposta->tentativas_invalidas += 1;
         $resposta->save();
-        return ['ponto'=>$resposta->pontuacao, 'maximo'=>$recompensa->pontuacao];
 
+        return $resposta;
     }
 
-    private function erros($resposta,$exercicio, $recompensa){
-
-        if($exercicio->qndt_erros==null){
-            return null;
-        }
-  
-        // verifica a quantidade de tentativas invalidas
-        $resposta->tentativas_invalidas = $resposta->tentativas_invalidas + 1;
-        $restantes = ($exercicio->qndt_erros) - ($resposta->tentativas_invalidas) ;
-        if($restantes<0){
-            $saida['tempo']=0;
-        }
+    public function aplicarNovaTentativa(Jogador $jogador, Exercicio $exercicio)
+    {
+        $resposta = Resposta::where(['jogador_id' => $jogador->id, 'exercicio_id' => $exercicio->id])->firstOrFail();
+        $resposta->repeticao += 1;
+        $resposta->ultima_interacao = date('Y-m-d H:i:s');
+        $resposta->tentativas_invalidas = 0;
+        $resposta->pontuacao = $this->recalcularPontuacao($resposta, $exercicio);
         $resposta->save();
-        return $restantes;
-        
     }
 
-    public function buscaErros(Resposta $resposta, ExercicioMVFLP $exercicio){
-        if($exercicio->qndt_erros==null){
-            return null;
-        }
-
-        return ($exercicio->qndt_erros) - ($resposta->tentativas_invalidas);
-    
+    public function finalizarExercicio(DateTime $dataHoraFinalizacao, Jogador $jogador, Exercicio $exercicio)
+    {
+        $resposta = Resposta::where(['jogador_id' => $jogador->id, 'exercicio_id' => $exercicio->id])->firstOrFail();
+        $resposta->concluida = true;
+        $resposta->tempo = $this->calcularTempoResposta($dataHoraFinalizacao, $resposta, $exercicio);
+        $resposta->save();
     }
 
-
-
-    private function tempo($resposta,$exercicio){
-
-        if($exercicio->tempo==null){
-           return  ['minutos'=>null,'segundos'=>null];
-
+    private function tempoRestante(Resposta $resposta, Exercicio $exercicio)
+    {
+        if ($exercicio->tempo == null) {
+            return  null;
         }
-        $tempo= $exercicio->tempo *60;
-        $inicio= strtotime($resposta->tempo)+$tempo;
-        $atual = strtotime(date("Y-m-d H:i:s"));
 
-        if($inicio>$atual){
-            $minu = floor(($inicio - $atual)/60);
-            $segundos = round(round((($inicio - $atual)/60)-$minu,2)*60);
-            return ['minutos'=>$minu,'segundos'=>$segundos]
-           ;
+        $inicio = strtotime($resposta->ultima_interacao);
+        $atual = strtotime('now');
+
+        $tempo = $atual - $inicio ;
+
+        if ($tempo <= 0) {
+            return 0;
+        } else {
+            $tempoRestante = $exercicio->tempo - $tempo;
+            return  $tempoRestante < 0 ? 0 : $tempoRestante ;
         }
-        elseif($inicio<$atual){
-            return ['minutos'=>0,'segundos'=>$resposta->repeticao];
-
-
-        }
-        return null;
     }
 
-
-
-    public function tempoParaResposta($resposta,$exercicio){
-
-        if($exercicio->tempo==null){
-           return  null;
-
-        }
-        $tempo= $exercicio->tempo *60;
-        $inicio= strtotime($resposta->tempo)+$tempo;
-        $atual = strtotime(date("Y-m-d H:i:s"));
-
-        if($inicio>$atual){
-            $segundos = $inicio-$atual;
-
-            return $segundos;
-           ;
-        }
-        elseif($inicio<$atual){
-            return null;
-
-
-        }
-        return null;
+    private function calcularTempoResposta(DateTime $dataHoraFinalizacao, Resposta $resposta, Exercicio $exercicio)
+    {
+        $inicio = strtotime($resposta->ultima_interacao);
+        $finalizacao = strtotime($dataHoraFinalizacao->format('Y-m-d H:i:s'));
+        return $finalizacao - $inicio;
     }
 
+    private function recalcularPontuacao(Resposta $resposta, Exercicio $exercicio)
+    {
+        $recompensa = $exercicio->recompensa()->firstOrFail();
 
+        $pontuacaoInicial = $recompensa->pontuacao;
 
-    public function buscaTempo($resposta,$exercicio){
+        $porcentagem = ($resposta->repeticao / 5);
 
-        if($exercicio->tempo==null){
-            return null;
-         }
+        $porcentagem = $porcentagem > 0.8 ? 0.8 : $porcentagem;
 
-        if($exercicio->tempo>0){
-            $minu = floor($resposta->tempo);
-            $segundos = round(round(($resposta->tempo)-$minu,2)*60);
-            return ['minutos'=> $minu,'segundos'=>$segundos];
-
-        }
-        return ['minutos'=> 0,'segundos'=>0];
-
+        return round($pontuacaoInicial - ($pontuacaoInicial * $porcentagem));
     }
-
-
 }

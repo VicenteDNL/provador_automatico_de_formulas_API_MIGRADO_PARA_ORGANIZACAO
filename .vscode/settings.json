@@ -1,0 +1,18 @@
+{
+    "[php]": {
+        // Desativa formatação automatica
+        "editor.formatOnSave": false,
+    },
+
+    // Executa a formatação do arquivo via php-cs-fixer
+    "emeraldwalk.runonsave" :{
+        "commands": [
+            {
+                "match": "\\.php$",
+                "isAsync": false,
+                // "cmd": "${workspaceFolder}\\tools\\php-cs-fixer\\vendor\\bin\\php-cs-fixer fix ${file} --config ${workspaceFolder}\\tools\\php-cs-fixer\\.php-cs-fixer.php"
+                "cmd": "${workspaceFolder}\\tools\\php-cs-fixer\\vendor\\bin\\php-cs-fixer fix ${file} --config ${workspaceFolder}\\tools\\php-cs-fixer\\.php-cs-fixer.php"
+            },
+        ]
+    }
+}
