@@ -2,16 +2,16 @@
 
 use App\Http\Controllers\Api\Admin\ArvoreRefutacaoController as AdminArvoreRefutacaoController;
 use App\Http\Controllers\Api\Admin\ExercicioController;
+use App\Http\Controllers\Api\Admin\JogadorController as AdminJogadorController;
 use App\Http\Controllers\Api\Admin\LogicLiveController;
 use App\Http\Controllers\Api\Admin\NivelController;
 use App\Http\Controllers\Api\Admin\RecompensaController;
 use App\Http\Controllers\Api\Admin\RespostaController;
-use App\Http\Controllers\Api\aluno\ArvoreRefutacaoController;
-use App\Http\Controllers\Api\aluno\autenticacao\AuthHash;
-use App\Http\Controllers\Api\aluno\ExercicioVFController as AlunoExercicioVFController;
-use App\Http\Controllers\Api\aluno\modulos\EstudoConceitosController;
-use App\Http\Controllers\Api\aluno\modulos\EstudoLivreController;
-use App\Http\Controllers\Api\aluno\RespostaController as AlunoRespostaController;
+use App\Http\Controllers\Api\Aluno\ArvoreRefutacaoController;
+use App\Http\Controllers\Api\Aluno\EstudoConceitosController;
+use App\Http\Controllers\Api\Aluno\EstudoLivreController;
+use App\Http\Controllers\Api\Aluno\JogadorController;
+use App\Http\Controllers\Api\Aluno\ValidacaoFormulasController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\UsuarioController;
 use Illuminate\Support\Facades\Route;
@@ -41,12 +41,15 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::delete('niveis/{id}', [NivelController::class, 'destroy']);
 
     Route::get('exercicios', [ExercicioController::class, 'index']);
+    Route::get('exercicios/all', [ExercicioController::class, 'all']);
     Route::get('exercicios/{id}', [ExercicioController::class, 'show']);
     Route::put('exercicios/{id}', [ExercicioController::class, 'update']);
     Route::post('exercicios', [ExercicioController::class, 'store']);
     Route::delete('exercicios/{id}', [ExercicioController::class, 'destroy']);
 
-    Route::get('respostas', [RespostaController::class, 'index']);
+    Route::post('respostas', [RespostaController::class, 'index']);
+
+    Route::get('jogadores/all', [AdminJogadorController::class, 'all']);
 
     Route::post('arvore/otimizada', [AdminArvoreRefutacaoController::class, 'arvore']);
     Route::post('arvore/inicia', [AdminArvoreRefutacaoController::class, 'inicia']);
@@ -69,25 +72,23 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('logiclive/reset', [LogicLiveController::class, 'reset']);
 });
 
-Route::post('aluno/hash', [AuthHash::class, 'hash']);   //Valida o HASH do aluno
-Route::post('aluno/livre/inicia', [EstudoLivreController::class, 'inicia']);
-Route::post('aluno/livre/arvore', [EstudoLivreController::class, 'arvore']);
-Route::post('aluno/livre/adiciona', [EstudoLivreController::class, 'adiciona']);
-Route::post('aluno/livre/deriva', [EstudoLivreController::class, 'deriva']);
-Route::post('aluno/livre/tica', [EstudoLivreController::class, 'tica']);
-Route::post('aluno/livre/fecha', [EstudoLivreController::class, 'fecha']);
+Route::middleware(['jogadorHash', 'exercicioHash'])->group(function () {
+    Route::get('aluno/validacao-formula/inicia', [ValidacaoFormulasController::class, 'inicia']);
+    Route::post('aluno/validacao-formula/adiciona', [ValidacaoFormulasController::class, 'adiciona']);
+    Route::post('aluno/validacao-formula/deriva', [ValidacaoFormulasController::class, 'deriva']);
+    Route::post('aluno/validacao-formula/tica', [ValidacaoFormulasController::class, 'tica']);
+    Route::post('aluno/validacao-formula/fecha', [ValidacaoFormulasController::class, 'fecha']);
+    Route::post('aluno/validacao-formula/concluir', [ValidacaoFormulasController::class, 'concluir']);
+    Route::get('aluno/validacao-formula/tentar-novamente', [ValidacaoFormulasController::class, 'reiniciar']);
 
-Route::post('aluno/conceitos/concluir/{id}', [EstudoConceitosController::class, 'concluir']);
+    Route::post('aluno/estudo-conceitos/concluir', [EstudoConceitosController::class, 'concluir']);
+    Route::post('aluno/estudo-livre/concluir', [EstudoLivreController::class, 'concluir']);
+});
 
-// Requisições do lado do aluno
-Route::post('exercicio/validacao/resposta', [ArvoreRefutacaoController::class, 'validar']);
-Route::post('exercicio/validacao/{id}', [AlunoExercicioVFController::class, 'buscarExercicio']);
-Route::get('exercicio/arvore/criar', [AlunoExercicioVFController::class, 'criarArvoreExercicio']);
-Route::post('exercicio/tentarnovamente/{id}', [AlunoRespostaController::class, 'deletarResposta']);
-
-Route::post('aluno/arvore/otimizada', [ArvoreRefutacaoController::class, 'criarArvoreOtimizada']);
-Route::post('aluno/arvore/inicializacao/premisas-conclucao', [ArvoreRefutacaoController::class, 'premissasConclusao']);
-Route::post('aluno/arvore/inicializacao/adiciona-no', [ArvoreRefutacaoController::class, 'adicionaNo']);
-Route::post('aluno/arvore/derivacao/adiciona-no', [ArvoreRefutacaoController::class, 'derivar']);
-Route::post('aluno/arvore/derivacao/fechar-no', [ArvoreRefutacaoController::class, 'fecharNo']);
-Route::post('aluno/arvore/derivacao/ticar-no', [ArvoreRefutacaoController::class, 'ticarNo']);
+Route::post('aluno/hash', [JogadorController::class, 'hash']);
+Route::post('aluno/arvore/inicia', [ArvoreRefutacaoController::class, 'inicia']);
+Route::post('aluno/arvore/arvore', [ArvoreRefutacaoController::class, 'arvore']);
+Route::post('aluno/arvore/adiciona', [ArvoreRefutacaoController::class, 'adiciona']);
+Route::post('aluno/arvore/deriva', [ArvoreRefutacaoController::class, 'deriva']);
+Route::post('aluno/arvore/tica', [ArvoreRefutacaoController::class, 'tica']);
+Route::post('aluno/arvore/fecha', [ArvoreRefutacaoController::class, 'fecha']);

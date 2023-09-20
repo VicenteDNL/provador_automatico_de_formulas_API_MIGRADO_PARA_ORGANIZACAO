@@ -20,4 +20,10 @@ class Jogador extends Model
 {
     use HasFactory;
     protected $table = 'jogadores';
+    protected $hidden = ['token', 'token_valido'];
+
+    public function respostas()
+    {
+        return $this->hasMany(Resposta::class);
+    }
 }

@@ -7,11 +7,8 @@ use App\Http\Controllers\Api\ResponseController;
 use App\Http\Controllers\Api\Type;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\API\Aluno\EstudoConceitos\EstudoConceitosConcluirRequest;
-use App\LogicLive\Common\Enums\Types;
 use App\LogicLive\Common\Models\RespostaModel;
-use App\LogicLive\Managers\EstudoConceitos\EstudoConceitosExercicio;
 use App\LogicLive\Resources\RespostaResource;
-use App\Models\LogicLive;
 use Throwable;
 
 class EstudoConceitosController extends Controller
@@ -23,17 +20,10 @@ class EstudoConceitosController extends Controller
     public function concluir(EstudoConceitosConcluirRequest $request)
     {
         try {
-            $exercicio = LogicLive::where([
-                'tipo'   => Types::EXERCICIO->descricao(),
-                'hash'   => $request->exeHash,
-                'modelo' => EstudoConceitosExercicio::class,
-            ])->first();
+            $exercicio = $request->exercicio;
+            $jogador = $request->jogador;
 
-            if (is_null($exercicio)) {
-                return ResponseController::json(Type::error, Action::update, null, 'exercicio não encontrado');
-            }
-
-            $respostaResource = new RespostaResource($request->usuHash);
+            $respostaResource = new RespostaResource($jogador->token);
             $resultado = $respostaResource->create(
                 new RespostaModel([
                     'exe_hash'        => $exercicio->hash,

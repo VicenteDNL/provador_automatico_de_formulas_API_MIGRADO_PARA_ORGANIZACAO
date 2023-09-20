@@ -14,4 +14,9 @@ class Resposta extends Model
     {
         return $this->belongsTo(Exercicio::class);
     }
+
+    public function jogador()
+    {
+        return $this->belongsTo(Jogador::class);
+    }
 }

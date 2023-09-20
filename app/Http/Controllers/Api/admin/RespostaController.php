@@ -6,45 +6,48 @@ use App\Http\Controllers\Api\Action;
 use App\Http\Controllers\Api\ResponseController;
 use App\Http\Controllers\Api\Type;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\DB;
+use App\Http\Requests\API\Admin\Resposta\RespostaIndexRequest;
+use App\Models\Resposta;
 use Throwable;
 
 class RespostaController extends Controller
 {
+    private Resposta $resposta;
+
     public function __construct()
     {
+        $this->resposta = new Resposta();
     }
 
-    public function index()
+    public function index(RespostaIndexRequest $request)
     {
         try {
-            $resposta = DB::table('respostas as r')
-            ->select([
-                'j.id as jogador_id',
-                'j.nome',
-                'j.usunome',
-                'j.avatar',
-                'j.email',
-                'j.ativo',
-                'e.id as exercicio_id',
-                'e.nome as exercicio_nome',
-                'e.tempo as exercicio_tempo',
-                'e.qndt_erros as exercicio_qndt_erros',
-                'e.ativo as exercicio_ativo',
-                'r.tempo as resposta_tempo',
-                'r.tentativas_invalidas as resposta_erros',
-                'r.pontuacao as resposta_pontuacao',
-                'r.concluida as resposta_concluida',
-                'r.ativa as resposta_ativa',
-                're.pontuacao as recompensas_pontuacao',
-            ])
-            ->join('exercicios as e', 'r.exercicio_id', '=', 'e.id')
-            ->join('jogadores as j', 'r.jogador_id', '=', 'j.id')
-            ->join('recompensas as re', 'e.recompensa_id', '=', 're.id')
+            $filters = [];
+
+            if (isset($request->completa)) {
+                $filters[] = ['respostas.concluida', '=', $request->completa];
+            }
+
+            if (isset($request->jogador_id)) {
+                $filters[] = ['respostas.jogador_id', '=', $request->jogador_id];
+            }
+
+            if (isset($request->exercicio_id)) {
+                $filters[] = ['respostas.exercicio_id', '=', $request->exercicio_id];
+            }
+
+            if (isset($request->ativa)) {
+                $filters[] = ['respostas.ativa', '=', $request->ativa];
+            }
+            $resposta = $this->resposta
+            ->with('jogador')
+            ->with('exercicio')
+            ->with('exercicio.recompensa')
+            ->where($filters)
             ->paginate(30);
+            // $resposta->paginate(30);
             return ResponseController::json(Type::success, Action::index, $resposta);
         } catch(Throwable $e) {
-            DB::rollBack();
             return ResponseController::json(Type::error, Action::store);
         }
     }

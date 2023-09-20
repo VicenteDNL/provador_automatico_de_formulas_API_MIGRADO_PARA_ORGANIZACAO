@@ -51,6 +51,19 @@ class ExercicioController extends Controller
     }
 
     /**
+     * @return Response
+     */
+    public function all()
+    {
+        try {
+            $data = Exercicio::all();
+            return  ResponseController::json(Type::success, Action::index, $data);
+        } catch(Throwable $e) {
+            return ResponseController::json(Type::error, Action::index);
+        }
+    }
+
+    /**
      * @param  ExercicioStoreRequest $request
      * @param  Exercicio             $exercicio
      * @return Response
