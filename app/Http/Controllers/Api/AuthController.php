@@ -58,10 +58,9 @@ class AuthController extends Controller
     }
 
     /**
-     * @param  Request      $request
      * @return JsonResponse
      */
-    public function me(Request $request)
+    public function me()
     {
         try {
             return ResponseController::json(Type::success, Action::login);
